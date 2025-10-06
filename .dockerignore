@@ -1,0 +1,24 @@
+# IDE files
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# Git
+.git
+
+# Maven
+target/
+!target/*.jar
+.mvn/
+mvnw
+mvnw.cmd
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test sources
+src/test/
