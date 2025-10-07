@@ -28,7 +28,7 @@ public class Product {
   @Column(nullable = false)
   private Integer price;
 
-  @Column(nullable = false, length = 1000)
+  @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 
   @CreationTimestamp
