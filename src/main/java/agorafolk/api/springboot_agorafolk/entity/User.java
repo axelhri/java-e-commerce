@@ -48,7 +48,7 @@ public class User implements UserDetails {
   private Instant createdAt;
 
   @UpdateTimestamp
-  @Column(nullable = true)
+  @Column(nullable = false)
   private Instant updatedAt;
 
   @Override
