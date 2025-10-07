@@ -51,7 +51,7 @@ public class User implements UserDetails {
   @Column(nullable = true)
   private Instant updatedAt;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = false)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private Cart cart;
 
   @Override
