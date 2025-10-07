@@ -51,6 +51,9 @@ public class User implements UserDetails {
   @Column(nullable = true)
   private Instant updatedAt;
 
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, optional = false)
+  private Cart cart;
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     Set<GrantedAuthority> authorities = new HashSet<>();
