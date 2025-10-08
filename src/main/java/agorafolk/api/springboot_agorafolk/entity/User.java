@@ -1,19 +1,19 @@
 package agorafolk.api.springboot_agorafolk.entity;
 
 import agorafolk.api.springboot_agorafolk.model.Role;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,27 +31,30 @@ public class User implements UserDetails {
   private String email;
 
   @Column(nullable = false, length = 255)
+  @JsonIgnore
   private String password;
 
   @Builder.Default
   @Column(nullable = false)
   private Integer points = 10000;
 
-  @ElementCollection(fetch = FetchType.EAGER)
+  @ElementCollection(fetch = FetchType.LAZY)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
   @Column(name = "role")
-  private Set<Role> roles = EnumSet.of(Role.USER);
+  @Builder.Default
+  private Set<Role> roles = new HashSet<>(EnumSet.of(Role.USER));
 
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
 
   @UpdateTimestamp
-  @Column(nullable = true)
+  @Column
   private Instant updatedAt;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
   private Cart cart;
 
   @Override
@@ -60,7 +63,7 @@ public class User implements UserDetails {
     for (Role role : roles) {
       authorities.addAll(role.getAuthorities());
     }
-    return authorities;
+    return Collections.unmodifiableSet(authorities);
   }
 
   @Override

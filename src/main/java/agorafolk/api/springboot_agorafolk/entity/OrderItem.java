@@ -16,19 +16,18 @@ public class OrderItem {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(updatable = false, nullable = false, columnDefinition = "UUID")
   private UUID id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "order_id", nullable = false)
   private Order order;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "product_id", nullable = false)
   private Product product;
 
+  @Builder.Default
   @Column(nullable = false)
-  private Integer quantity;
-
-  @Column(nullable = false)
-  private Integer price;
+  private Integer quantity = 1;
 }

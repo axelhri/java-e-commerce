@@ -24,10 +24,11 @@ public class Order {
   @Column(updatable = false, nullable = false, columnDefinition = "UUID")
   private UUID id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id",  nullable = false)
   private User user;
 
+  @Builder.Default
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> orderItems = new ArrayList<>();
 
@@ -38,10 +39,4 @@ public class Order {
   @UpdateTimestamp
   @Column(nullable = true)
   private Instant updatedAt;
-
-  public int getOrderTotalPrice() {
-    return orderItems.stream()
-            .mapToInt(item -> item.getPrice() * item.getQuantity())
-            .sum();
-  }
 }

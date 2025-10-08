@@ -23,18 +23,15 @@ public class Cart {
   @Column(updatable = false, nullable = false, columnDefinition = "UUID")
   private UUID id;
 
-  @Builder.Default
-  @Column(nullable = false)
-  private Integer total = 0;
-
   @UpdateTimestamp
-  @Column(nullable = true)
+  @Column
   private Instant updatedAt;
 
-  @OneToOne
+  @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false, unique = true)
   private User user;
 
+  @Builder.Default
   @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<CartItem> cartItems = new ArrayList<>();
 }

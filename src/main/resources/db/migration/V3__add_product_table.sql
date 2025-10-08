@@ -3,9 +3,8 @@ CREATE TABLE products (
     name VARCHAR(255) NOT NULL,
     price INTEGER NOT NULL,
     description TEXT NOT NULL,
-    vendor_id UUID NOT NULL,
+    vendor_id UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+    updated_at TIMESTAMP
 );
 

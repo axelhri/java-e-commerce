@@ -31,7 +31,7 @@ public class Product {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "vendor_id",  nullable = false)
   private Vendor vendor;
 
@@ -40,6 +40,6 @@ public class Product {
   private Instant createdAt;
 
   @UpdateTimestamp
-  @Column(nullable = true)
+  @Column
   private Instant updatedAt;
 }

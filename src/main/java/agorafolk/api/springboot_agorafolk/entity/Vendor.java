@@ -31,9 +31,10 @@ public class Vendor {
   private Instant createdAt;
 
   @UpdateTimestamp
-  @Column(nullable = true)
+  @Column
   private Instant updatedAt;
 
-  @OneToMany(mappedBy = "vendor")
+  @Builder.Default
+  @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
   private List<Product> products;
 }

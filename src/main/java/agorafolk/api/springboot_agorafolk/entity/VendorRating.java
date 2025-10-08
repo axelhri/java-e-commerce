@@ -14,7 +14,10 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 @Entity
-@Table(name = "vendors_ratings")
+@Table(
+        name = "vendors_ratings",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"vendor_id", "user_id"})
+)
 public class VendorRating {
 
   @Id
@@ -22,14 +25,15 @@ public class VendorRating {
   @Column(updatable = false, nullable = false, columnDefinition = "UUID")
   private UUID id;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "vendor_id", nullable = false)
   private Vendor vendor;
 
-  @ManyToOne
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private Rating rating;
 
