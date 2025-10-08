@@ -33,11 +33,17 @@ public enum Role {
 
   @Getter private final Set<Permission> permissions;
 
-  private final Set<SimpleGrantedAuthority> authoritiesCache =
-          Collections.unmodifiableSet(Stream.concat(
-                          permissions.stream().map(Permission::toAuthority),
-                          Stream.of(new SimpleGrantedAuthority("ROLE_" + name())))
-                  .collect(Collectors.toSet()));
+  private final Set<SimpleGrantedAuthority> authoritiesCache;
+
+  Role(Set<Permission> permissions) {
+    this.permissions = permissions;
+    this.authoritiesCache = Collections.unmodifiableSet(
+            Stream.concat(
+                    permissions.stream().map(Permission::toAuthority),
+                    Stream.of(new SimpleGrantedAuthority("ROLE_" + name()))
+            ).collect(Collectors.toSet())
+    );
+  }
 
   public Set<SimpleGrantedAuthority> getAuthorities() {
     return authoritiesCache;

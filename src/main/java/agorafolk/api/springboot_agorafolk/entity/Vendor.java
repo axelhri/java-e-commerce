@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,5 +37,5 @@ public class Vendor {
 
   @Builder.Default
   @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
-  private List<Product> products;
+  private List<Product> products = new ArrayList<>();
 }

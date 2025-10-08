@@ -33,7 +33,7 @@ public class VendorRating {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Enumerated(EnumType.STRING)
+  @Enumerated(EnumType.ORDINAL)
   @Column(nullable = false)
   private Rating rating;
 

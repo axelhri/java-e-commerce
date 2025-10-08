@@ -29,5 +29,5 @@ public class CartItem {
 
   @Builder.Default
   @Column(nullable = false)
-  private Integer quantity = 0;
+  private Integer quantity = 1;
 }
