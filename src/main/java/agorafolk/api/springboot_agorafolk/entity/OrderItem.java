@@ -1,9 +1,8 @@
 package agorafolk.api.springboot_agorafolk.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-
 import java.util.UUID;
+import lombok.*;
 
 @Getter
 @Setter

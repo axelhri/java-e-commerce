@@ -11,6 +11,5 @@ public enum Rating {
   FOUR_STAR(4),
   FIVE_STAR(5);
 
-  @Getter
-  private final Integer rating;
+  @Getter private final Integer rating;
 }

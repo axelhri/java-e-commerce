@@ -1,13 +1,12 @@
 package agorafolk.api.springboot_agorafolk.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -23,9 +22,7 @@ public class Cart {
   @Column(updatable = false, nullable = false, columnDefinition = "UUID")
   private UUID id;
 
-  @UpdateTimestamp
-  @Column
-  private Instant updatedAt;
+  @UpdateTimestamp @Column private Instant updatedAt;
 
   @OneToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false, unique = true)

@@ -2,14 +2,13 @@ package agorafolk.api.springboot_agorafolk.entity;
 
 import agorafolk.api.springboot_agorafolk.model.Rating;
 import jakarta.persistence.*;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Getter
 @Setter

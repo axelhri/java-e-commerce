@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.*;
-
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -49,9 +48,7 @@ public class User implements UserDetails {
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
 
-  @UpdateTimestamp
-  @Column
-  private Instant updatedAt;
+  @UpdateTimestamp @Column private Instant updatedAt;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore

@@ -1,14 +1,13 @@
 package agorafolk.api.springboot_agorafolk.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -31,9 +30,7 @@ public class Vendor {
   @Column(updatable = false, nullable = false)
   private Instant createdAt;
 
-  @UpdateTimestamp
-  @Column
-  private Instant updatedAt;
+  @UpdateTimestamp @Column private Instant updatedAt;
 
   @Builder.Default
   @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)

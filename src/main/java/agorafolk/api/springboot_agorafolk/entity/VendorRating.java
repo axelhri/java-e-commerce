@@ -2,11 +2,10 @@ package agorafolk.api.springboot_agorafolk.entity;
 
 import agorafolk.api.springboot_agorafolk.model.Rating;
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.Instant;
 import java.util.UUID;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Setter
@@ -15,9 +14,8 @@ import java.util.UUID;
 @Builder
 @Entity
 @Table(
-        name = "vendors_ratings",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"vendor_id", "user_id"})
-)
+    name = "vendors_ratings",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"vendor_id", "user_id"}))
 public class VendorRating {
 
   @Id

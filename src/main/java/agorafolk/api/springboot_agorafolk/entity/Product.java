@@ -1,12 +1,11 @@
 package agorafolk.api.springboot_agorafolk.entity;
 
 import jakarta.persistence.*;
+import java.time.Instant;
+import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-import java.time.Instant;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -32,14 +31,12 @@ public class Product {
   private String description;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "vendor_id",  nullable = false)
+  @JoinColumn(name = "vendor_id", nullable = false)
   private Vendor vendor;
 
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
 
-  @UpdateTimestamp
-  @Column
-  private Instant updatedAt;
+  @UpdateTimestamp @Column private Instant updatedAt;
 }

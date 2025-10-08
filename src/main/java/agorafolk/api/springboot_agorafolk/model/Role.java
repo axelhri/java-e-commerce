@@ -12,13 +12,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 @RequiredArgsConstructor
 public enum Role {
-  USER(
-          Set.of(
-                  USER_READ,
-                  USER_CREATE,
-                  USER_DELETE,
-                  USER_UPDATE
-          )),
+  USER(Set.of(USER_READ, USER_CREATE, USER_DELETE, USER_UPDATE)),
   ADMIN(
       Set.of(
           USER_READ,
@@ -28,8 +22,7 @@ public enum Role {
           ADMIN_CREATE,
           ADMIN_DELETE,
           ADMIN_READ,
-          ADMIN_UPDATE
-      ));
+          ADMIN_UPDATE));
 
   @Getter private final Set<Permission> permissions;
 
@@ -37,12 +30,12 @@ public enum Role {
 
   Role(Set<Permission> permissions) {
     this.permissions = permissions;
-    this.authoritiesCache = Collections.unmodifiableSet(
+    this.authoritiesCache =
+        Collections.unmodifiableSet(
             Stream.concat(
                     permissions.stream().map(Permission::toAuthority),
-                    Stream.of(new SimpleGrantedAuthority("ROLE_" + name()))
-            ).collect(Collectors.toSet())
-    );
+                    Stream.of(new SimpleGrantedAuthority("ROLE_" + name())))
+                .collect(Collectors.toSet()));
   }
 
   public Set<SimpleGrantedAuthority> getAuthorities() {
