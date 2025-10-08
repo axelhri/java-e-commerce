@@ -39,3 +39,6 @@ check: # Formatting check
 
 fix: # Formatting fix
 	mvn spotless:apply
+
+drop: # Delete and recreate database schema
+	docker exec -it postgres_db psql -U axel -d db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public"
