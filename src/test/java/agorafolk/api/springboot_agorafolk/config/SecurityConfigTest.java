@@ -9,7 +9,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 public class SecurityConfigTest {
 
   @Bean
-  public JwtAuthenticationFilter jwtAuthFilter () {
+  public JwtAuthenticationFilter jwtAuthFilter() {
     return Mockito.mock(JwtAuthenticationFilter.class);
   }
 
