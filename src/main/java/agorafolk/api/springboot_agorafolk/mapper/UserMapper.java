@@ -10,8 +10,8 @@ public class UserMapper {
 
   public User toUserEntity(@NonNull RegisterRequest dto) {
      return User.builder()
-            .email(dto.getEmail())
-            .password(dto.getPassword())
+            .email(dto.email())
+            .password(dto.password())
             .build();
   }
 }
