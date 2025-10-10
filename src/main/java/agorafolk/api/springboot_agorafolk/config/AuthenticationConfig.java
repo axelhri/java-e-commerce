@@ -21,7 +21,10 @@ public class AuthenticationConfig {
 
   @Bean
   public UserDetailsService userDetailsService() {
-    return username -> userRepository.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
+    return username ->
+        userRepository
+            .findByEmail(username)
+            .orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
   }
 
   @Bean
@@ -33,7 +36,8 @@ public class AuthenticationConfig {
   }
 
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
+      throws Exception {
     return config.getAuthenticationManager();
   }
 

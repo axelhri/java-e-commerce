@@ -1,7 +1,7 @@
 package agorafolk.api.springboot_agorafolk.controller;
 
-import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
+import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +17,14 @@ public class AuthenticationController {
   private final AuthenticationServiceInterface authenticationService;
 
   @PostMapping("/register")
-  public ResponseEntity<AuthenticationResponse> register(@RequestBody AuthenticationRequest registerRequest) {
+  public ResponseEntity<AuthenticationResponse> register(
+      @RequestBody AuthenticationRequest registerRequest) {
     return ResponseEntity.ok(authenticationService.register(registerRequest));
   }
 
   @PostMapping("/login")
-  public ResponseEntity<AuthenticationResponse> login(@RequestBody AuthenticationRequest loginRequest) {
+  public ResponseEntity<AuthenticationResponse> login(
+      @RequestBody AuthenticationRequest loginRequest) {
     return ResponseEntity.ok(authenticationService.login(loginRequest));
   }
 }
