@@ -28,6 +28,8 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     }
 
     User user = userMapper.toUserEntity(registerRequest);
+    user.setPassword(passwordEncoder.encode(registerRequest.password()));
+
     userRepository.save(user);
 
     String jwt = jwtService.generateToken(user);
