@@ -28,11 +28,11 @@ public class AuthenticationConfig {
   }
 
   @Bean
-  public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
+  public DaoAuthenticationProvider authenticationProvider() {
     DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-    authProvider.setPasswordEncoder(passwordEncoder());
     authProvider.setUserDetailsService(userDetailsService());
-    return new ProviderManager(authProvider);
+    authProvider.setPasswordEncoder(passwordEncoder());
+    return authProvider;
   }
 
   @Bean

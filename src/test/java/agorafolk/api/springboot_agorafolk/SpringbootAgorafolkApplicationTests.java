@@ -1,9 +1,7 @@
 package agorafolk.api.springboot_agorafolk;
 
-import agorafolk.api.springboot_agorafolk.config.SecurityConfigTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -12,7 +10,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers
 @SpringBootTest
-@Import(SecurityConfigTest.class)
 class SpringbootAgorafolkApplicationTests {
 
   @Container
