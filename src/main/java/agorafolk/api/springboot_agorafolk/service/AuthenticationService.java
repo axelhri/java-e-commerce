@@ -24,11 +24,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   private final PasswordEncoder passwordEncoder;
 
   private void saveUserToken(User user, String jwt) {
-    var token = Token.builder()
-            .user(user)
-            .token(jwt)
-            .tokenType(TokenType.BEARER)
-            .build();
+    var token = Token.builder().user(user).token(jwt).tokenType(TokenType.BEARER).build();
 
     tokenRepository.save(token);
   }
@@ -40,10 +36,11 @@ public class AuthenticationService implements AuthenticationServiceInterface {
       return;
     }
 
-    validToken.forEach(t -> {
-      t.setExpired(true);
-      t.setRevoked(true);
-    });
+    validToken.forEach(
+        t -> {
+          t.setExpired(true);
+          t.setRevoked(true);
+        });
 
     tokenRepository.saveAll(validToken);
   }

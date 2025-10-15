@@ -2,6 +2,7 @@ package agorafolk.api.springboot_agorafolk.config;
 
 import agorafolk.api.springboot_agorafolk.repository.TokenRepository;
 import agorafolk.api.springboot_agorafolk.service.JwtService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,13 +42,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     jwt = authHeader.substring(7);
-    userEmail = jwtService.extractUsername(jwt);
+
+    try {
+      userEmail = jwtService.extractUsername(jwt);
+    } catch (JwtException e) {
+      filterChain.doFilter(request, response);
+      return;
+    }
 
     if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
       UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
-      var isTokenValid = tokenRepository.findByToken(jwt)
-              .map(t -> !t.isExpired() && !t.isRevoked())
-              .orElse(false);
+      var isTokenValid =
+          tokenRepository.findByToken(jwt).map(t -> !t.isExpired() && !t.isRevoked()).orElse(false);
       if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
         UsernamePasswordAuthenticationToken authToken =
             new UsernamePasswordAuthenticationToken(
