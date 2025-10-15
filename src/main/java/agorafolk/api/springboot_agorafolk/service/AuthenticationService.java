@@ -2,9 +2,12 @@ package agorafolk.api.springboot_agorafolk.service;
 
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
+import agorafolk.api.springboot_agorafolk.entity.Token;
 import agorafolk.api.springboot_agorafolk.entity.User;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
+import agorafolk.api.springboot_agorafolk.model.TokenType;
+import agorafolk.api.springboot_agorafolk.repository.TokenRepository;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,9 +18,20 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService implements AuthenticationServiceInterface {
 
   private final UserRepository userRepository;
+  private final TokenRepository tokenRepository;
   private final JwtService jwtService;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
+
+  private void saveUserToken(User user, String jwt) {
+    var token = Token.builder()
+            .user(user)
+            .token(jwt)
+            .tokenType(TokenType.BEARER)
+            .build();
+
+    tokenRepository.save(token);
+  }
 
   @Override
   public AuthenticationResponse register(AuthenticationRequest registerRequest) {
@@ -30,9 +44,11 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     User user = userMapper.toUserEntity(registerRequest);
     user.setPassword(passwordEncoder.encode(registerRequest.password()));
 
-    userRepository.save(user);
+    var savedUser = userRepository.save(user);
 
     String jwt = jwtService.generateToken(user);
+
+    saveUserToken(savedUser, jwt);
 
     return new AuthenticationResponse(jwt, user.getId());
   }
@@ -45,6 +61,8 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
     String jwt = jwtService.generateToken(user);
+
+    saveUserToken(user, jwt);
 
     return new AuthenticationResponse(jwt, user.getId());
   }

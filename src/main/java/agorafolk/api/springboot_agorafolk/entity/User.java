@@ -44,6 +44,9 @@ public class User implements UserDetails {
   @Builder.Default
   private Set<Role> roles = new HashSet<>(EnumSet.of(Role.USER));
 
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  private List<Token> tokens;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
