@@ -24,7 +24,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   private final PasswordEncoder passwordEncoder;
 
   private void saveUserToken(User user, String jwt) {
-    var token = Token.builder().user(user).token(jwt).tokenType(TokenType.BEARER).build();
+    var token = Token.builder().user(user).jwtToken(jwt).tokenType(TokenType.BEARER).build();
 
     tokenRepository.save(token);
   }

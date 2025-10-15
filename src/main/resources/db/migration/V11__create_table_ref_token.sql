@@ -1,6 +1,6 @@
 CREATE TABLE tokens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    token VARCHAR NOT NULL UNIQUE,
+    jwt_token VARCHAR NOT NULL UNIQUE,
     token_type VARCHAR NOT NULL,
     expired BOOLEAN NOT NULL DEFAULT FALSE,
     revoked BOOLEAN NOT NULL DEFAULT FALSE,
