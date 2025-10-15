@@ -9,9 +9,15 @@ import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
 import agorafolk.api.springboot_agorafolk.model.TokenType;
 import agorafolk.api.springboot_agorafolk.repository.TokenRepository;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 @Service
 @AllArgsConstructor
@@ -58,11 +64,13 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     var savedUser = userRepository.save(user);
 
-    String jwt = jwtService.generateToken(user);
+    String jwtToken = jwtService.generateToken(user);
 
-    saveUserToken(savedUser, jwt);
+    String jwtRefreshToken = jwtService.generateRefreshToken(user);
 
-    return new AuthenticationResponse(jwt, user.getId());
+    saveUserToken(savedUser, jwtToken);
+
+    return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
   }
 
   @Override
@@ -72,11 +80,48 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             .findByEmail(loginRequest.email())
             .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
 
-    String jwt = jwtService.generateToken(user);
+    String jwtToken = jwtService.generateToken(user);
 
     revokeAllUserTokens(user);
-    saveUserToken(user, jwt);
 
-    return new AuthenticationResponse(jwt, user.getId());
+    String jwtRefreshToken = jwtService.generateRefreshToken(user);
+
+    saveUserToken(user, jwtToken);
+
+    return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
+  }
+
+  @Override
+  public void refreshToken(
+          HttpServletRequest request,
+          HttpServletResponse response
+  ) throws IOException {
+    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+    final String refreshToken;
+    final String userEmail;
+
+    if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+      return;
+    }
+
+    refreshToken = authHeader.substring(7);
+
+    userEmail = jwtService.extractUsername(refreshToken);
+
+    if (userEmail != null) {
+
+      var user = userRepository.findByEmail(userEmail)
+              .orElseThrow();
+
+      if (jwtService.isTokenValid(refreshToken, user)) {
+
+        var accessToken = jwtService.generateToken(user);
+        revokeAllUserTokens(user);
+        saveUserToken(user, accessToken);
+        var authResponse = new AuthenticationResponse(accessToken, refreshToken, user.getId());
+        new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
+
+      }
+    }
   }
 }
