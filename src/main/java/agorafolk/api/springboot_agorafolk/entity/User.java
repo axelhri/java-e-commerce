@@ -46,7 +46,7 @@ public class User implements UserDetails {
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   @JsonIgnore
-  private List<Token> tokens;
+  private transient List<Token> tokens;
 
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
