@@ -33,6 +33,21 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     tokenRepository.save(token);
   }
 
+  private void revokeAllUserTokens(User user) {
+    var validToken = tokenRepository.findAllValidTokensByUserId(user.getId());
+
+    if (validToken.isEmpty()) {
+      return;
+    }
+
+    validToken.forEach(t -> {
+      t.setExpired(true);
+      t.setRevoked(true);
+    });
+
+    tokenRepository.saveAll(validToken);
+  }
+
   @Override
   public AuthenticationResponse register(AuthenticationRequest registerRequest) {
 
@@ -62,6 +77,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     String jwt = jwtService.generateToken(user);
 
+    revokeAllUserTokens(user);
     saveUserToken(user, jwt);
 
     return new AuthenticationResponse(jwt, user.getId());
