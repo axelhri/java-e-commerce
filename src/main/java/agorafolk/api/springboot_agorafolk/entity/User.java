@@ -45,6 +45,7 @@ public class User implements UserDetails {
   private Set<Role> roles = new HashSet<>(EnumSet.of(Role.USER));
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  @JsonIgnore
   private List<Token> tokens;
 
   @CreationTimestamp

@@ -21,7 +21,7 @@ public class Token {
   private UUID id;
 
   @Column(nullable = false, unique = true)
-  private String token;
+  private String jwtToken;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
