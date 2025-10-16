@@ -9,6 +9,9 @@ import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
 import agorafolk.api.springboot_agorafolk.model.TokenType;
 import agorafolk.api.springboot_agorafolk.repository.TokenRepository;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
+import exception.InvalidCredentialsException;
+import exception.InvalidTokenException;
+import exception.UserAlreadyExistsException;
 import java.util.Locale;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,8 +53,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   public AuthenticationResponse register(AuthenticationRequest registerRequest) {
 
     if (userRepository.existsByEmail(registerRequest.email())) {
-      throw new IllegalArgumentException(
-          "Invalid informations"); // REFACTOR : custom exception to be added
+      throw new UserAlreadyExistsException(registerRequest.email() + " is already registered");
     }
 
     User user = userMapper.toUserEntity(registerRequest);
@@ -70,20 +72,18 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
   @Override
   public AuthenticationResponse login(AuthenticationRequest loginRequest) {
-    String normalizedEmail = loginRequest.email().trim().toLowerCase(Locale.ROOT);
-
     User user =
         userRepository
-            .findByEmail(normalizedEmail)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+            .findByEmail(loginRequest.email().trim().toLowerCase(Locale.ROOT))
+            .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
 
     if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
-      throw new IllegalArgumentException("Invalid credentials");
+      throw new InvalidCredentialsException("Invalid credentials");
     }
 
-    String jwtToken = jwtService.generateToken(user);
-
     revokeAllUserTokens(user);
+
+    String jwtToken = jwtService.generateToken(user);
 
     String jwtRefreshToken = jwtService.generateRefreshToken(user);
 
@@ -95,7 +95,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   @Override
   public AuthenticationResponse refreshToken(String refreshToken) {
     if (refreshToken == null || refreshToken.isBlank()) {
-      throw new IllegalArgumentException("Invalid refresh token");
+      throw new InvalidTokenException("Token is empty");
     }
 
     String email = jwtService.extractUsername(refreshToken);
@@ -103,14 +103,15 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     User user =
         userRepository
             .findByEmail(email)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+            .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
     if (!jwtService.isTokenValid(refreshToken, user)) {
-      throw new IllegalArgumentException("Invalid refresh token");
+      throw new InvalidCredentialsException("Token is invalid or expired");
     }
 
-    String newAccessToken = jwtService.generateToken(user);
     revokeAllUserTokens(user);
+
+    String newAccessToken = jwtService.generateToken(user);
     saveUserToken(user, newAccessToken);
 
     return new AuthenticationResponse(newAccessToken, refreshToken, user.getId());

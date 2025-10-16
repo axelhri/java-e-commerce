@@ -3,6 +3,7 @@ package agorafolk.api.springboot_agorafolk.controller;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
+import exception.InvalidTokenException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -27,22 +28,23 @@ public class AuthenticationController {
   public ResponseEntity<AuthenticationResponse> login(
       @RequestBody @Valid AuthenticationRequest loginRequest) {
     AuthenticationResponse response = authenticationService.login(loginRequest);
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+    return ResponseEntity.ok(response);
   }
 
   @PostMapping("/refresh-token")
   public ResponseEntity<AuthenticationResponse> refreshToken(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
+
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+      throw new InvalidTokenException("Missing token");
     }
 
     String refreshToken = authHeader.substring(7);
     if (refreshToken.isBlank()) {
-      throw new IllegalArgumentException("Invalid refresh token");
+      throw new InvalidTokenException("Token is empty");
     }
 
     AuthenticationResponse response = authenticationService.refreshToken(refreshToken);
-    return ResponseEntity.status(HttpStatus.OK).body(response);
+    return ResponseEntity.ok(response);
   }
 }
