@@ -9,12 +9,8 @@ import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
 import agorafolk.api.springboot_agorafolk.model.TokenType;
 import agorafolk.api.springboot_agorafolk.repository.TokenRepository;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.util.Locale;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +33,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   private void revokeAllUserTokens(User user) {
     var validToken = tokenRepository.findAllValidTokensByUserId(user.getId());
 
-    if (validToken.isEmpty()) {
+    if (validToken == null || validToken.isEmpty()) {
       return;
     }
 
@@ -74,10 +70,16 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
   @Override
   public AuthenticationResponse login(AuthenticationRequest loginRequest) {
+    String normalizedEmail = loginRequest.email().trim().toLowerCase(Locale.ROOT);
+
     User user =
         userRepository
-            .findByEmail(loginRequest.email())
+            .findByEmail(normalizedEmail)
             .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+
+    if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+      throw new IllegalArgumentException("Invalid credentials");
+    }
 
     String jwtToken = jwtService.generateToken(user);
 
@@ -91,32 +93,26 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   }
 
   @Override
-  public void refreshToken(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-    final String refreshToken;
-    final String userEmail;
-
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      return;
+  public AuthenticationResponse refreshToken(String refreshToken) {
+    if (refreshToken == null || refreshToken.isBlank()) {
+      throw new IllegalArgumentException("Invalid refresh token");
     }
 
-    refreshToken = authHeader.substring(7);
+    String email = jwtService.extractUsername(refreshToken);
 
-    userEmail = jwtService.extractUsername(refreshToken);
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
 
-    if (userEmail != null) {
-
-      var user = userRepository.findByEmail(userEmail).orElseThrow();
-
-      if (jwtService.isTokenValid(refreshToken, user)) {
-
-        var accessToken = jwtService.generateToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, accessToken);
-        var authResponse = new AuthenticationResponse(accessToken, refreshToken, user.getId());
-        new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
-      }
+    if (!jwtService.isTokenValid(refreshToken, user)) {
+      throw new IllegalArgumentException("Invalid refresh token");
     }
+
+    String newAccessToken = jwtService.generateToken(user);
+    revokeAllUserTokens(user);
+    saveUserToken(user, newAccessToken);
+
+    return new AuthenticationResponse(newAccessToken, refreshToken, user.getId());
   }
 }
