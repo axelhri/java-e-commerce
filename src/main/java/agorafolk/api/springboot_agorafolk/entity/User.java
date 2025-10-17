@@ -58,6 +58,14 @@ public class User implements UserDetails {
   @JsonIgnore
   private Cart cart;
 
+  @PrePersist
+  @PreUpdate
+  private void normalizeEmail() {
+    if (email != null) {
+      email = email.trim().toLowerCase(Locale.ROOT);
+    }
+  }
+
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
     Set<GrantedAuthority> authorities = new HashSet<>();

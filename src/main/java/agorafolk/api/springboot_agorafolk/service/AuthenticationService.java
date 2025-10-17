@@ -2,19 +2,16 @@ package agorafolk.api.springboot_agorafolk.service;
 
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
-import agorafolk.api.springboot_agorafolk.entity.Token;
 import agorafolk.api.springboot_agorafolk.entity.User;
+import agorafolk.api.springboot_agorafolk.exception.InvalidCredentialsException;
+import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
+import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
+import agorafolk.api.springboot_agorafolk.interfaces.TokenManagementServiceInterface;
 import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
-import agorafolk.api.springboot_agorafolk.model.TokenType;
-import agorafolk.api.springboot_agorafolk.repository.TokenRepository;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.util.Locale;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -23,39 +20,16 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService implements AuthenticationServiceInterface {
 
   private final UserRepository userRepository;
-  private final TokenRepository tokenRepository;
+  private final TokenManagementServiceInterface tokenManagementService;
   private final JwtService jwtService;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
-
-  private void saveUserToken(User user, String jwt) {
-    var token = Token.builder().user(user).jwtToken(jwt).tokenType(TokenType.BEARER).build();
-
-    tokenRepository.save(token);
-  }
-
-  private void revokeAllUserTokens(User user) {
-    var validToken = tokenRepository.findAllValidTokensByUserId(user.getId());
-
-    if (validToken.isEmpty()) {
-      return;
-    }
-
-    validToken.forEach(
-        t -> {
-          t.setExpired(true);
-          t.setRevoked(true);
-        });
-
-    tokenRepository.saveAll(validToken);
-  }
 
   @Override
   public AuthenticationResponse register(AuthenticationRequest registerRequest) {
 
     if (userRepository.existsByEmail(registerRequest.email())) {
-      throw new IllegalArgumentException(
-          "Invalid informations"); // REFACTOR : custom exception to be added
+      throw new UserAlreadyExistsException(registerRequest.email() + " is already registered");
     }
 
     User user = userMapper.toUserEntity(registerRequest);
@@ -67,7 +41,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     String jwtRefreshToken = jwtService.generateRefreshToken(user);
 
-    saveUserToken(savedUser, jwtToken);
+    tokenManagementService.saveUserToken(savedUser, jwtToken);
 
     return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
   }
@@ -76,47 +50,46 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   public AuthenticationResponse login(AuthenticationRequest loginRequest) {
     User user =
         userRepository
-            .findByEmail(loginRequest.email())
-            .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+            .findByEmail(loginRequest.email().trim().toLowerCase(Locale.ROOT))
+            .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
+
+    if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+      throw new InvalidCredentialsException("Invalid credentials");
+    }
+
+    tokenManagementService.revokeAllUserTokens(user);
 
     String jwtToken = jwtService.generateToken(user);
 
-    revokeAllUserTokens(user);
-
     String jwtRefreshToken = jwtService.generateRefreshToken(user);
 
-    saveUserToken(user, jwtToken);
+    tokenManagementService.saveUserToken(user, jwtToken);
 
     return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
   }
 
   @Override
-  public void refreshToken(HttpServletRequest request, HttpServletResponse response)
-      throws IOException {
-    final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-    final String refreshToken;
-    final String userEmail;
-
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      return;
+  public AuthenticationResponse refreshToken(String refreshToken) {
+    if (refreshToken == null || refreshToken.isBlank()) {
+      throw new InvalidTokenException("Token is empty");
     }
 
-    refreshToken = authHeader.substring(7);
+    String email = jwtService.extractUsername(refreshToken);
 
-    userEmail = jwtService.extractUsername(refreshToken);
+    User user =
+        userRepository
+            .findByEmail(email)
+            .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
 
-    if (userEmail != null) {
-
-      var user = userRepository.findByEmail(userEmail).orElseThrow();
-
-      if (jwtService.isTokenValid(refreshToken, user)) {
-
-        var accessToken = jwtService.generateToken(user);
-        revokeAllUserTokens(user);
-        saveUserToken(user, accessToken);
-        var authResponse = new AuthenticationResponse(accessToken, refreshToken, user.getId());
-        new ObjectMapper().writeValue(response.getOutputStream(), authResponse);
-      }
+    if (!jwtService.isTokenValid(refreshToken, user)) {
+      throw new InvalidCredentialsException("Token is invalid or expired");
     }
+
+    tokenManagementService.revokeAllUserTokens(user);
+
+    String newAccessToken = jwtService.generateToken(user);
+    tokenManagementService.saveUserToken(user, newAccessToken);
+
+    return new AuthenticationResponse(newAccessToken, refreshToken, user.getId());
   }
 }
