@@ -7,6 +7,7 @@ import agorafolk.api.springboot_agorafolk.exception.InvalidCredentialsException;
 import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
 import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
+import agorafolk.api.springboot_agorafolk.interfaces.TokenManagementServiceInterface;
 import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
 import java.util.Locale;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService implements AuthenticationServiceInterface {
 
   private final UserRepository userRepository;
-  private final TokenManagementService tokenManagementService;
+  private final TokenManagementServiceInterface tokenManagementService;
   private final JwtService jwtService;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
