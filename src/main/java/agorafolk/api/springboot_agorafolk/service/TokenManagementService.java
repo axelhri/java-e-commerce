@@ -30,10 +30,10 @@ public class TokenManagementService implements TokenManagementServiceInterface {
     }
 
     validToken.forEach(
-            t -> {
-              t.setExpired(true);
-              t.setRevoked(true);
-            });
+        t -> {
+          t.setExpired(true);
+          t.setRevoked(true);
+        });
 
     tokenRepository.saveAll(validToken);
   }

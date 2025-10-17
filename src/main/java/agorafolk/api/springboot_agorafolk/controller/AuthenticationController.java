@@ -2,8 +2,8 @@ package agorafolk.api.springboot_agorafolk.controller;
 
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
-import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
+import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
