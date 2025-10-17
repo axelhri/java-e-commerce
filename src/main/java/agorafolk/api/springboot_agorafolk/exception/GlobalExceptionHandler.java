@@ -1,4 +1,4 @@
-package exception;
+package agorafolk.api.springboot_agorafolk.exception;
 
 import agorafolk.api.springboot_agorafolk.dto.ErrorResponse;
 import java.time.Instant;
