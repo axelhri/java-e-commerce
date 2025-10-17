@@ -2,12 +2,9 @@ package agorafolk.api.springboot_agorafolk.service;
 
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
-import agorafolk.api.springboot_agorafolk.entity.Token;
 import agorafolk.api.springboot_agorafolk.entity.User;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
-import agorafolk.api.springboot_agorafolk.model.TokenType;
-import agorafolk.api.springboot_agorafolk.repository.TokenRepository;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
 import agorafolk.api.springboot_agorafolk.exception.InvalidCredentialsException;
 import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
@@ -22,32 +19,10 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService implements AuthenticationServiceInterface {
 
   private final UserRepository userRepository;
-  private final TokenRepository tokenRepository;
+  private final TokenManagementService tokenManagementService;
   private final JwtService jwtService;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
-
-  private void saveUserToken(User user, String jwt) {
-    var token = Token.builder().user(user).jwtToken(jwt).tokenType(TokenType.BEARER).build();
-
-    tokenRepository.save(token);
-  }
-
-  private void revokeAllUserTokens(User user) {
-    var validToken = tokenRepository.findAllValidTokensByUserId(user.getId());
-
-    if (validToken == null || validToken.isEmpty()) {
-      return;
-    }
-
-    validToken.forEach(
-        t -> {
-          t.setExpired(true);
-          t.setRevoked(true);
-        });
-
-    tokenRepository.saveAll(validToken);
-  }
 
   @Override
   public AuthenticationResponse register(AuthenticationRequest registerRequest) {
@@ -65,7 +40,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     String jwtRefreshToken = jwtService.generateRefreshToken(user);
 
-    saveUserToken(savedUser, jwtToken);
+    tokenManagementService.saveUserToken(savedUser, jwtToken);
 
     return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
   }
@@ -81,13 +56,13 @@ public class AuthenticationService implements AuthenticationServiceInterface {
       throw new InvalidCredentialsException("Invalid credentials");
     }
 
-    revokeAllUserTokens(user);
+    tokenManagementService.revokeAllUserTokens(user);
 
     String jwtToken = jwtService.generateToken(user);
 
     String jwtRefreshToken = jwtService.generateRefreshToken(user);
 
-    saveUserToken(user, jwtToken);
+    tokenManagementService.saveUserToken(user, jwtToken);
 
     return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
   }
@@ -109,10 +84,10 @@ public class AuthenticationService implements AuthenticationServiceInterface {
       throw new InvalidCredentialsException("Token is invalid or expired");
     }
 
-    revokeAllUserTokens(user);
+    tokenManagementService.revokeAllUserTokens(user);
 
     String newAccessToken = jwtService.generateToken(user);
-    saveUserToken(user, newAccessToken);
+    tokenManagementService.saveUserToken(user, newAccessToken);
 
     return new AuthenticationResponse(newAccessToken, refreshToken, user.getId());
   }
