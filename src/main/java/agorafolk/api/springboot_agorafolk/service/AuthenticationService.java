@@ -2,6 +2,7 @@ package agorafolk.api.springboot_agorafolk.service;
 
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
+import agorafolk.api.springboot_agorafolk.dto.RefreshTokenResponse;
 import agorafolk.api.springboot_agorafolk.entity.User;
 import agorafolk.api.springboot_agorafolk.exception.InvalidCredentialsException;
 import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
@@ -39,11 +40,9 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     String jwtToken = jwtService.generateToken(user);
 
-    String jwtRefreshToken = jwtService.generateRefreshToken(user);
-
     tokenManagementService.saveUserToken(savedUser, jwtToken);
 
-    return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
+    return new AuthenticationResponse(jwtToken, user.getId());
   }
 
   @Override
@@ -61,15 +60,13 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     String jwtToken = jwtService.generateToken(user);
 
-    String jwtRefreshToken = jwtService.generateRefreshToken(user);
-
     tokenManagementService.saveUserToken(user, jwtToken);
 
-    return new AuthenticationResponse(jwtToken, jwtRefreshToken, user.getId());
+    return new AuthenticationResponse(jwtToken, user.getId());
   }
 
   @Override
-  public AuthenticationResponse refreshToken(String refreshToken) {
+  public RefreshTokenResponse refreshToken(String refreshToken) {
     if (refreshToken == null || refreshToken.isBlank()) {
       throw new InvalidTokenException("Token is empty");
     }
@@ -90,6 +87,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     String newAccessToken = jwtService.generateToken(user);
     tokenManagementService.saveUserToken(user, newAccessToken);
 
-    return new AuthenticationResponse(newAccessToken, refreshToken, user.getId());
+    return new RefreshTokenResponse(newAccessToken, refreshToken, user.getId());
   }
 }
