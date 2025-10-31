@@ -27,7 +27,17 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
-    return buildErrorResponse("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    return buildErrorResponse(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  @ExceptionHandler(InvalidPasswordException.class)
+  public ResponseEntity<ErrorResponse> handleInvalidPassword(InvalidPasswordException ex) {
+    return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
+  @ExceptionHandler(ResourceNotFoundException.class)
+  public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
+    return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
   }
 
   private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
