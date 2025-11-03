@@ -5,7 +5,6 @@ import agorafolk.api.springboot_agorafolk.interfaces.UserServiceInterface;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,7 @@ public class UserController {
 
   @PutMapping("/password")
   public ResponseEntity<String> changePassword(
-          @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePassword dto) {
+      @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePassword dto) {
     userService.changePassword(userDetails.getUsername(), dto);
     return ResponseEntity.ok("Password changed successfully");
   }
