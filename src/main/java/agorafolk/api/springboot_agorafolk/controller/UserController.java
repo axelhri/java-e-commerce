@@ -1,5 +1,6 @@
 package agorafolk.api.springboot_agorafolk.controller;
 
+import agorafolk.api.springboot_agorafolk.dto.ApiResponse;
 import agorafolk.api.springboot_agorafolk.dto.ChangePassword;
 import agorafolk.api.springboot_agorafolk.interfaces.UserServiceInterface;
 import jakarta.validation.Valid;
@@ -16,9 +17,9 @@ public class UserController {
   private final UserServiceInterface userService;
 
   @PutMapping("/password")
-  public ResponseEntity<String> changePassword(
+  public ResponseEntity<ApiResponse> changePassword(
       @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePassword dto) {
     userService.changePassword(userDetails.getUsername(), dto);
-    return ResponseEntity.ok("Password changed successfully");
+    return ResponseEntity.ok(new ApiResponse(true, "Your password has been changed successfully"));
   }
 }
