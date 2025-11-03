@@ -28,7 +28,7 @@ public class UserService implements UserServiceInterface {
 
     if (passwordEncoder.matches(dto.newPassword(), user.getPassword())) {
       throw new InvalidPasswordException(
-          "New password must be different from the current password");
+          "Password changed failed");
     }
 
     user.setPassword(passwordEncoder.encode(dto.newPassword()));
