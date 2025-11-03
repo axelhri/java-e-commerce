@@ -31,10 +31,6 @@ public class UserService implements UserServiceInterface {
           "New password must be different from the current password");
     }
 
-    if (!dto.newPassword().equals(dto.confirmPassword())) {
-      throw new InvalidPasswordException("Confirm password does not match your new password");
-    }
-
     user.setPassword(passwordEncoder.encode(dto.newPassword()));
     userRepository.save(user);
   }
