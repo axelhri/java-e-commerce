@@ -27,6 +27,7 @@ jobs:
         run: mvn spotless:check
 
       - name: SonarQube Analysis
+        if: github.ref != 'refs/heads/develop'
         run: |
           mvn clean verify sonar:sonar \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION  }} \
