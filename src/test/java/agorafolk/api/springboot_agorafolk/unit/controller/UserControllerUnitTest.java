@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 import agorafolk.api.springboot_agorafolk.controller.UserController;
 import agorafolk.api.springboot_agorafolk.dto.ApiResponse;
 import agorafolk.api.springboot_agorafolk.dto.ChangePassword;
+import agorafolk.api.springboot_agorafolk.exception.InvalidPasswordException;
+import agorafolk.api.springboot_agorafolk.exception.ResourceNotFoundException;
 import agorafolk.api.springboot_agorafolk.interfaces.UserServiceInterface;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -56,6 +58,44 @@ class UserControllerUnitTest {
       assertTrue(response.getBody().success());
       assertSame(HttpStatus.OK, response.getStatusCode());
       assertEquals("Your password has been changed successfully", response.getBody().message());
+    }
+
+    @Test
+    void changePasswordShouldThrowInvalidPasswordException() {
+      // Arrange
+      when(userDetails.getUsername()).thenReturn(email);
+      doThrow(new InvalidPasswordException("Current password is invalid"))
+          .when(userService)
+          .changePassword(email, dto);
+
+      // Act
+      InvalidPasswordException exception =
+          assertThrows(
+              InvalidPasswordException.class,
+              () -> userController.changePassword(userDetails, dto));
+
+      // Assert
+      assertEquals("Current password is invalid", exception.getMessage());
+      verify(userService, times(1)).changePassword(email, dto);
+    }
+
+    @Test
+    void changePasswordShouldThrowResourceNotFoundException() {
+      // Arrange
+      when(userDetails.getUsername()).thenReturn(email);
+      doThrow(new ResourceNotFoundException("User not found"))
+          .when(userService)
+          .changePassword(email, dto);
+
+      // Act
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> userController.changePassword(userDetails, dto));
+
+      // Assert
+      assertEquals("User not found", exception.getMessage());
+      verify(userService, times(1)).changePassword(email, dto);
     }
   }
 }
