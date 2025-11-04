@@ -2,6 +2,7 @@ package agorafolk.api.springboot_agorafolk.controller;
 
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
+import agorafolk.api.springboot_agorafolk.dto.RefreshTokenResponse;
 import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import jakarta.validation.Valid;
@@ -32,7 +33,7 @@ public class AuthenticationController {
   }
 
   @PostMapping("/refresh-token")
-  public ResponseEntity<AuthenticationResponse> refreshToken(
+  public ResponseEntity<RefreshTokenResponse> refreshToken(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authHeader) {
 
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -44,7 +45,7 @@ public class AuthenticationController {
       throw new InvalidTokenException("Token is empty");
     }
 
-    AuthenticationResponse response = authenticationService.refreshToken(refreshToken);
+    RefreshTokenResponse response = authenticationService.refreshToken(refreshToken);
     return ResponseEntity.ok(response);
   }
 }

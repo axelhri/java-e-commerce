@@ -37,7 +37,7 @@ public class User implements UserDetails {
   @Column(nullable = false)
   private Integer points = 10000;
 
-  @ElementCollection(fetch = FetchType.LAZY)
+  @ElementCollection(fetch = FetchType.EAGER)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
   @Column(name = "role")
