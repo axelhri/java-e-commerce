@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
   private final UserServiceInterface userService;
 
-  @PutMapping("/password")
+  @PatchMapping("/password")
   public ResponseEntity<ApiResponse> changePassword(
       @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePassword dto) {
     userService.changePassword(userDetails.getUsername(), dto);
