@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import agorafolk.api.springboot_agorafolk.controller.AuthenticationController;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
+import agorafolk.api.springboot_agorafolk.exception.InvalidPasswordException;
 import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import java.util.UUID;
@@ -27,9 +28,12 @@ class AuthenticationControllerUnitTest {
 
   private AuthenticationRequest authRequest;
 
+  private UUID userId;
+
   @BeforeEach
   void setUp() {
     authRequest = new AuthenticationRequest("test@mail.com", "Password123!");
+    userId = UUID.randomUUID();
   }
 
   @Nested
@@ -37,8 +41,7 @@ class AuthenticationControllerUnitTest {
     @Test
     void registerShouldReturnSuccessResponseIfAccountIsCreated() {
       // Arrange
-      AuthenticationResponse authResponse =
-          new AuthenticationResponse("jwtAccessToken", UUID.randomUUID());
+      AuthenticationResponse authResponse = new AuthenticationResponse("jwtAccessToken", userId);
       when(authenticationService.register(authRequest)).thenReturn(authResponse);
 
       // Act
@@ -67,6 +70,41 @@ class AuthenticationControllerUnitTest {
           UserAlreadyExistsException.class, () -> authenticationController.register(authRequest));
 
       verify(authenticationService).register(authRequest);
+    }
+  }
+
+  @Nested
+  class loginUnitTest {
+    @Test
+    void loginShouldReturnSuccessResponseIfCredentialsAreCorrect() {
+      // Arrange
+      AuthenticationResponse authResponse = new AuthenticationResponse("jwtAccessToken", userId);
+      when(authenticationService.login(authRequest)).thenReturn(authResponse);
+
+      // Act
+      ResponseEntity<AuthenticationResponse> response = authenticationController.login(authRequest);
+
+      // Assert
+      verify(authenticationService).login(authRequest);
+
+      assertNotNull(response);
+      assertEquals(HttpStatus.OK, response.getStatusCode());
+      assertNotNull(response.getBody());
+      assertEquals("jwtAccessToken", response.getBody().accessToken());
+      assertEquals(authResponse.id(), response.getBody().id());
+    }
+
+    @Test
+    void loginShouldReturnThrowInvalidCredentialsException() {
+      // Arrange
+      when(authenticationService.login(authRequest))
+          .thenThrow(new InvalidPasswordException("Invalid credentials"));
+
+      // Act & Assert
+      assertThrows(
+          InvalidPasswordException.class, () -> authenticationController.login(authRequest));
+
+      verify(authenticationService).login(authRequest);
     }
   }
 }
