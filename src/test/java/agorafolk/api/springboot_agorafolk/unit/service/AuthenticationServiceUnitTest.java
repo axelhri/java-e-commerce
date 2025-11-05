@@ -12,6 +12,7 @@ import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
 import agorafolk.api.springboot_agorafolk.service.AuthenticationService;
 import agorafolk.api.springboot_agorafolk.service.JwtService;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -34,14 +35,13 @@ class AuthenticationServiceUnitTest {
 
   @InjectMocks private AuthenticationService authenticationService;
 
-  private AuthenticationRequest registerRequest;
+  private AuthenticationRequest authRequest;
   private User user;
 
   @BeforeEach
   void setUp() {
-    registerRequest = new AuthenticationRequest("test@mail.com", "Password123!");
-    user =
-        User.builder().email(registerRequest.email()).password(registerRequest.password()).build();
+    authRequest = new AuthenticationRequest("test@mail.com", "Password123!");
+    user = User.builder().email(authRequest.email()).password(authRequest.password()).build();
   }
 
   @Nested
@@ -49,20 +49,20 @@ class AuthenticationServiceUnitTest {
     @Test
     void registerShouldRegisterUserSuccessfully() {
       // Arrange
-      when(userRepository.existsByEmail(registerRequest.email())).thenReturn(false);
-      when(userMapper.toUserEntity(registerRequest)).thenReturn(user);
-      when(passwordEncoder.encode(registerRequest.password())).thenReturn("encodedPass");
+      when(userRepository.existsByEmail(authRequest.email())).thenReturn(false);
+      when(userMapper.toUserEntity(authRequest)).thenReturn(user);
+      when(passwordEncoder.encode(authRequest.password())).thenReturn("encodedPass");
       when(userRepository.save(user)).thenReturn(user);
       when(jwtService.generateToken(user)).thenReturn("jwtAccessToken");
       doNothing().when(tokenManagementService).saveUserToken(user, "jwtAccessToken");
 
       // Act
-      AuthenticationResponse response = authenticationService.register(registerRequest);
+      AuthenticationResponse response = authenticationService.register(authRequest);
 
       // Assert
-      verify(userRepository, times(1)).existsByEmail(registerRequest.email());
-      verify(userMapper, times(1)).toUserEntity(registerRequest);
-      verify(passwordEncoder, times(1)).encode(registerRequest.password());
+      verify(userRepository, times(1)).existsByEmail(authRequest.email());
+      verify(userMapper, times(1)).toUserEntity(authRequest);
+      verify(passwordEncoder, times(1)).encode(authRequest.password());
       verify(userRepository, times(1)).save(user);
       verify(jwtService, times(1)).generateToken(user);
       verify(tokenManagementService, times(1)).saveUserToken(user, "jwtAccessToken");
@@ -76,16 +76,40 @@ class AuthenticationServiceUnitTest {
     @Test
     void registerShouldThrowExceptionWhenUserIsAlreadyExists() {
       // Arrange
-      when(userRepository.existsByEmail(registerRequest.email())).thenReturn(true);
+      when(userRepository.existsByEmail(authRequest.email())).thenReturn(true);
 
       // Act & Assert
       assertThrows(
-          UserAlreadyExistsException.class, () -> authenticationService.register(registerRequest));
+          UserAlreadyExistsException.class, () -> authenticationService.register(authRequest));
 
       // Assert
-      verify(userRepository, times(1)).existsByEmail(registerRequest.email());
+      verify(userRepository, times(1)).existsByEmail(authRequest.email());
       verifyNoMoreInteractions(
           userRepository, userMapper, passwordEncoder, jwtService, tokenManagementService);
+    }
+  }
+
+  @Nested
+  class loginUnitTest {
+    @Test
+    void loginShouldLoginUserSuccessfully() {
+      when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.of(user));
+      when(passwordEncoder.matches(authRequest.password(), user.getPassword())).thenReturn(true);
+      doNothing().when(tokenManagementService).revokeAllUserTokens(user);
+      when(jwtService.generateToken(user)).thenReturn("jwtAccessToken");
+      doNothing().when(tokenManagementService).saveUserToken(user, "jwtAccessToken");
+
+      AuthenticationResponse response = authenticationService.login(authRequest);
+
+      verify(userRepository, times(1)).findByEmail(authRequest.email());
+      verify(passwordEncoder, times(1)).matches(authRequest.password(), user.getPassword());
+      verify(tokenManagementService, times(1)).revokeAllUserTokens(user);
+      verify(jwtService, times(1)).generateToken(user);
+      verify(tokenManagementService, times(1)).saveUserToken(user, "jwtAccessToken");
+
+      assertNotNull(response);
+      assertEquals("jwtAccessToken", response.accessToken());
+      assertEquals(user.getId(), response.id());
     }
   }
 }
