@@ -117,7 +117,7 @@ class AuthenticationServiceUnitTest {
     }
 
     @Test
-    void loginShouldThrowExceptionIfEMailIsNotFound() {
+    void loginShouldThrowExceptionIfEmailIsNotFound() {
       // Arrange
       when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.empty());
 
@@ -127,6 +127,22 @@ class AuthenticationServiceUnitTest {
 
       // Assert
       verify(userRepository, times(1)).findByEmail(authRequest.email());
+      verifyNoMoreInteractions(passwordEncoder, tokenManagementService, jwtService);
+    }
+
+    @Test
+    void loginShouldThrowExceptionIfPasswordDoesNotMatch() {
+      // Arrange
+      when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.of(user));
+      when(passwordEncoder.matches(authRequest.password(), user.getPassword())).thenReturn(false);
+
+      // Act & Assert
+      assertThrows(
+          InvalidCredentialsException.class, () -> authenticationService.login(authRequest));
+
+      // Assert
+      verify(userRepository, times(1)).findByEmail(authRequest.email());
+      verify(passwordEncoder, times(1)).matches(authRequest.password(), user.getPassword());
       verifyNoMoreInteractions(passwordEncoder, tokenManagementService, jwtService);
     }
   }
