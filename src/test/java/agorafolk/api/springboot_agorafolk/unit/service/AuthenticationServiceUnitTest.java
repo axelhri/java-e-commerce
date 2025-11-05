@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
 import agorafolk.api.springboot_agorafolk.entity.User;
+import agorafolk.api.springboot_agorafolk.exception.InvalidCredentialsException;
 import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.TokenManagementServiceInterface;
 import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
@@ -93,14 +94,17 @@ class AuthenticationServiceUnitTest {
   class loginUnitTest {
     @Test
     void loginShouldLoginUserSuccessfully() {
+      // Arrange
       when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.of(user));
       when(passwordEncoder.matches(authRequest.password(), user.getPassword())).thenReturn(true);
       doNothing().when(tokenManagementService).revokeAllUserTokens(user);
       when(jwtService.generateToken(user)).thenReturn("jwtAccessToken");
       doNothing().when(tokenManagementService).saveUserToken(user, "jwtAccessToken");
 
+      // Act
       AuthenticationResponse response = authenticationService.login(authRequest);
 
+      // Assert
       verify(userRepository, times(1)).findByEmail(authRequest.email());
       verify(passwordEncoder, times(1)).matches(authRequest.password(), user.getPassword());
       verify(tokenManagementService, times(1)).revokeAllUserTokens(user);
@@ -110,6 +114,20 @@ class AuthenticationServiceUnitTest {
       assertNotNull(response);
       assertEquals("jwtAccessToken", response.accessToken());
       assertEquals(user.getId(), response.id());
+    }
+
+    @Test
+    void loginShouldThrowExceptionIfEMailIsNotFound() {
+      // Arrange
+      when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.empty());
+
+      // Act & Assert
+      assertThrows(
+          InvalidCredentialsException.class, () -> authenticationService.login(authRequest));
+
+      // Assert
+      verify(userRepository, times(1)).findByEmail(authRequest.email());
+      verifyNoMoreInteractions(passwordEncoder, tokenManagementService, jwtService);
     }
   }
 }
