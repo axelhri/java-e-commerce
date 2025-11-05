@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
 import agorafolk.api.springboot_agorafolk.entity.User;
+import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.TokenManagementServiceInterface;
 import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
 import agorafolk.api.springboot_agorafolk.repository.UserRepository;
@@ -69,6 +70,22 @@ class AuthenticationServiceUnitTest {
       assertNotNull(response);
       assertEquals("jwtAccessToken", response.accessToken());
       assertEquals(user.getId(), response.id());
+      assertEquals("encodedPass", user.getPassword());
+    }
+
+    @Test
+    void registerShouldThrowExceptionWhenUserIsAlreadyExists() {
+      // Arrange
+      when(userRepository.existsByEmail(registerRequest.email())).thenReturn(true);
+
+      // Act & Assert
+      assertThrows(
+          UserAlreadyExistsException.class, () -> authenticationService.register(registerRequest));
+
+      // Assert
+      verify(userRepository, times(1)).existsByEmail(registerRequest.email());
+      verifyNoMoreInteractions(
+          userRepository, userMapper, passwordEncoder, jwtService, tokenManagementService);
     }
   }
 }
