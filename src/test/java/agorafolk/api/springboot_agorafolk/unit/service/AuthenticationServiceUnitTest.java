@@ -7,6 +7,7 @@ import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
 import agorafolk.api.springboot_agorafolk.entity.User;
 import agorafolk.api.springboot_agorafolk.exception.InvalidCredentialsException;
+import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
 import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.TokenManagementServiceInterface;
 import agorafolk.api.springboot_agorafolk.mapper.UserMapper;
@@ -144,6 +145,82 @@ class AuthenticationServiceUnitTest {
       verify(userRepository, times(1)).findByEmail(authRequest.email());
       verify(passwordEncoder, times(1)).matches(authRequest.password(), user.getPassword());
       verifyNoMoreInteractions(passwordEncoder, tokenManagementService, jwtService);
+    }
+  }
+
+  @Nested
+  class refreshTokenUnitTest {
+    private String token;
+    private final String email = "test@mail.com";
+    private final String validToken = "validToken";
+
+    @Test
+    void refreshTokenShouldThrowExceptionIfTokenIsNull() {
+      // Arrange
+      token = null;
+
+      // Act & Assert
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class, () -> authenticationService.refreshToken(token));
+
+      verifyNoInteractions(jwtService, userRepository, tokenManagementService);
+      assertEquals("Token is empty", exception.getMessage());
+    }
+
+    @Test
+    void refreshTokenShouldThrowExceptionIfTokenIsBlank() {
+      // Arrange
+      token = "";
+
+      // Act & Assert
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class, () -> authenticationService.refreshToken(token));
+
+      assertEquals("Token is empty", exception.getMessage());
+      verifyNoInteractions(jwtService, userRepository, tokenManagementService);
+    }
+
+    @Test
+    void refreshTokenShouldThrowExceptionWhenEmailNotFound() {
+      // Arrange
+      when(jwtService.extractUsername(validToken)).thenReturn(email);
+      when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class, () -> authenticationService.refreshToken(validToken));
+
+      // Assert
+      verify(jwtService, times(1)).extractUsername(validToken);
+      verify(userRepository, times(1)).findByEmail(email);
+      verifyNoMoreInteractions(tokenManagementService);
+
+      assertEquals("Invalid refresh token", exception.getMessage());
+    }
+
+    @Test
+    void refreshTokenShouldThrowExceptionWhenTokenIsInvalid() {
+      // Arrange
+      when(jwtService.extractUsername(validToken)).thenReturn(user.getEmail());
+      when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+      when(jwtService.isTokenValid(validToken, user)).thenReturn(false);
+
+      // Act & Assert
+      InvalidCredentialsException exception =
+          assertThrows(
+              InvalidCredentialsException.class,
+              () -> authenticationService.refreshToken(validToken));
+
+      // Assert
+      verify(jwtService, times(1)).extractUsername(validToken);
+      verify(userRepository, times(1)).findByEmail(user.getEmail());
+      verify(jwtService, times(1)).isTokenValid(validToken, user);
+      verifyNoMoreInteractions(tokenManagementService);
+
+      assertEquals("Token is invalid or expired", exception.getMessage());
     }
   }
 }
