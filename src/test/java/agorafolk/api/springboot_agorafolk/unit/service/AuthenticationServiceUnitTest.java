@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
+import agorafolk.api.springboot_agorafolk.dto.RefreshTokenResponse;
 import agorafolk.api.springboot_agorafolk.entity.User;
 import agorafolk.api.springboot_agorafolk.exception.InvalidCredentialsException;
 import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
@@ -153,6 +154,31 @@ class AuthenticationServiceUnitTest {
     private String token;
     private final String email = "test@mail.com";
     private final String validToken = "validToken";
+
+    @Test
+    void refreshTokenShouldReturnNewTokenSuccessfully() {
+      // Arrange
+      when(jwtService.extractUsername(validToken)).thenReturn(user.getEmail());
+      when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
+      when(jwtService.isTokenValid(validToken, user)).thenReturn(true);
+      when(jwtService.generateToken(user)).thenReturn("newAccessToken");
+      doNothing().when(tokenManagementService).revokeAllUserTokens(user);
+      doNothing().when(tokenManagementService).saveUserToken(user, "newAccessToken");
+
+      // Act
+      RefreshTokenResponse response = authenticationService.refreshToken(validToken);
+
+      // Assert
+      verify(jwtService, times(1)).extractUsername(validToken);
+      verify(userRepository, times(1)).findByEmail(user.getEmail());
+      verify(jwtService, times(1)).isTokenValid(validToken, user);
+      verify(jwtService, times(1)).generateToken(user);
+
+      assertNotNull(response);
+      assertEquals("newAccessToken", response.accessToken());
+      assertEquals(validToken, response.refreshToken());
+      assertEquals(user.getId(), response.id());
+    }
 
     @Test
     void refreshTokenShouldThrowExceptionIfTokenIsNull() {
