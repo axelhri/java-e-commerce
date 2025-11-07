@@ -88,4 +88,20 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
       assertEquals("user@mail.com", decodedTokenEmail);
     }
   }
+
+  @Nested
+  class loginIntegrationTest {
+    @Test
+    void loginShouldLogInUserSuccessfully() {
+      // Arrange
+      AuthenticationRequest request = new AuthenticationRequest(user.getEmail(), "Password123!");
+
+      // Act
+      AuthenticationResponse response = authenticationService.login(request);
+
+      // Assert
+      assertEquals(user.getId(), response.id());
+      assertTrue(passwordEncoder.matches("Password123!", user.getPassword()));
+    }
+  }
 }
