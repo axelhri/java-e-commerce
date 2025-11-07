@@ -8,10 +8,10 @@
 		<version>3.5.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>agorafolk.api</groupId>
-	<artifactId>springboot-agorafolk</artifactId>
+	<groupId>ecommerce.api</groupId>
+	<artifactId>springboot-ecommerce</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>springboot-agorafolk</name>
+	<name>springboot-ecommerce</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>

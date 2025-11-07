@@ -1,0 +1,7 @@
+package ecom.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.UUID;
+
+public record AuthenticationResponse(
+    @JsonProperty("access_token") String accessToken, @JsonProperty("user_id") UUID id) {}
