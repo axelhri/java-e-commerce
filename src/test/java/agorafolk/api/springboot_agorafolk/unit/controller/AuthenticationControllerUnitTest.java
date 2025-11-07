@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import agorafolk.api.springboot_agorafolk.controller.AuthenticationController;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
+import agorafolk.api.springboot_agorafolk.dto.RefreshTokenResponse;
 import agorafolk.api.springboot_agorafolk.exception.InvalidPasswordException;
 import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
@@ -28,12 +29,15 @@ class AuthenticationControllerUnitTest {
 
   private AuthenticationRequest authRequest;
 
+  private RefreshTokenResponse refreshTokenResponse;
+
   private UUID userId;
 
   @BeforeEach
   void setUp() {
     authRequest = new AuthenticationRequest("test@mail.com", "Password123!");
     userId = UUID.randomUUID();
+    refreshTokenResponse = new RefreshTokenResponse("accessToken", "refreshToken", userId);
   }
 
   @Nested
@@ -105,6 +109,25 @@ class AuthenticationControllerUnitTest {
           InvalidPasswordException.class, () -> authenticationController.login(authRequest));
 
       verify(authenticationService).login(authRequest);
+    }
+  }
+
+  @Nested
+  class refreshTokenUnitTest {
+
+    @Test
+    void refreshTokenShouldReturnSuccessResponseWhenTokenIsValid() {
+      String validHeader = "Bearer accessToken";
+      when(authenticationService.refreshToken("accessToken")).thenReturn(refreshTokenResponse);
+
+      ResponseEntity<RefreshTokenResponse> response =
+          authenticationController.refreshToken(validHeader);
+
+      verify(authenticationService, times(1)).refreshToken("accessToken");
+
+      assertNotNull(response);
+      assertEquals(HttpStatus.OK, response.getStatusCode());
+      assertEquals(refreshTokenResponse, response.getBody());
     }
   }
 }
