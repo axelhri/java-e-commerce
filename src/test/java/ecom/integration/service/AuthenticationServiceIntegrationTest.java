@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import ecom.config.PostgresTestContainer;
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
+import ecom.dto.RefreshTokenResponse;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.UserAlreadyExistsException;
 import ecom.interfaces.TokenManagementServiceInterface;
+import ecom.repository.TokenRepository;
 import ecom.repository.UserRepository;
 import ecom.service.AuthenticationService;
 import ecom.service.JwtService;
@@ -28,6 +30,7 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
   @Autowired private PasswordEncoder passwordEncoder;
   @Autowired private JwtService jwtService;
   @Autowired private TokenManagementServiceInterface tokenManagementService;
+  @Autowired private TokenRepository tokenRepository;
 
   private User user;
 
@@ -43,6 +46,7 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
 
   @AfterEach
   void cleanDb() {
+    tokenRepository.deleteAll();
     userRepository.deleteAll();
   }
 
@@ -136,6 +140,27 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
       assertNotNull(response);
       String decodedTokenEmail = jwtService.extractUsername(response.accessToken());
       assertEquals(user.getEmail(), decodedTokenEmail);
+    }
+  }
+
+  @Nested
+  class refreshTokenIntegrationTest {
+
+    @Test
+    void refreshTokenShouldGenerateValidToken() throws InterruptedException {
+      // Arrange
+      String validToken = jwtService.generateToken(user);
+      tokenManagementService.saveUserToken(user, validToken);
+
+      Thread.sleep(1000);
+
+      // Act
+      RefreshTokenResponse response = authenticationService.refreshToken(validToken);
+
+      // Assert
+      assertNotNull(response);
+      assertEquals(user.getId(), response.id());
+      assertNotEquals(validToken, response.accessToken());
     }
   }
 }
