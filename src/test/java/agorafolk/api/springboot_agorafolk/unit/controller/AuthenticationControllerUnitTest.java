@@ -8,6 +8,7 @@ import agorafolk.api.springboot_agorafolk.dto.AuthenticationRequest;
 import agorafolk.api.springboot_agorafolk.dto.AuthenticationResponse;
 import agorafolk.api.springboot_agorafolk.dto.RefreshTokenResponse;
 import agorafolk.api.springboot_agorafolk.exception.InvalidPasswordException;
+import agorafolk.api.springboot_agorafolk.exception.InvalidTokenException;
 import agorafolk.api.springboot_agorafolk.exception.UserAlreadyExistsException;
 import agorafolk.api.springboot_agorafolk.interfaces.AuthenticationServiceInterface;
 import java.util.UUID;
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -128,6 +131,42 @@ class AuthenticationControllerUnitTest {
       assertNotNull(response);
       assertEquals(HttpStatus.OK, response.getStatusCode());
       assertEquals(refreshTokenResponse, response.getBody());
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void refreshTokenShouldThrowExceptionIfHeaderIsMissing(String authheader) {
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class, () -> authenticationController.refreshToken(authheader));
+
+      assertEquals("Missing token", exception.getMessage());
+      verifyNoMoreInteractions(authenticationService);
+    }
+
+    @Test
+    void refreshTokenShouldThrowIfBearerIsMissing() {
+      String invalidHeader = "Token accessToken";
+
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class,
+              () -> authenticationController.refreshToken(invalidHeader));
+
+      assertEquals("Missing token", exception.getMessage());
+      verifyNoMoreInteractions(authenticationService);
+    }
+
+    @Test
+    void refreshTokenShouldThrowExceptionifTokenIsMissing() {
+      String emptyToken = "Bearer ";
+
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class, () -> authenticationController.refreshToken(emptyToken));
+
+      assertEquals("Token is empty", exception.getMessage());
+      verifyNoMoreInteractions(authenticationService);
     }
   }
 }
