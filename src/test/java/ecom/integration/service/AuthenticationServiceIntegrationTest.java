@@ -8,6 +8,7 @@ import ecom.dto.AuthenticationResponse;
 import ecom.dto.RefreshTokenResponse;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
+import ecom.exception.InvalidTokenException;
 import ecom.exception.UserAlreadyExistsException;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.repository.TokenRepository;
@@ -18,6 +19,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -161,6 +164,28 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
       assertNotNull(response);
       assertEquals(user.getId(), response.id());
       assertNotEquals(validToken, response.accessToken());
+    }
+
+    @Test
+    void refreshTokenShouldThrowExceptionWhenUserDoesNotExist() {
+      // Arrange
+      String fakeToken = jwtService.generateToken(User.builder().email("random@mail.com").build());
+
+      // Act & Assert
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class, () -> authenticationService.refreshToken(fakeToken));
+      assertEquals(exception.getMessage(), "Invalid refresh token");
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    void refreshTokenShouldThrowExceptionWhenTokenIsBlankOrNull(String token) {
+      // Act & Assert
+      InvalidTokenException exception =
+          assertThrows(
+              InvalidTokenException.class, () -> authenticationService.refreshToken(token));
+      assertEquals(exception.getMessage(), "Token is empty");
     }
   }
 }
