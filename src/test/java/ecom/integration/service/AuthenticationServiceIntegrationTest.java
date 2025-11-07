@@ -106,9 +106,19 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
     }
 
     @Test
-    void loginShouldThrowExceptionWhenCredentialsAreInvalid() {
+    void loginShouldThrowExceptionWhenPasswordIsInvalid() {
       // Arrange
       AuthenticationRequest request = new AuthenticationRequest(user.getEmail(), "Invalidpass321!");
+
+      // Act & Assert
+      assertThrows(InvalidCredentialsException.class, () -> authenticationService.login(request));
+    }
+
+    @Test
+    void loginShouldThrowExceptionWhenEmailIsInvalid() {
+      // Arrange
+      AuthenticationRequest request =
+          new AuthenticationRequest("random@mail.com", "Randompass123!");
 
       // Act & Assert
       assertThrows(InvalidCredentialsException.class, () -> authenticationService.login(request));
