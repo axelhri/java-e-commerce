@@ -6,6 +6,7 @@ import ecom.config.PostgresTestContainer;
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
 import ecom.entity.User;
+import ecom.exception.InvalidCredentialsException;
 import ecom.exception.UserAlreadyExistsException;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.repository.UserRepository;
@@ -102,6 +103,15 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
       // Assert
       assertEquals(user.getId(), response.id());
       assertTrue(passwordEncoder.matches("Password123!", user.getPassword()));
+    }
+
+    @Test
+    void loginShouldThrowExceptionWhenCredentialsAreInvalid() {
+      // Arrange
+      AuthenticationRequest request = new AuthenticationRequest(user.getEmail(), "Invalidpass321!");
+
+      // Act & Assert
+      assertThrows(InvalidCredentialsException.class, () -> authenticationService.login(request));
     }
   }
 }
