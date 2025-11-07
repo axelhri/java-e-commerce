@@ -123,5 +123,19 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
       // Act & Assert
       assertThrows(InvalidCredentialsException.class, () -> authenticationService.login(request));
     }
+
+    @Test
+    void loginShouldGenerateAValidToken() {
+      // Arrange
+      AuthenticationRequest request = new AuthenticationRequest(user.getEmail(), "Password123!");
+
+      // Act
+      AuthenticationResponse response = authenticationService.login(request);
+
+      // Assert
+      assertNotNull(response);
+      String decodedTokenEmail = jwtService.extractUsername(response.accessToken());
+      assertEquals(user.getEmail(), decodedTokenEmail);
+    }
   }
 }
