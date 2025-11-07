@@ -1,7 +1,7 @@
 package ecom.dto;
 
-import ecom.interfaces.PasswordMatch;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import ecom.interfaces.PasswordMatch;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

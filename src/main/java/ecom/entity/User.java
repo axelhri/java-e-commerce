@@ -1,7 +1,7 @@
 package ecom.entity;
 
-import ecom.model.Role;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ecom.model.Role;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.*;
