@@ -11,7 +11,6 @@ import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
 import ecom.exception.UserAlreadyExistsException;
 import ecom.interfaces.TokenManagementServiceInterface;
-import ecom.repository.TokenRepository;
 import ecom.repository.UserRepository;
 import ecom.service.AuthenticationService;
 import ecom.service.JwtService;
@@ -33,7 +32,6 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
   @Autowired private PasswordEncoder passwordEncoder;
   @Autowired private JwtService jwtService;
   @Autowired private TokenManagementServiceInterface tokenManagementService;
-  @Autowired private TokenRepository tokenRepository;
 
   private User user;
 
@@ -49,7 +47,6 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
 
   @AfterEach
   void cleanDb() {
-    tokenRepository.deleteAll();
     userRepository.deleteAll();
   }
 
