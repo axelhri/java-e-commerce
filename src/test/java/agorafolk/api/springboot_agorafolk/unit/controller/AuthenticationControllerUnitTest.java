@@ -120,12 +120,15 @@ class AuthenticationControllerUnitTest {
 
     @Test
     void refreshTokenShouldReturnSuccessResponseWhenTokenIsValid() {
+      // Arrange
       String validHeader = "Bearer accessToken";
       when(authenticationService.refreshToken("accessToken")).thenReturn(refreshTokenResponse);
 
+      // Act
       ResponseEntity<RefreshTokenResponse> response =
           authenticationController.refreshToken(validHeader);
 
+      // Assert
       verify(authenticationService, times(1)).refreshToken("accessToken");
 
       assertNotNull(response);
@@ -136,35 +139,43 @@ class AuthenticationControllerUnitTest {
     @ParameterizedTest
     @NullAndEmptySource
     void refreshTokenShouldThrowExceptionIfHeaderIsMissing(String authheader) {
+      // Act & Assert
       InvalidTokenException exception =
           assertThrows(
               InvalidTokenException.class, () -> authenticationController.refreshToken(authheader));
 
+      // Assert
       assertEquals("Missing token", exception.getMessage());
       verifyNoMoreInteractions(authenticationService);
     }
 
     @Test
     void refreshTokenShouldThrowIfBearerIsMissing() {
+      // Arrange
       String invalidHeader = "Token accessToken";
 
+      // Act & Assert
       InvalidTokenException exception =
           assertThrows(
               InvalidTokenException.class,
               () -> authenticationController.refreshToken(invalidHeader));
 
+      // Assert
       assertEquals("Missing token", exception.getMessage());
       verifyNoMoreInteractions(authenticationService);
     }
 
     @Test
     void refreshTokenShouldThrowExceptionifTokenIsMissing() {
+      // Arange
       String emptyToken = "Bearer ";
 
+      // Act & Assert
       InvalidTokenException exception =
           assertThrows(
               InvalidTokenException.class, () -> authenticationController.refreshToken(emptyToken));
 
+      // Assert
       assertEquals("Token is empty", exception.getMessage());
       verifyNoMoreInteractions(authenticationService);
     }
