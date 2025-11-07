@@ -73,5 +73,19 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
       // Act & Assert
       assertThrows(UserAlreadyExistsException.class, () -> authenticationService.register(request));
     }
+
+    @Test
+    void registerShouldGenerateAValidToken() {
+      // Arrange
+      AuthenticationRequest request = new AuthenticationRequest("user@mail.com", "Randompass123!");
+
+      // Act
+      AuthenticationResponse response = authenticationService.register(request);
+
+      // Assert
+      assertNotNull(response.accessToken());
+      String decodedTokenEmail = jwtService.extractUsername(response.accessToken());
+      assertEquals("user@mail.com", decodedTokenEmail);
+    }
   }
 }
