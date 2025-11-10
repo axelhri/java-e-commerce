@@ -53,6 +53,11 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
   }
 
+  @ExceptionHandler(CartAlreadyExistsException.class)
+  public ResponseEntity<ErrorResponse> handleCartAlreadyExists(CartAlreadyExistsException ex) {
+    return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
+  }
+
   private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
     ErrorResponse error = new ErrorResponse(message, status.value(), Instant.now().toEpochMilli());
     return new ResponseEntity<>(error, status);
