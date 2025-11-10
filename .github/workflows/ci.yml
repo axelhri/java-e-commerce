@@ -10,6 +10,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     if: github.event.head_commit.message != 'Initial commit'
+    env:
+      TESTCONTAINERS_RYUK_DISABLED: "true"
 
     steps:
       - name: Checkout repository
@@ -22,6 +24,9 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+
+      - name: Check Docker
+        run: docker info
 
       - name: Check code formatting
         run: mvn spotless:check
