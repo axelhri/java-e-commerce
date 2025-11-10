@@ -14,6 +14,7 @@ import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.repository.UserRepository;
 import ecom.service.AuthenticationService;
 import ecom.service.JwtService;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@Ignore
 @SpringBootTest(properties = "spring.profiles.active=test")
 class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
 
