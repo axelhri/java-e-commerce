@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import ecom.config.PostgresTestContainer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
