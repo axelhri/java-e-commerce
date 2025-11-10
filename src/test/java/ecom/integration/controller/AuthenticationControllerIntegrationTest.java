@@ -21,9 +21,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = "spring.profiles.active=test")
 @AutoConfigureMockMvc(addFilters = false)
-public class AuthenticationControllerIntegrationTest {
+public class AuthenticationControllerIntegrationTest extends PostgresTestContainer {
 
   @Autowired private MockMvc mockMvc;
 
