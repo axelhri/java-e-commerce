@@ -8,9 +8,11 @@ import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
 import ecom.exception.UserAlreadyExistsException;
 import ecom.interfaces.AuthenticationServiceInterface;
+import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.mapper.UserMapper;
 import ecom.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import java.util.Locale;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,8 +27,10 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   private final JwtService jwtService;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
+  private final CartServiceInterface cartService;
 
   @Override
+  @Transactional
   public AuthenticationResponse register(AuthenticationRequest registerRequest) {
 
     if (userRepository.existsByEmail(registerRequest.email())) {
@@ -41,6 +45,8 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     String jwtToken = jwtService.generateToken(user);
 
     tokenManagementService.saveUserToken(savedUser, jwtToken);
+
+    cartService.createCart(savedUser);
 
     return new AuthenticationResponse(jwtToken, user.getId());
   }
