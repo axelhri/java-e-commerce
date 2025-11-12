@@ -6,6 +6,7 @@ import static org.mockito.Mockito.*;
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
 import ecom.dto.RefreshTokenResponse;
+import ecom.entity.Cart;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
@@ -36,6 +37,8 @@ class AuthenticationServiceUnitTest {
   @Mock private UserMapper userMapper;
   @Mock private PasswordEncoder passwordEncoder;
 
+  @Mock private CartServiceInterface cartService;
+
   @InjectMocks private AuthenticationService authenticationService;
 
   private AuthenticationRequest authRequest;
@@ -58,6 +61,7 @@ class AuthenticationServiceUnitTest {
       when(userRepository.save(user)).thenReturn(user);
       when(jwtService.generateToken(user)).thenReturn("jwtAccessToken");
       doNothing().when(tokenManagementService).saveUserToken(user, "jwtAccessToken");
+      when(cartService.createCart(user)).thenReturn(new Cart());
 
       // Act
       AuthenticationResponse response = authenticationService.register(authRequest);
@@ -69,6 +73,7 @@ class AuthenticationServiceUnitTest {
       verify(userRepository, times(1)).save(user);
       verify(jwtService, times(1)).generateToken(user);
       verify(tokenManagementService, times(1)).saveUserToken(user, "jwtAccessToken");
+      verify(cartService, times(1)).createCart(user);
 
       assertNotNull(response);
       assertEquals("jwtAccessToken", response.accessToken());
