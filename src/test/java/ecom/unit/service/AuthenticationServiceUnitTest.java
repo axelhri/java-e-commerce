@@ -11,6 +11,7 @@ import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
 import ecom.exception.ResourceAlreadyExists;
+import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.mapper.UserMapper;
 import ecom.repository.UserRepository;
