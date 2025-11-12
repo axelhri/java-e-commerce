@@ -38,21 +38,26 @@ public class VendorServiceUnitTest {
 
     @Test
     void createVendorShouldReturnVendorSuccessfully() {
+      // Arrange
       when(vendorMapper.toVendorEntity(vendorRequest)).thenReturn(vendor);
       when(vendorRepository.save(vendor)).thenReturn(vendor);
 
+      // Act
       Vendor createdVendor = vendorService.createVendor(vendorRequest);
 
+      // Assert
       assertNotNull(createdVendor);
       assertEquals(createdVendor.getName(), vendorRequest.name());
     }
 
     @Test
     void createVendorShouldThrowExceptionVendorAlreadyExists() {
+      // Arrange
       when(vendorMapper.toVendorEntity(vendorRequest)).thenReturn(vendor);
       when(vendorRepository.save(vendor))
           .thenThrow(new DataIntegrityViolationException("Duplicate vendor"));
 
+      // Act & Assert
       ResourceAlreadyExists exception =
           assertThrows(
               ResourceAlreadyExists.class, () -> vendorService.createVendor(vendorRequest));
