@@ -82,8 +82,7 @@ class AuthenticationServiceUnitTest {
       when(userRepository.existsByEmail(authRequest.email())).thenReturn(true);
 
       // Act & Assert
-      assertThrows(
-          ResourceAlreadyExists.class, () -> authenticationService.register(authRequest));
+      assertThrows(ResourceAlreadyExists.class, () -> authenticationService.register(authRequest));
 
       // Assert
       verify(userRepository, times(1)).existsByEmail(authRequest.email());

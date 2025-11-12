@@ -69,8 +69,7 @@ class AuthenticationControllerUnitTest {
     void registerShouldThrowUserAlreadyExistsException() {
       // Arrange
       when(authenticationService.register(authRequest))
-          .thenThrow(
-              new ResourceAlreadyExists(authRequest.email() + " is already registered"));
+          .thenThrow(new ResourceAlreadyExists(authRequest.email() + " is already registered"));
 
       // Act & Assert
       assertThrows(
