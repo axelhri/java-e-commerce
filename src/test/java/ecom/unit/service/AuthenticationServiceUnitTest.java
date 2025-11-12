@@ -10,7 +10,7 @@ import ecom.entity.Cart;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
-import ecom.exception.UserAlreadyExistsException;
+import ecom.exception.ResourceAlreadyExists;
 import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.mapper.UserMapper;
@@ -88,8 +88,7 @@ class AuthenticationServiceUnitTest {
       when(userRepository.existsByEmail(authRequest.email())).thenReturn(true);
 
       // Act & Assert
-      assertThrows(
-          UserAlreadyExistsException.class, () -> authenticationService.register(authRequest));
+      assertThrows(ResourceAlreadyExists.class, () -> authenticationService.register(authRequest));
 
       // Assert
       verify(userRepository, times(1)).existsByEmail(authRequest.email());

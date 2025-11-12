@@ -9,7 +9,7 @@ import ecom.dto.AuthenticationResponse;
 import ecom.dto.RefreshTokenResponse;
 import ecom.exception.InvalidPasswordException;
 import ecom.exception.InvalidTokenException;
-import ecom.exception.UserAlreadyExistsException;
+import ecom.exception.ResourceAlreadyExists;
 import ecom.interfaces.AuthenticationServiceInterface;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,12 +69,11 @@ class AuthenticationControllerUnitTest {
     void registerShouldThrowUserAlreadyExistsException() {
       // Arrange
       when(authenticationService.register(authRequest))
-          .thenThrow(
-              new UserAlreadyExistsException(authRequest.email() + " is already registered"));
+          .thenThrow(new ResourceAlreadyExists(authRequest.email() + " is already registered"));
 
       // Act & Assert
       assertThrows(
-          UserAlreadyExistsException.class, () -> authenticationController.register(authRequest));
+          ResourceAlreadyExists.class, () -> authenticationController.register(authRequest));
 
       verify(authenticationService).register(authRequest);
     }

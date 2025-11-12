@@ -15,7 +15,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "vendors")
+@Table(
+    name = "vendors",
+    uniqueConstraints = {@UniqueConstraint(columnNames = "name")})
 public class Vendor {
 
   @Id
@@ -23,7 +25,7 @@ public class Vendor {
   @Column(updatable = false, nullable = false, columnDefinition = "UUID")
   private UUID id;
 
-  @Column(nullable = false, length = 100)
+  @Column(unique = true, nullable = false, length = 100)
   private String name;
 
   @CreationTimestamp

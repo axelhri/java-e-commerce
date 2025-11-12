@@ -1,5 +1,6 @@
 package ecom.config;
 
+import ecom.model.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +30,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/v1/user/**")
                     .authenticated()
+                    .requestMatchers("/api/v1/vendors")
+                    .hasRole(Role.ADMIN.name())
                     .anyRequest()
                     .authenticated())
         .sessionManagement(
