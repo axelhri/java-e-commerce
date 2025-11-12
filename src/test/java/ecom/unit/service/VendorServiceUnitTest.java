@@ -1,11 +1,11 @@
 package ecom.unit.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 import ecom.dto.VendorRequest;
 import ecom.entity.Vendor;
+import ecom.exception.ResourceAlreadyExists;
 import ecom.mapper.VendorMapper;
 import ecom.repository.VendorRepository;
 import ecom.service.VendorService;
@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 public class VendorServiceUnitTest {
@@ -44,6 +45,19 @@ public class VendorServiceUnitTest {
 
       assertNotNull(createdVendor);
       assertEquals(createdVendor.getName(), vendorRequest.name());
+    }
+
+    @Test
+    void createVendorShouldThrowExceptionVendorAlreadyExists() {
+      when(vendorMapper.toVendorEntity(vendorRequest)).thenReturn(vendor);
+      when(vendorRepository.save(vendor))
+          .thenThrow(new DataIntegrityViolationException("Duplicate vendor"));
+
+      ResourceAlreadyExists exception =
+          assertThrows(
+              ResourceAlreadyExists.class, () -> vendorService.createVendor(vendorRequest));
+
+      assertEquals("A vendor with this name already exists", exception.getMessage());
     }
   }
 }
