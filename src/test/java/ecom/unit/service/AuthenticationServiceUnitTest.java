@@ -9,7 +9,7 @@ import ecom.dto.RefreshTokenResponse;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
-import ecom.exception.UserAlreadyExistsException;
+import ecom.exception.ResourceAlreadyExists;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.mapper.UserMapper;
 import ecom.repository.UserRepository;
@@ -83,7 +83,7 @@ class AuthenticationServiceUnitTest {
 
       // Act & Assert
       assertThrows(
-          UserAlreadyExistsException.class, () -> authenticationService.register(authRequest));
+          ResourceAlreadyExists.class, () -> authenticationService.register(authRequest));
 
       // Assert
       verify(userRepository, times(1)).existsByEmail(authRequest.email());
