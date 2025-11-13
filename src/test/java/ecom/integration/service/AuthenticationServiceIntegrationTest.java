@@ -9,7 +9,7 @@ import ecom.dto.RefreshTokenResponse;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
-import ecom.exception.ResourceAlreadyExists;
+import ecom.exception.ResourceAlreadyExistsException;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.repository.UserRepository;
 import ecom.service.AuthenticationService;
@@ -76,7 +76,8 @@ class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
       AuthenticationRequest request = new AuthenticationRequest(user.getEmail(), "Randompass123!");
 
       // Act & Assert
-      assertThrows(ResourceAlreadyExists.class, () -> authenticationService.register(request));
+      assertThrows(
+          ResourceAlreadyExistsException.class, () -> authenticationService.register(request));
     }
 
     @Test

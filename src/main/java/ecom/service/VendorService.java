@@ -2,7 +2,7 @@ package ecom.service;
 
 import ecom.dto.VendorRequest;
 import ecom.entity.Vendor;
-import ecom.exception.ResourceAlreadyExists;
+import ecom.exception.ResourceAlreadyExistsException;
 import ecom.interfaces.VendorServiceInterface;
 import ecom.mapper.VendorMapper;
 import ecom.repository.VendorRepository;
@@ -25,7 +25,7 @@ public class VendorService implements VendorServiceInterface {
 
     } catch (DataIntegrityViolationException e) {
 
-      throw new ResourceAlreadyExists("A vendor with this name already exists");
+      throw new ResourceAlreadyExistsException("A vendor with this name already exists");
     }
   }
 }

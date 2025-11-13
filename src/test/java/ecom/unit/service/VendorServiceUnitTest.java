@@ -5,7 +5,7 @@ import static org.mockito.Mockito.when;
 
 import ecom.dto.VendorRequest;
 import ecom.entity.Vendor;
-import ecom.exception.ResourceAlreadyExists;
+import ecom.exception.ResourceAlreadyExistsException;
 import ecom.mapper.VendorMapper;
 import ecom.repository.VendorRepository;
 import ecom.service.VendorService;
@@ -58,9 +58,10 @@ public class VendorServiceUnitTest {
           .thenThrow(new DataIntegrityViolationException("Duplicate vendor"));
 
       // Act & Assert
-      ResourceAlreadyExists exception =
+      ResourceAlreadyExistsException exception =
           assertThrows(
-              ResourceAlreadyExists.class, () -> vendorService.createVendor(vendorRequest));
+              ResourceAlreadyExistsException.class,
+              () -> vendorService.createVendor(vendorRequest));
 
       assertEquals("A vendor with this name already exists", exception.getMessage());
     }

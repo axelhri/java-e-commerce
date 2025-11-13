@@ -6,7 +6,7 @@ import ecom.dto.RefreshTokenResponse;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
-import ecom.exception.ResourceAlreadyExists;
+import ecom.exception.ResourceAlreadyExistsException;
 import ecom.interfaces.AuthenticationServiceInterface;
 import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.TokenManagementServiceInterface;
@@ -34,7 +34,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   public AuthenticationResponse register(AuthenticationRequest registerRequest) {
 
     if (userRepository.existsByEmail(registerRequest.email())) {
-      throw new ResourceAlreadyExists(registerRequest.email() + " is already registered");
+      throw new ResourceAlreadyExistsException(registerRequest.email() + " is already registered");
     }
 
     User user = userMapper.toUserEntity(registerRequest);
