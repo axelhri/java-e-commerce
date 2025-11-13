@@ -41,6 +41,6 @@ public class Category {
   @ManyToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY)
   private Set<Category> childrenCategory = new HashSet<>();
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+  @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private Set<Product> products = new HashSet<>();
 }
