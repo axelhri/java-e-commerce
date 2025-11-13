@@ -23,8 +23,8 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
   }
 
-  @ExceptionHandler(ResourceAlreadyExists.class)
-  public ResponseEntity<ErrorResponse> handleUserAlreadyExists(ResourceAlreadyExists ex) {
+  @ExceptionHandler(ResourceAlreadyExistsException.class)
+  public ResponseEntity<ErrorResponse> handleUserAlreadyExists(ResourceAlreadyExistsException ex) {
     return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
   }
 
