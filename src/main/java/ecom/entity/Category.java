@@ -38,6 +38,9 @@ public class Category {
       inverseJoinColumns = @JoinColumn(name = "parent_id"))
   private Set<Category> parentCategory = new HashSet<>();
 
-  @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+  @ManyToMany(mappedBy = "parentCategory", fetch = FetchType.LAZY)
+  private Set<Category> childrenCategory = new HashSet<>();
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
   private Set<Product> products = new HashSet<>();
 }

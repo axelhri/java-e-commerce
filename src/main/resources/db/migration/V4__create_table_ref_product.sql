@@ -4,6 +4,7 @@ CREATE TABLE products (
     price INTEGER NOT NULL,
     description TEXT NOT NULL,
     vendor_id UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
+    category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP
 );
