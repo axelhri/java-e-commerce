@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.Set;
+import java.util.UUID;
 
 public record CategoryRequest(
     @JsonProperty("category_name")
@@ -12,4 +14,5 @@ public record CategoryRequest(
         @Pattern(
             regexp = "^[\\p{L} -]+$",
             message = "Category name must only contain letters, spaces and hyphens")
-        String name) {}
+        String name,
+    @JsonProperty("category_parents") Set<UUID> parentIds) {}
