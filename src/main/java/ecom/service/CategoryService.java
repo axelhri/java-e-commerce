@@ -3,6 +3,7 @@ package ecom.service;
 import ecom.dto.CategoryRequest;
 import ecom.entity.Category;
 import ecom.exception.ResourceAlreadyExistsException;
+import ecom.interfaces.CategoryServiceInterface;
 import ecom.mapper.CategoryMapper;
 import ecom.repository.CategoryRepository;
 import lombok.AllArgsConstructor;
@@ -11,10 +12,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class CategoryService {
+public class CategoryService implements CategoryServiceInterface {
   private final CategoryRepository categoryRepository;
   private final CategoryMapper categoryMapper;
 
+  @Override
   public Category createCategory(CategoryRequest categoryRequest) {
     Category category = categoryMapper.categoryToEntity(categoryRequest);
 
