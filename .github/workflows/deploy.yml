@@ -1,13 +1,10 @@
 name: Deployment
 
 on:
-  push:
-    branches:
-      - main
   workflow_run:
     workflows: ["CI - Spring Boot"]
-    types:
-      - completed
+    branches: [develop]
+    types: [completed]
 
 jobs:
   deploy:
@@ -15,6 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    - name: Extract project version
+      id: extract_version
+      run: |
+        echo "VERSION=$(./mvnw -q -Dexec.executable='echo' -Dexec.args='${project.version}' --non-recursive exec:exec)" >> $GITHUB_OUTPUT 
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -28,13 +30,11 @@ jobs:
     - name: Build and push docker image
       uses: docker/build-push-action@v5
       with:
-        context: .docker/Dockerfile
+        context: .
+        file: ./.docker/Dockerfile
         push: true
         tags: |
           ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:latest
           ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:${{ steps.extract_version.outputs.VERSION }}
         cache-from: type=gha
         cache-to: type=gha, mode=mas
-        build-args: |
-          PROFILE=prod
-          APP_VERSION=0.0.1
