@@ -3,7 +3,7 @@ name: Deployment
 on:
   workflow_run:
     workflows: ["CI - Spring Boot"]
-    branches: [develop]
+    branches: [feature/cd-workflow]
     types: [completed]
 
 jobs:
@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Extract project version
       id: extract_version
