@@ -34,7 +34,7 @@ jobs:
         file: ./.docker/Dockerfile
         push: true
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:latest
-          ${{ secrets.DOCKER_USERNAME }}/${{ env.APP_NAME }}:${{ steps.extract_version.outputs.VERSION }}
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APP_NAME }}:latest
+          ${{ secrets.DOCKER_USERNAME }}/${{ secrets.APP_NAME }}:${{ steps.extract_version.outputs.VERSION }}
         cache-from: type=gha
         cache-to: type=gha, mode=mas
