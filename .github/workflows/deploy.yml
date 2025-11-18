@@ -16,6 +16,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Make mvnw executable
+      run: chmod +x mvnw
+
     - name: Extract project version
       id: extract_version
       run: |
