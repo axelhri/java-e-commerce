@@ -7,6 +7,8 @@ import ecom.controller.CategoryController;
 import ecom.dto.ApiResponse;
 import ecom.dto.CategoryRequest;
 import ecom.entity.Category;
+import ecom.exception.ResourceAlreadyExistsException;
+import ecom.exception.ResourceNotFoundException;
 import ecom.service.CategoryService;
 import java.util.Set;
 import java.util.UUID;
@@ -42,14 +44,49 @@ public class CategoryControllerUnitTest {
 
     @Test
     void createCategoryShouldReturn200Ok() {
+      // Arrange
       when(categoryService.createCategory(categoryRequest)).thenReturn(category);
 
+      // Act
       ResponseEntity<ApiResponse> response = categoryController.createCategory(categoryRequest);
 
+      // Assert
       assertNotNull(response);
       assertTrue(response.getBody().success());
       assertEquals(HttpStatus.OK, response.getStatusCode());
       assertEquals("Category created successfully.", response.getBody().message());
+    }
+
+    @Test
+    void createCategoryShouldThrowExceptionWhenCategoryAlreadyExists() {
+      // Arrange
+      categoryRequest = new CategoryRequest("Ballon!!", Set.of(parentId));
+
+      doThrow(new ResourceAlreadyExistsException("A category with this name already exists"))
+          .when(categoryService)
+          .createCategory(categoryRequest);
+
+      // Act & Assert
+      ResourceAlreadyExistsException exception =
+          assertThrows(
+              ResourceAlreadyExistsException.class,
+              () -> categoryController.createCategory(categoryRequest));
+
+      assertEquals("A category with this name already exists", exception.getMessage());
+    }
+
+    @Test
+    void createCategoryShouldThrowExceptionWhenParentCategoryIsNotFound() {
+      doThrow(new ResourceNotFoundException("Parent category not found"))
+          .when(categoryService)
+          .createCategory(categoryRequest);
+
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> categoryController.createCategory(categoryRequest));
+
+      assertEquals("Parent category not found", exception.getMessage());
     }
   }
 }
