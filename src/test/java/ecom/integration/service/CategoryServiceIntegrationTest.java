@@ -5,9 +5,13 @@ import static org.junit.jupiter.api.Assertions.*;
 import ecom.config.PostgresTestContainer;
 import ecom.dto.CategoryRequest;
 import ecom.entity.Category;
+import ecom.exception.ResourceAlreadyExistsException;
+import ecom.exception.ResourceNotFoundException;
 import ecom.mapper.CategoryMapper;
 import ecom.repository.CategoryRepository;
 import ecom.service.CategoryService;
+import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,6 +49,25 @@ public class CategoryServiceIntegrationTest extends PostgresTestContainer {
       Category savedCategory = categoryRepository.findById(category.getId()).orElseThrow();
 
       assertEquals(savedCategory.getName(), category.getName());
+    }
+
+    @Test
+    void createCategoryShouldThrowExceptionWhenCategoryAlreadyExists() {
+      // Arrange
+      CategoryRequest request = new CategoryRequest("Black Friday", null);
+
+      // Act & Assert
+      assertThrows(
+          ResourceAlreadyExistsException.class, () -> categoryService.createCategory(request));
+    }
+
+    @Test
+    void createCategoryShouldThrowExceptionWhenCategoryIsNotFound() {
+      // Arrange
+      CategoryRequest request = new CategoryRequest("Pool", Set.of(UUID.randomUUID()));
+
+      // Act & Assert
+      assertThrows(ResourceNotFoundException.class, () -> categoryService.createCategory(request));
     }
   }
 }
