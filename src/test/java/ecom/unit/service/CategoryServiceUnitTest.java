@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import ecom.dto.CategoryRequest;
 import ecom.entity.Category;
+import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.mapper.CategoryMapper;
 import ecom.repository.CategoryRepository;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 public class CategoryServiceUnitTest {
@@ -55,6 +57,24 @@ public class CategoryServiceUnitTest {
     }
 
     @Test
+    void createCategoryShouldCreateCategoryWithoutParentsWhenParentIdsIsNull() {
+      // Arrange
+      CategoryRequest request = new CategoryRequest("Ballon", null);
+      Category categoryNoParent = Category.builder().name(request.name()).build();
+
+      when(categoryMapper.categoryToEntity(request)).thenReturn(categoryNoParent);
+      when(categoryRepository.save(categoryNoParent)).thenReturn(categoryNoParent);
+
+      // Act
+      Category response = categoryService.createCategory(request);
+
+      // Assert
+      verify(categoryRepository, never()).findById(any());
+      assertEquals("Ballon", response.getName());
+      assertNull(response.getParentCategory());
+    }
+
+    @Test
     void createCategoryShouldReturnNotFoundExceptionIfParentCategoryDoesNotExist() {
       // Arrange
       when(categoryMapper.categoryToEntity(categoryRequest)).thenReturn(category);
@@ -67,6 +87,22 @@ public class CategoryServiceUnitTest {
               () -> categoryService.createCategory(categoryRequest));
 
       assertEquals("Parent category not found", exception.getMessage());
+    }
+
+    @Test
+    void createCategoryShouldReturnExceptionIfCategoryAlreadyExists() {
+      // Arrange
+      when(categoryMapper.categoryToEntity(categoryRequest)).thenReturn(category);
+      when(categoryRepository.findById(parentId)).thenReturn(Optional.of(category));
+      when(categoryRepository.save(category)).thenThrow(new DataIntegrityViolationException(""));
+
+      // Act & Assert
+      ResourceAlreadyExistsException exception =
+          assertThrows(
+              ResourceAlreadyExistsException.class,
+              () -> categoryService.createCategory(categoryRequest));
+
+      assertEquals("A category with this name already exists", exception.getMessage());
     }
   }
 }
