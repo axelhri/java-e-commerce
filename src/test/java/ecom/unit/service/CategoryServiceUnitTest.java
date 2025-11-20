@@ -34,15 +34,31 @@ public class CategoryServiceUnitTest {
   @BeforeEach
   void setUp() {
     categoryRequest = new CategoryRequest("Ballon", Set.of(parentId));
+    category = Category.builder().name(categoryRequest.name()).build();
   }
 
   @Nested
   class createCategoryUnitTest {
+
+    @Test
+    void createCategoryShouldCreateNewCategorySuccessfully() {
+      // Arrange
+      when(categoryMapper.categoryToEntity(categoryRequest)).thenReturn(category);
+      when(categoryRepository.findById(parentId)).thenReturn(Optional.of(category));
+      when(categoryRepository.save(category)).thenReturn(category);
+
+      // Arrange
+      Category categoryResponse = categoryService.createCategory(categoryRequest);
+
+      // Assert
+      assertEquals(categoryResponse.getName(), categoryRequest.name());
+    }
+
     @Test
     void createCategoryShouldReturnNotFoundExceptionIfParentCategoryDoesNotExist() {
       // Arrange
       when(categoryMapper.categoryToEntity(categoryRequest)).thenReturn(category);
-      when(categoryRepository.findById(any())).thenReturn(Optional.empty());
+      when(categoryRepository.findById(parentId)).thenReturn(Optional.empty());
 
       // Act & Assert
       ResourceNotFoundException exception =
