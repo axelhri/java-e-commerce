@@ -47,4 +47,20 @@ public class CategoryControllerIntegrationTest {
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.message").value("Category created successfully."));
   }
+
+  @Test
+  void createCategoryShouldReturnBadRequestIfValidationFails() throws Exception {
+    // Arrange
+    CategoryRequest request = new CategoryRequest("Electronics!!", Set.of(UUID.randomUUID()));
+
+    // Act & Assert
+    mockMvc
+        .perform(
+            post("/api/v1/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+        .andExpect(
+            jsonPath("$.name")
+                .value("Category name must only contain letters, spaces and hyphens"));
+  }
 }
