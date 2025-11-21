@@ -24,12 +24,6 @@ public class CategoryServiceIntegrationTest extends PostgresTestContainer {
 
   private Category category;
 
-  @BeforeEach
-  void setUp() {
-    category = Category.builder().name("Black Friday").build();
-    categoryRepository.save(category);
-  }
-
   @Nested
   class createCategoryIntegrationTest {
     @Test
@@ -54,7 +48,7 @@ public class CategoryServiceIntegrationTest extends PostgresTestContainer {
     @Test
     void createCategoryShouldThrowExceptionWhenCategoryAlreadyExists() {
       // Arrange
-      CategoryRequest request = new CategoryRequest("Black Friday", null);
+      CategoryRequest request = new CategoryRequest("Laptop", null);
 
       // Act & Assert
       assertThrows(
