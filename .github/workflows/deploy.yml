@@ -56,7 +56,7 @@ jobs:
         port: ${{ secrets.VPS_PORT }}
         passphrase: ${{ secrets.VPS_PASSPHRASE }}
         script: |
-          cd /opt/${{ secrets.APP_NAME }} || mkdir -p /opt/${{ secrets.APP_NAME }} && cd /opt/${{ secrets.APP_NAME }}
+          cd /opt/${{ secrets.APP_NAME }} || sudo mkdir -p /opt/${{ secrets.APP_NAME }} && cd /opt/${{ secrets.APP_NAME }}
           
           cat > .env << EOF
           APP_NAME=${{ secrets.APP_NAME }}
@@ -67,11 +67,12 @@ jobs:
           REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
           EOF
           
+          sudo chmod 666 /var/run/docker.sock
+          
           rm compose.prod.yml
           
-          if [! -f compose.prod.yml]; then
+          if [ ! -f compose.prod.yml ]; then
             curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" -o compose.prod.yml https://raw.githubusercontent.com/${{ github.repository }}/refs/head/main/compose.prod.yml
-          
           fi
           
           docker compose -f compose.prod.yml --env-file .env pull
