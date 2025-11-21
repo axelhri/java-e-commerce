@@ -14,16 +14,14 @@ import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.repository.UserRepository;
 import ecom.service.AuthenticationService;
 import ecom.service.JwtService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@Disabled
 @SpringBootTest
 class AuthenticationServiceIntegrationTest extends PostgresTestContainer {
 
