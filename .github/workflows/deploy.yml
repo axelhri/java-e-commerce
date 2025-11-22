@@ -65,9 +65,7 @@ jobs:
           POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
-          EOF
-          
-          sudo chmod 666 /var/run/docker.sock
+          EOF       
           
           rm compose.prod.yml
           
