@@ -7,6 +7,7 @@ import ecom.dto.ProductRequest;
 import ecom.entity.Category;
 import ecom.entity.Product;
 import ecom.entity.Vendor;
+import ecom.exception.ResourceNotFoundException;
 import ecom.mapper.ProductMapper;
 import ecom.repository.CategoryRepository;
 import ecom.repository.ProductRepository;
@@ -76,6 +77,21 @@ public class ProductServiceUnitTest {
       assertEquals(vendor, result.getVendor());
 
       verify(productRepository, times(1)).save(product);
+    }
+
+    @Test
+    void createProductShouldThrowExceptionIfCategoryDoesNotExist() {
+      // Arrange
+      when(productMapper.productToEntity(productRequest)).thenReturn(product);
+      when(categoryRepository.findById(productRequest.category())).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> productService.createProduct(productRequest));
+
+      assertEquals("Category not found.", exception.getMessage());
+      verify(productRepository, never()).save(product);
     }
   }
 }
