@@ -93,5 +93,22 @@ public class ProductServiceUnitTest {
       assertEquals("Category not found.", exception.getMessage());
       verify(productRepository, never()).save(product);
     }
+
+    @Test
+    void createProductShouldThrowExceptionIfVendorDoesNotExist() {
+      // Arrange
+      when(productMapper.productToEntity(productRequest)).thenReturn(product);
+      when(categoryRepository.findById(productRequest.category()))
+          .thenReturn(Optional.of(category));
+      when(vendorRepository.findById(productRequest.vendor())).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> productService.createProduct(productRequest));
+
+      assertEquals("Vendor not found.", exception.getMessage());
+      verify(productRepository, never()).save(product);
+    }
   }
 }
