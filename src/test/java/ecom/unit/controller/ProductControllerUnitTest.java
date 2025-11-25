@@ -61,8 +61,10 @@ class ProductControllerUnitTest {
 
     @Test
     void createProductShouldReturnCode200Ok() throws Exception {
+      // Arrange
       when(productService.createProduct(productRequest)).thenReturn(product);
 
+      // Act & Assert
       mockMvc
           .perform(
               post("/api/v1/products")
@@ -71,6 +73,31 @@ class ProductControllerUnitTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.success").value(true))
           .andExpect(jsonPath("$.message").value("Product created successfully"));
+
+      verify(productService, times(1)).createProduct(any(ProductRequest.class));
+    }
+
+    @Test
+    void createProductShouldReturn400BadRequestIfPriceIsNull() throws Exception {
+      // Arrange
+      productRequest =
+          new ProductRequest(
+              "Football gloves",
+              null,
+              "Red and white football gloves.",
+              UUID.randomUUID(),
+              UUID.randomUUID());
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/products")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(productRequest)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.price").value("Price is required."));
+
+      verify(productService, never()).createProduct(any(ProductRequest.class));
     }
   }
 }
