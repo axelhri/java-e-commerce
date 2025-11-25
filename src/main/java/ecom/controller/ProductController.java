@@ -2,7 +2,7 @@ package ecom.controller;
 
 import ecom.dto.ApiResponse;
 import ecom.dto.ProductRequest;
-import ecom.service.ProductService;
+import ecom.interfaces.ProductServiceInterface;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/products")
 public class ProductController {
 
-  private final ProductService productService;
+  private final ProductServiceInterface productService;
 
   @PostMapping
   public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody ProductRequest dto) {

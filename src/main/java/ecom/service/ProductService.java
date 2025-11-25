@@ -5,6 +5,7 @@ import ecom.entity.Category;
 import ecom.entity.Product;
 import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
+import ecom.interfaces.ProductServiceInterface;
 import ecom.mapper.ProductMapper;
 import ecom.repository.CategoryRepository;
 import ecom.repository.ProductRepository;
@@ -14,12 +15,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class ProductService {
+public class ProductService implements ProductServiceInterface {
   private final ProductRepository productRepository;
   private final CategoryRepository categoryRepository;
   private final VendorRepository vendorRepository;
   private final ProductMapper productMapper;
 
+  @Override
   public Product createProduct(ProductRequest productRequest) {
     Product product = productMapper.productToEntity(productRequest);
     Category category =
