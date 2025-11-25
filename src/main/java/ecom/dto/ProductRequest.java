@@ -16,5 +16,4 @@ public record ProductRequest(
         @Size(min = 10, max = 100)
         String description,
     @JsonProperty("vendor") @NotNull(message = "Vendor is required.") UUID vendor,
-    @JsonProperty("category") @NotNull(message = "At least one category is required.")
-        UUID category) {}
+    @JsonProperty("category") @NotNull(message = "Category is required.") UUID category) {}

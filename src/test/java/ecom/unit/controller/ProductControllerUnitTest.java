@@ -128,5 +128,43 @@ class ProductControllerUnitTest {
 
       verify(productService, never()).createProduct(any(ProductRequest.class));
     }
+
+    @Test
+    void createProductShouldReturn400BadRequestIfVendorIsMissing() throws Exception {
+      // Arrange
+      productRequest =
+          new ProductRequest(
+              "Black trench coat", 80000, "Black comfortable trench coat.", null, categoryId);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/products")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(productRequest)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.vendor").value("Vendor is required."));
+
+      verify(productService, never()).createProduct(any(ProductRequest.class));
+    }
+
+    @Test
+    void createProductShouldReturn400BadRequestIfCategoryIsMissing() throws Exception {
+      // Arrange
+      productRequest =
+          new ProductRequest(
+              "Black trench coat", 80000, "Black comfortable trench coat.", vendorId, null);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/products")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(productRequest)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.category").value("Category is required."));
+
+      verify(productService, never()).createProduct(any(ProductRequest.class));
+    }
   }
 }
