@@ -38,16 +38,14 @@ class ProductControllerUnitTest {
 
   private ProductRequest productRequest;
   private Product product;
+  private UUID categoryId = UUID.randomUUID();
+  private UUID vendorId = UUID.randomUUID();
 
   @BeforeEach
   void setUp() {
     productRequest =
         new ProductRequest(
-            "Black trench coat",
-            80000,
-            "Black comfortable trench coat.",
-            UUID.randomUUID(),
-            UUID.randomUUID());
+            "Black trench coat", 80000, "Black comfortable trench coat.", vendorId, categoryId);
     product =
         Product.builder()
             .name(productRequest.name())
@@ -78,15 +76,46 @@ class ProductControllerUnitTest {
     }
 
     @Test
+    void createProductShouldReturn400BadRequestIfNameIsIncorrect() throws Exception {
+      // Arrange
+      productRequest =
+          new ProductRequest("d", 5000, "Random product description.", vendorId, categoryId);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/products")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(productRequest)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.name").value("size must be between 3 and 100"));
+
+      verify(productService, never()).createProduct(any(ProductRequest.class));
+    }
+
+    @Test
+    void createProductShouldReturn400BadRequestIfDescriptionIsIncorrect() throws Exception {
+      // Arrange
+      productRequest = new ProductRequest("Random product name.", 5000, "d", vendorId, categoryId);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/products")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(productRequest)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.description").value("size must be between 10 and 100"));
+
+      verify(productService, never()).createProduct(any(ProductRequest.class));
+    }
+
+    @Test
     void createProductShouldReturn400BadRequestIfPriceIsNull() throws Exception {
       // Arrange
       productRequest =
           new ProductRequest(
-              "Football gloves",
-              null,
-              "Red and white football gloves.",
-              UUID.randomUUID(),
-              UUID.randomUUID());
+              "Football gloves", null, "Red and white football gloves.", vendorId, categoryId);
 
       // Act & Assert
       mockMvc
