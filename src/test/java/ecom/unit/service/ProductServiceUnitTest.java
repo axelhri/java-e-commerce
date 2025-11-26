@@ -24,7 +24,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ProductServiceUnitTest {
+class ProductServiceUnitTest {
 
   @Mock private ProductRepository productRepository;
   @Mock private CategoryRepository categoryRepository;
@@ -109,6 +109,22 @@ public class ProductServiceUnitTest {
 
       assertEquals("Vendor not found.", exception.getMessage());
       verify(productRepository, never()).save(product);
+    }
+
+    @Test
+    void createProductShouldThrowWhenMapperReturnsNull() {
+      when(productMapper.productToEntity(productRequest)).thenReturn(null);
+      when(categoryRepository.findById(productRequest.category()))
+          .thenReturn(Optional.of(category));
+      when(vendorRepository.findById(productRequest.vendor())).thenReturn(Optional.of(vendor));
+
+      assertThrows(NullPointerException.class, () -> productService.createProduct(productRequest));
+
+      assertEquals("Mapper return null.", productService.createProduct(productRequest));
+
+      verify(productMapper).productToEntity(productRequest);
+
+      verify(productRepository, never()).save(any());
     }
   }
 }
