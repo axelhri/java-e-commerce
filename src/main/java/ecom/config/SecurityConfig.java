@@ -34,6 +34,8 @@ public class SecurityConfig {
                     .hasRole(Role.ADMIN.name())
                     .requestMatchers("/api/v1/categories")
                     .hasRole(Role.ADMIN.name())
+                    .requestMatchers("/api/v1/products")
+                    .hasRole(Role.ADMIN.name())
                     .anyRequest()
                     .authenticated())
         .sessionManagement(
