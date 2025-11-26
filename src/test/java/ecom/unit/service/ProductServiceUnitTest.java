@@ -113,14 +113,14 @@ class ProductServiceUnitTest {
 
     @Test
     void createProductShouldThrowWhenMapperReturnsNull() {
+      // Arrange
       when(productMapper.productToEntity(productRequest)).thenReturn(null);
       when(categoryRepository.findById(productRequest.category()))
           .thenReturn(Optional.of(category));
       when(vendorRepository.findById(productRequest.vendor())).thenReturn(Optional.of(vendor));
 
+      // Act & Assert
       assertThrows(NullPointerException.class, () -> productService.createProduct(productRequest));
-
-      assertEquals("Mapper return null.", productService.createProduct(productRequest));
 
       verify(productMapper).productToEntity(productRequest);
 
