@@ -67,12 +67,10 @@ jobs:
           REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
           EOF
           
-          sudo chmod 666 /var/run/docker.sock
-          
           rm compose.prod.yml
           
           if [ ! -f compose.prod.yml ]; then
-            curl -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" -o compose.prod.yml https://raw.githubusercontent.com/${{ github.repository }}/develop/compose.prod.yml
+            curl -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" -o compose.prod.yml https://raw.githubusercontent.com/${{ github.repository }}/main/compose.prod.yml
           fi
           
           docker compose -f compose.prod.yml --env-file .env pull
