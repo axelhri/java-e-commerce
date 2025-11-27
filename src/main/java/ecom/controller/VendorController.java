@@ -4,7 +4,9 @@ import ecom.dto.ApiResponse;
 import ecom.dto.VendorRequest;
 import ecom.interfaces.VendorServiceInterface;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +17,12 @@ public class VendorController {
   private final VendorServiceInterface vendorService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse> createVendor(@Valid @RequestBody VendorRequest dto) {
+  public ResponseEntity<ApiResponse<VendorRequest>> createVendor(
+      @Valid @RequestBody VendorRequest dto) {
     vendorService.createVendor(dto);
-    return ResponseEntity.ok(new ApiResponse(true, "Vendor created successfully."));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(
+            new ApiResponse<>(
+                Instant.now(), HttpStatus.CREATED.value(), "Vendor created successfully", dto));
   }
 }
