@@ -4,7 +4,9 @@ import ecom.dto.ApiResponse;
 import ecom.dto.ProductRequest;
 import ecom.interfaces.ProductServiceInterface;
 import jakarta.validation.Valid;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,8 +21,12 @@ public class ProductController {
   private final ProductServiceInterface productService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse> createProduct(@Valid @RequestBody ProductRequest dto) {
+  public ResponseEntity<ApiResponse<ProductRequest>> createProduct(
+      @Valid @RequestBody ProductRequest dto) {
     productService.createProduct(dto);
-    return ResponseEntity.ok(new ApiResponse(true, "Product created successfully"));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(
+            new ApiResponse<ProductRequest>(
+                Instant.now(), HttpStatus.CREATED.value(), "Product created successfully", dto));
   }
 }
