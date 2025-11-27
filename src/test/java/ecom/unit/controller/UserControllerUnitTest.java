@@ -50,12 +50,12 @@ class UserControllerUnitTest {
       when(userDetails.getUsername()).thenReturn(email);
 
       // Act
-      ResponseEntity<ApiResponse> response = userController.changePassword(userDetails, dto);
+      ResponseEntity<ApiResponse<ChangePassword>> response =
+          userController.changePassword(userDetails, dto);
 
       // Assert
       verify(userService, times(1)).changePassword(email, dto);
       assertNotNull(response);
-      assertTrue(response.getBody().success());
       assertSame(HttpStatus.OK, response.getStatusCode());
       assertEquals("Your password has been changed successfully", response.getBody().message());
     }

@@ -48,13 +48,13 @@ public class CategoryControllerUnitTest {
       when(categoryService.createCategory(categoryRequest)).thenReturn(category);
 
       // Act
-      ResponseEntity<ApiResponse> response = categoryController.createCategory(categoryRequest);
+      ResponseEntity<ApiResponse<CategoryRequest>> response =
+          categoryController.createCategory(categoryRequest);
 
       // Assert
       assertNotNull(response);
-      assertTrue(response.getBody().success());
-      assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals("Category created successfully.", response.getBody().message());
+      assertEquals(HttpStatus.CREATED, response.getStatusCode());
+      assertEquals("Category created successfully", response.getBody().message());
     }
 
     @Test
