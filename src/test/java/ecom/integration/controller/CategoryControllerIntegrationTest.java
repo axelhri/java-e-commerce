@@ -43,9 +43,8 @@ public class CategoryControllerIntegrationTest {
             post("/api/v1/categories")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.success").value(true))
-        .andExpect(jsonPath("$.message").value("Category created successfully."));
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.message").value("Category created successfully"));
   }
 
   @Test

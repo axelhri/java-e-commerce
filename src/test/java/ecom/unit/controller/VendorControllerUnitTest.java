@@ -43,14 +43,14 @@ public class VendorControllerUnitTest {
       when(vendorService.createVendor(vendorRequest)).thenReturn(vendor);
 
       // Act
-      ResponseEntity<ApiResponse> response = vendorController.createVendor(vendorRequest);
+      ResponseEntity<ApiResponse<VendorRequest>> response =
+          vendorController.createVendor(vendorRequest);
 
       // Assert
       verify(vendorService, times(1)).createVendor(vendorRequest);
       assertNotNull(response);
-      assertTrue(response.getBody().success());
-      assertEquals(HttpStatus.OK, response.getStatusCode());
-      assertEquals("Vendor created successfully.", response.getBody().message());
+      assertEquals(HttpStatus.CREATED, response.getStatusCode());
+      assertEquals("Vendor created successfully", response.getBody().message());
     }
   }
 }

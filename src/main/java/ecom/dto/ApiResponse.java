@@ -1,3 +1,5 @@
 package ecom.dto;
 
-public record ApiResponse(boolean success, String message) {}
+import java.time.Instant;
+
+public record ApiResponse<T>(Instant timestamp, int status, String message, T data) {}

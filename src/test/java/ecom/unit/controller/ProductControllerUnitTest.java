@@ -68,8 +68,7 @@ class ProductControllerUnitTest {
               post("/api/v1/products")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(productRequest)))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.success").value(true))
+          .andExpect(status().isCreated())
           .andExpect(jsonPath("$.message").value("Product created successfully"));
 
       verify(productService, times(1)).createProduct(any(ProductRequest.class));
