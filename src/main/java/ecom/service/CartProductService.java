@@ -1,7 +1,7 @@
 package ecom.service;
 
-import ecom.dto.AddToCartRequest;
 import ecom.dto.CartItemResponse;
+import ecom.dto.ManageCartRequest;
 import ecom.entity.Cart;
 import ecom.entity.CartItem;
 import ecom.entity.Product;
@@ -21,7 +21,7 @@ public class CartProductService implements CartProductServiceInterface {
   private final ProductRepository productRepository;
 
   @Override
-  public CartItemResponse addProductToCart(User user, AddToCartRequest request) {
+  public CartItemResponse addProductToCart(User user, ManageCartRequest request) {
     Cart userCart = user.getCart();
 
     Product product =
@@ -47,5 +47,22 @@ public class CartProductService implements CartProductServiceInterface {
         cartItem.getProduct().getName(),
         cartItem.getQuantity(),
         cartItem.getProduct().getPrice());
+  }
+
+  @Override
+  public void removeProductFromCart(User user, ManageCartRequest request) {
+    Cart userCart = user.getCart();
+
+    CartItem cartItem =
+        cartItemRepository
+            .findByCartIdAndProductId(userCart.getId(), request.productId())
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found in cart"));
+
+    if (request.quantity() >= cartItem.getQuantity()) {
+      cartItemRepository.delete(cartItem);
+    } else {
+      cartItem.setQuantity(cartItem.getQuantity() - request.quantity());
+      cartItemRepository.save(cartItem);
+    }
   }
 }

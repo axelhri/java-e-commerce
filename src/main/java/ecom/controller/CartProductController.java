@@ -1,8 +1,8 @@
 package ecom.controller;
 
-import ecom.dto.AddToCartRequest;
 import ecom.dto.ApiResponse;
 import ecom.dto.CartItemResponse;
+import ecom.dto.ManageCartRequest;
 import ecom.entity.User;
 import ecom.interfaces.CartProductServiceInterface;
 import jakarta.validation.Valid;
@@ -11,10 +11,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
@@ -24,7 +21,7 @@ public class CartProductController {
 
   @PostMapping
   public ResponseEntity<ApiResponse<CartItemResponse>> addProductToCart(
-      @AuthenticationPrincipal User user, @Valid @RequestBody AddToCartRequest dto) {
+      @AuthenticationPrincipal User user, @Valid @RequestBody ManageCartRequest dto) {
     CartItemResponse response = cartProductService.addProductToCart(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
@@ -33,5 +30,12 @@ public class CartProductController {
                 HttpStatus.CREATED.value(),
                 "Product added to cart successfully",
                 response));
+  }
+
+  @DeleteMapping
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void removeProductFromCart(
+      @AuthenticationPrincipal User user, @Valid @RequestBody ManageCartRequest dto) {
+    cartProductService.removeProductFromCart(user, dto);
   }
 }

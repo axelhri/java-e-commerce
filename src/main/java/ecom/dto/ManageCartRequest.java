@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.*;
 import java.util.UUID;
 
-public record AddToCartRequest(
+public record ManageCartRequest(
     @JsonProperty("product_id") @NotNull(message = "Product's id is required") UUID productId,
     @JsonProperty("product_quantity")
         @NotNull(message = "Product quantity is required")
