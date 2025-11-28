@@ -6,7 +6,10 @@ import ecom.dto.ManageCartRequest;
 import ecom.entity.User;
 import ecom.interfaces.CartProductServiceInterface;
 import jakarta.validation.Valid;
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +40,12 @@ public class CartProductController {
   public void removeProductFromCart(
       @AuthenticationPrincipal User user, @Valid @RequestBody ManageCartRequest dto) {
     cartProductService.removeProductFromCart(user, dto);
+  }
+
+  @GetMapping("/total")
+  public ResponseEntity<Map<String, BigDecimal>> getCartTotalAmount(
+      @AuthenticationPrincipal User user) {
+    BigDecimal total = cartProductService.getCartTotalAmount(user);
+    return ResponseEntity.ok(Collections.singletonMap("total", total));
   }
 }
