@@ -10,6 +10,9 @@ import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.CartProductServiceInterface;
 import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +25,6 @@ public class CartProductService implements CartProductServiceInterface {
 
   @Override
   public CartItemResponse addProductToCart(User user, ManageCartRequest request) {
-    Cart userCart = user.getCart();
-
     Product product =
         productRepository
             .findById(request.productId())
@@ -31,14 +32,18 @@ public class CartProductService implements CartProductServiceInterface {
 
     CartItem cartItem =
         cartItemRepository
-            .findByCartIdAndProductId(userCart.getId(), request.productId())
+            .findByCartIdAndProductId(getUserCart(user).getId(), request.productId())
             .orElse(null);
 
     if (cartItem != null) {
       cartItem.setQuantity(cartItem.getQuantity() + request.quantity());
     } else {
       cartItem =
-          CartItem.builder().cart(userCart).product(product).quantity(request.quantity()).build();
+          CartItem.builder()
+              .cart(getUserCart(user))
+              .product(product)
+              .quantity(request.quantity())
+              .build();
     }
     cartItemRepository.save(cartItem);
 
@@ -51,11 +56,9 @@ public class CartProductService implements CartProductServiceInterface {
 
   @Override
   public void removeProductFromCart(User user, ManageCartRequest request) {
-    Cart userCart = user.getCart();
-
     CartItem cartItem =
         cartItemRepository
-            .findByCartIdAndProductId(userCart.getId(), request.productId())
+            .findByCartIdAndProductId(getUserCart(user).getId(), request.productId())
             .orElseThrow(() -> new ResourceNotFoundException("Product not found in cart"));
 
     if (request.quantity() >= cartItem.getQuantity()) {
@@ -64,5 +67,19 @@ public class CartProductService implements CartProductServiceInterface {
       cartItem.setQuantity(cartItem.getQuantity() - request.quantity());
       cartItemRepository.save(cartItem);
     }
+  }
+
+  @Override
+  public BigDecimal getCartTotalAmount(User user) {
+    List<CartItem> cartItems = cartItemRepository.findByCartId(getUserCart(user).getId());
+    int total =
+        cartItems.stream()
+            .mapToInt(item -> item.getProduct().getPrice() * item.getQuantity())
+            .sum();
+    return BigDecimal.valueOf(total).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+  }
+
+  private Cart getUserCart(User user) {
+    return user.getCart();
   }
 }
