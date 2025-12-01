@@ -104,4 +104,21 @@ class CartProductServiceUnitTest {
       assertEquals("Product not found", exception.getMessage());
     }
   }
+
+  @Nested
+  class removeProductFromCart {
+    @Test
+    void should_remove_product_from_cart_successfully() {
+      // Arrange
+      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
+          .thenReturn(Optional.of(cartItem));
+
+      // Act
+      cartProductService.removeProductFromCart(user, request);
+
+      // Assert
+      verify(cartProductService, times(1)).removeProductFromCart(user, request);
+    }
+  }
 }
