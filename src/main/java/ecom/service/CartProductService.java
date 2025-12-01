@@ -79,7 +79,7 @@ public class CartProductService implements CartProductServiceInterface {
     return BigDecimal.valueOf(total).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
   }
 
-  private Cart getUserCart(User user) {
+  public Cart getUserCart(User user) {
     return user.getCart();
   }
 }
