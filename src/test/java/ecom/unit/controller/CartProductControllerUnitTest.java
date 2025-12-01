@@ -11,6 +11,7 @@ import ecom.dto.CartItemResponse;
 import ecom.dto.ManageCartRequest;
 import ecom.entity.Product;
 import ecom.entity.User;
+import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.CartProductServiceInterface;
 import ecom.service.JwtService;
 import java.util.UUID;
@@ -92,6 +93,22 @@ class CartProductControllerUnitTest {
                   .content(objectMapper.writeValueAsString(request)))
           .andExpect(status().isBadRequest())
           .andExpect(jsonPath("$.quantity").value("Quantity must be at least 1 or higher"));
+    }
+
+    @Test
+    void should_not_add_product_if_product_is_not_found() throws Exception {
+      // Arrange
+      when(cartProductService.addProductToCart(any(), any()))
+          .thenThrow(new ResourceNotFoundException("Product not found"));
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/cart-items")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.message").value("Product not found"));
     }
   }
 }
