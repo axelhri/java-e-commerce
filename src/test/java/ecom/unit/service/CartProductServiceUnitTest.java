@@ -120,5 +120,22 @@ class CartProductServiceUnitTest {
       // Assert
       verify(cartProductService, times(1)).removeProductFromCart(user, request);
     }
+
+    @Test
+    void should_remove_product_exact_quantity_if_it_already_exists() {
+      // Arrange
+      cartItem.setQuantity(5);
+      request = new ManageCartRequest(product.getId(), 4);
+      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
+          .thenReturn(Optional.of(cartItem));
+
+      // Act
+      cartProductService.removeProductFromCart(user, request);
+
+      // Assert
+      assertEquals(1, cartItem.getQuantity());
+      verify(cartProductService, times(1)).removeProductFromCart(user, request);
+    }
   }
 }
