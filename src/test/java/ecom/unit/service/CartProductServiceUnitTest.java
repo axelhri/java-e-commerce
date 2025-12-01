@@ -137,5 +137,21 @@ class CartProductServiceUnitTest {
       assertEquals(1, cartItem.getQuantity());
       verify(cartProductService, times(1)).removeProductFromCart(user, request);
     }
+
+    @Test
+    void should_throw_exception_if_product_is_not_in_cart() {
+      // Arrange
+      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
+          .thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> cartProductService.removeProductFromCart(user, request));
+
+      assertEquals("Product not found in cart", exception.getMessage());
+    }
   }
 }
