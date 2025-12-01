@@ -111,4 +111,18 @@ class CartProductControllerUnitTest {
           .andExpect(jsonPath("$.message").value("Product not found"));
     }
   }
+
+  @Nested
+  class removeProductFromCart {
+
+    @Test
+    void should_remove_product_and_return_204_no_content() throws Exception {
+      mockMvc
+          .perform(
+              delete("/api/v1/cart-items")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isNoContent());
+    }
+  }
 }
