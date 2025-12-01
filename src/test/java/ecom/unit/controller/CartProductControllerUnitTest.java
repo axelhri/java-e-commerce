@@ -78,5 +78,20 @@ class CartProductControllerUnitTest {
           .andExpect(jsonPath("$.status").value(201))
           .andExpect(jsonPath("$.message").value("Product added to cart successfully"));
     }
+
+    @Test
+    void should_not_add_product_if_validation_fails() throws Exception {
+      // Arrange
+      request = new ManageCartRequest(product.getId(), -32);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/cart-items")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(request)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.quantity").value("Quantity must be at least 1 or higher"));
+    }
   }
 }
