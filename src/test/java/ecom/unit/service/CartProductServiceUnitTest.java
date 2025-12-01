@@ -9,6 +9,7 @@ import ecom.entity.Cart;
 import ecom.entity.CartItem;
 import ecom.entity.Product;
 import ecom.entity.User;
+import ecom.exception.ResourceNotFoundException;
 import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
 import ecom.service.CartProductService;
@@ -87,6 +88,20 @@ class CartProductServiceUnitTest {
       // Assert
       assertEquals(response.productId(), product.getId());
       assertEquals(response.quantity(), cartItem.getQuantity());
+    }
+
+    @Test
+    void should_throw_exception_if_product_does_not_exist() {
+      // Arrange
+      when(productRepository.findById(product.getId())).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> cartProductService.addProductToCart(user, request));
+
+      assertEquals("Product not found", exception.getMessage());
     }
   }
 }
