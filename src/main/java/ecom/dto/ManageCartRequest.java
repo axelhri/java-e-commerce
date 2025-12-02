@@ -9,5 +9,4 @@ public record ManageCartRequest(
     @JsonProperty("product_quantity")
         @NotNull(message = "Product quantity is required")
         @Min(value = 1, message = "Quantity must be at least 1 or higher")
-        @Positive
         Integer quantity) {}
