@@ -20,17 +20,15 @@ services:
     container_name: redis_prod
     command: [ "redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}" ]
     environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - ${REDIS_PASSWORD}
     volumes:
       - redis_data_prod:/data
     restart: unless-stopped
 
 
   app:
-    build:
-      context: .
-      dockerfile: .docker/Dockerfile
-    container_name: springboot_app_prod
+    image: ${DOCKER_USERNAME}/${APP_NAME}:latest
+    container_name: ${APP_NAME}
     depends_on:
       db:
         condition: service_healthy
