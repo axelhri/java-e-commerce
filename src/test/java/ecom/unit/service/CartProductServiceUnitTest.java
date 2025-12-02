@@ -1,5 +1,6 @@
 package ecom.unit.service;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -13,6 +14,8 @@ import ecom.exception.ResourceNotFoundException;
 import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
 import ecom.service.CartProductService;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -152,6 +155,34 @@ class CartProductServiceUnitTest {
               () -> cartProductService.removeProductFromCart(user, request));
 
       assertEquals("Product not found in cart", exception.getMessage());
+    }
+  }
+
+  @Nested
+  class getCartTotalAmount {
+
+    @Test
+    void should_get_cart_total_amount() {
+      // Arrange
+      when(cartProductService.getUserCart(user)).thenReturn(cart);
+
+      Product product2 =
+          Product.builder().name("product2").price(800).description("random description.").build();
+
+      cartItem.setProduct(product);
+      CartItem cartItem2 = CartItem.builder().product(product2).cart(cart).quantity(1).build();
+
+      cartItem2.setProduct(product2);
+
+      List<CartItem> items = List.of(cartItem, cartItem2);
+
+      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(items);
+
+      // Act
+      BigDecimal total = cartProductService.getCartTotalAmount(user);
+
+      // Assert
+      assertEquals(new BigDecimal("18.00"), total);
     }
   }
 }
