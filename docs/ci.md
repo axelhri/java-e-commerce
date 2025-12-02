@@ -2,6 +2,8 @@
 
 Ce fichier GitHub Actions configure un workflow de **CI**, incluant compilation, tests, analyses de code, analyse SonarQube et packaging.
 
+**[CI](../.github/workflows/ci.yml)**
+
 ---
 
 ## Déclencheurs
