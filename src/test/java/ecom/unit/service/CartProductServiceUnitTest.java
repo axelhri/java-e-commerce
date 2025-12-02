@@ -197,5 +197,18 @@ class CartProductServiceUnitTest {
       // Assert
       assertThat(total).isEqualByComparingTo("0.00");
     }
+
+    @Test
+    void should_not_calculate_null_cart_total_amount() {
+      // Arrange
+      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(null);
+
+      // Act
+      BigDecimal total = cartProductService.getCartTotalAmount(user);
+
+      // Assert
+      assertThat(total).isEqualByComparingTo("0.00");
+    }
   }
 }
