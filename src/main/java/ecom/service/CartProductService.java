@@ -72,6 +72,11 @@ public class CartProductService implements CartProductServiceInterface {
   @Override
   public BigDecimal getCartTotalAmount(User user) {
     List<CartItem> cartItems = cartItemRepository.findByCartId(getUserCart(user).getId());
+
+    if (cartItems == null || cartItems.isEmpty()) {
+      return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+    }
+
     int total =
         cartItems.stream()
             .mapToInt(item -> item.getProduct().getPrice() * item.getQuantity())
@@ -79,7 +84,7 @@ public class CartProductService implements CartProductServiceInterface {
     return BigDecimal.valueOf(total).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
   }
 
-  private Cart getUserCart(User user) {
+  public Cart getUserCart(User user) {
     return user.getCart();
   }
 }
