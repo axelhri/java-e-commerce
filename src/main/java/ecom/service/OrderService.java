@@ -1,12 +1,15 @@
 package ecom.service;
 
 import ecom.dto.OrderRequest;
+import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import ecom.repository.ProductRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -20,7 +23,7 @@ public class OrderService implements OrderServiceInterface {
   private OrderRepository orderRepository;
 
   @Override
-  public void createOrder(User user, OrderRequest request) {
+  public OrderResponse createOrder(User user, OrderRequest request) {
     Set<CartItem> cartItems =
         request.productIds().stream()
             .map(
@@ -56,9 +59,21 @@ public class OrderService implements OrderServiceInterface {
     orderRepository.save(order);
 
     cartItemRepository.deleteAll(cartItems);
+
+    return new OrderResponse(
+        cartItems.stream()
+            .map(cartItem -> cartItem.getProduct().getId())
+            .collect(Collectors.toSet()),
+        getOrderTotalAmount(orderItems));
   }
 
-  public Cart getUserCart(User user) {
-    return user.getCart();
+  public BigDecimal getOrderTotalAmount(Set<OrderItem> items) {
+    return items.stream()
+        .map(
+            item ->
+                BigDecimal.valueOf(item.getProduct().getPrice())
+                    .multiply(BigDecimal.valueOf(item.getQuantity())))
+        .reduce(BigDecimal.ZERO, BigDecimal::add)
+        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
   }
 }
