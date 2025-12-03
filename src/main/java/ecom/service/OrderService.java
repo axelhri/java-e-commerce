@@ -7,7 +7,6 @@ import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
-import ecom.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Set;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 public class OrderService implements OrderServiceInterface {
-  private ProductRepository productRepository;
   private CartItemRepository cartItemRepository;
   private OrderRepository orderRepository;
 
