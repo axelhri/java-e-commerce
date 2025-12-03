@@ -11,6 +11,7 @@ import ecom.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,14 +33,8 @@ public class OrderService implements OrderServiceInterface {
                         .findById(id)
                         .orElseThrow(
                             () -> new ResourceNotFoundException("Product not found in cart.")))
+            .peek(cartItem -> validateCartItemOwnership(user, cartItem))
             .collect(Collectors.toSet());
-
-    cartItems.forEach(
-        cartItem -> {
-          if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
-            throw new ResourceNotFoundException("Product not found in cart.");
-          }
-        });
 
     Order order = Order.builder().user(user).build();
 
@@ -60,14 +55,23 @@ public class OrderService implements OrderServiceInterface {
 
     cartItemRepository.deleteAll(cartItems);
 
-    return new OrderResponse(
-        cartItems.stream()
-            .map(cartItem -> cartItem.getProduct().getId())
-            .collect(Collectors.toSet()),
-        getOrderTotalAmount(orderItems));
+    BigDecimal orderTotal = getOrderTotalAmount(orderItems);
+
+    Set<UUID> productIds =
+        order.getOrderItems().stream()
+            .map(item -> item.getProduct().getId())
+            .collect(Collectors.toSet());
+
+    return new OrderResponse(productIds, orderTotal);
   }
 
-  public BigDecimal getOrderTotalAmount(Set<OrderItem> items) {
+  private void validateCartItemOwnership(User user, CartItem cartItem) {
+    if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
+      throw new ResourceNotFoundException("Product not found in cart.");
+    }
+  }
+
+  private BigDecimal getOrderTotalAmount(Set<OrderItem> items) {
     return items.stream()
         .map(
             item ->
