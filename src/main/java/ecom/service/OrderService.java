@@ -5,6 +5,7 @@ import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.OrderServiceInterface;
+import ecom.mapper.OrderItemMapper;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 public class OrderService implements OrderServiceInterface {
   private CartItemRepository cartItemRepository;
   private OrderRepository orderRepository;
+  private OrderItemMapper orderItemMapper;
 
   @Override
   public OrderResponse createOrder(User user, OrderRequest request) {
@@ -38,13 +40,7 @@ public class OrderService implements OrderServiceInterface {
 
     Set<OrderItem> orderItems =
         cartItems.stream()
-            .map(
-                cartItem ->
-                    OrderItem.builder()
-                        .order(order)
-                        .product(cartItem.getProduct())
-                        .quantity(cartItem.getQuantity())
-                        .build())
+            .map(cartItem -> orderItemMapper.fromCartItem(cartItem, order))
             .collect(Collectors.toSet());
 
     order.getOrderItems().addAll(orderItems);
