@@ -13,10 +13,7 @@ import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,8 +52,7 @@ public class OrderService implements OrderServiceInterface {
 
     BigDecimal orderTotal = getOrderTotalAmount(orderItems);
 
-    Set<UUID> productIds =
-        orderItems.stream().map(item -> item.getProduct().getId()).collect(Collectors.toSet());
+    Set<UUID> productIds = extractProductIds(orderItems);
 
     return new OrderResponse(productIds, orderTotal);
   }
@@ -81,10 +77,7 @@ public class OrderService implements OrderServiceInterface {
 
     BigDecimal orderTotal = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
 
-    Set<UUID> productIds =
-        order.getOrderItems().stream()
-            .map(item -> item.getProduct().getId())
-            .collect(Collectors.toSet());
+    Set<UUID> productIds = extractProductIds(order.getOrderItems());
 
     return new OrderResponse(productIds, orderTotal);
   }
@@ -103,5 +96,9 @@ public class OrderService implements OrderServiceInterface {
                     .multiply(BigDecimal.valueOf(item.getQuantity())))
         .reduce(BigDecimal.ZERO, BigDecimal::add)
         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+  }
+
+  private Set<UUID> extractProductIds(Collection<OrderItem> orderItems) {
+    return orderItems.stream().map(item -> item.getProduct().getId()).collect(Collectors.toSet());
   }
 }
