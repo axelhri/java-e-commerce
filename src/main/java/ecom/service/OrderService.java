@@ -1,15 +1,18 @@
 package ecom.service;
 
+import ecom.dto.CancelOrderRequest;
 import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.ResourceNotFoundException;
+import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.mapper.OrderItemMapper;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -50,6 +53,32 @@ public class OrderService implements OrderServiceInterface {
     cartItemRepository.deleteAll(cartItems);
 
     BigDecimal orderTotal = getOrderTotalAmount(orderItems);
+
+    Set<UUID> productIds =
+        order.getOrderItems().stream()
+            .map(item -> item.getProduct().getId())
+            .collect(Collectors.toSet());
+
+    return new OrderResponse(productIds, orderTotal);
+  }
+
+  @Override
+  public OrderResponse cancelOrder(User user, CancelOrderRequest request) {
+    Order order =
+        orderRepository
+            .findById(request.orderId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Issue encountered while searching for this order."));
+
+    if (!order.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedAccess("You do not have the rights to perform this action.");
+    }
+
+    orderRepository.deleteById(request.orderId());
+
+    BigDecimal orderTotal = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
 
     Set<UUID> productIds =
         order.getOrderItems().stream()

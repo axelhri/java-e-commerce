@@ -1,6 +1,7 @@
 package ecom.controller;
 
 import ecom.dto.ApiResponse;
+import ecom.dto.CancelOrderRequest;
 import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.User;
@@ -20,12 +21,22 @@ public class OrderController {
   private final OrderServiceInterface orderService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<OrderResponse>> addProductToCart(
+  public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody OrderRequest dto) {
     OrderResponse response = orderService.createOrder(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiResponse<>(
                 Instant.now(), HttpStatus.CREATED.value(), "Order passed successfully", response));
+  }
+
+  @DeleteMapping
+  public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
+      @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request) {
+    OrderResponse response = orderService.cancelOrder(user, request);
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(
+            new ApiResponse<>(
+                Instant.now(), HttpStatus.OK.value(), "Order cancelled successfully", response));
   }
 }
