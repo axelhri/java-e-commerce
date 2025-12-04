@@ -60,10 +60,10 @@ VALUES
     ('33333333-cccc-cccc-cccc-cccccccccccc', '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1);
 
 -- ORDERS
-INSERT INTO orders (id, user_id)
+INSERT INTO orders (id, user_id, status)
 VALUES
-    ('11111111-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222'),
-    ('22222222-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333');
+    ('11111111-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', 'PENDING'),
+    ('22222222-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'PENDING');
 
 -- ORDER ITEMS
 INSERT INTO order_items (id, order_id, product_id, quantity)

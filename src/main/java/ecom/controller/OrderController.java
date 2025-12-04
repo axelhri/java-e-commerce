@@ -21,16 +21,16 @@ public class OrderController {
   private final OrderServiceInterface orderService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
+  public ResponseEntity<ApiResponse<OrderResponse>> initiateOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody OrderRequest dto) {
-    OrderResponse response = orderService.createOrder(user, dto);
+    OrderResponse response = orderService.initiateOrder(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiResponse<>(
                 Instant.now(), HttpStatus.CREATED.value(), "Order passed successfully", response));
   }
 
-  @DeleteMapping
+  @PostMapping("/cancel")
   public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request) {
     OrderResponse response = orderService.cancelOrder(user, request);

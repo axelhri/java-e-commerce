@@ -8,16 +8,16 @@ import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.mapper.OrderItemMapper;
+import ecom.model.OrderStatus;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -27,17 +27,15 @@ public class OrderService implements OrderServiceInterface {
   private OrderItemMapper orderItemMapper;
 
   @Override
-  public OrderResponse createOrder(User user, OrderRequest request) {
-    Set<CartItem> cartItems =
-        request.productIds().stream()
-            .map(
-                id ->
-                    cartItemRepository
-                        .findById(id)
-                        .orElseThrow(
-                            () -> new ResourceNotFoundException("Product not found in cart.")))
-            .peek(cartItem -> validateCartItemOwnership(user, cartItem))
-            .collect(Collectors.toSet());
+  @Transactional
+  public OrderResponse initiateOrder(User user, OrderRequest request) {
+    List<CartItem> foundItems = cartItemRepository.findAllById(request.productIds());
+
+    for (CartItem cartItem : foundItems) {
+      validateCartItemOwnership(user, cartItem);
+    }
+
+    Set<CartItem> cartItems = new HashSet<>(foundItems);
 
     Order order = Order.builder().user(user).build();
 
@@ -54,10 +52,7 @@ public class OrderService implements OrderServiceInterface {
 
     BigDecimal orderTotal = getOrderTotalAmount(orderItems);
 
-    Set<UUID> productIds =
-        order.getOrderItems().stream()
-            .map(item -> item.getProduct().getId())
-            .collect(Collectors.toSet());
+    Set<UUID> productIds = extractProductIds(orderItems);
 
     return new OrderResponse(productIds, orderTotal);
   }
@@ -76,14 +71,13 @@ public class OrderService implements OrderServiceInterface {
       throw new UnauthorizedAccess("You do not have the rights to perform this action.");
     }
 
-    orderRepository.deleteById(request.orderId());
+    order.setStatus(OrderStatus.CANCELLED);
+
+    orderRepository.save(order);
 
     BigDecimal orderTotal = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
 
-    Set<UUID> productIds =
-        order.getOrderItems().stream()
-            .map(item -> item.getProduct().getId())
-            .collect(Collectors.toSet());
+    Set<UUID> productIds = extractProductIds(order.getOrderItems());
 
     return new OrderResponse(productIds, orderTotal);
   }
@@ -102,5 +96,9 @@ public class OrderService implements OrderServiceInterface {
                     .multiply(BigDecimal.valueOf(item.getQuantity())))
         .reduce(BigDecimal.ZERO, BigDecimal::add)
         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+  }
+
+  private Set<UUID> extractProductIds(Collection<OrderItem> orderItems) {
+    return orderItems.stream().map(item -> item.getProduct().getId()).collect(Collectors.toSet());
   }
 }

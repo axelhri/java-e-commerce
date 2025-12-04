@@ -6,7 +6,7 @@ import ecom.dto.OrderResponse;
 import ecom.entity.User;
 
 public interface OrderServiceInterface {
-  OrderResponse createOrder(User user, OrderRequest request);
+  OrderResponse initiateOrder(User user, OrderRequest request);
 
   OrderResponse cancelOrder(User user, CancelOrderRequest request);
 }
