@@ -58,6 +58,11 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(ex.getMessage(), HttpStatus.CONFLICT);
   }
 
+  @ExceptionHandler(UnauthorizedAccess.class)
+  public ResponseEntity<ErrorResponse> handleUnauthorizedAccess(UnauthorizedAccess ex) {
+    return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
+  }
+
   private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
     ErrorResponse error = new ErrorResponse(message, status.value(), Instant.now().toEpochMilli());
     return new ResponseEntity<>(error, status);
