@@ -30,7 +30,7 @@ public class OrderController {
                 Instant.now(), HttpStatus.CREATED.value(), "Order passed successfully", response));
   }
 
-  @DeleteMapping
+  @PostMapping("/cancel")
   public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request) {
     OrderResponse response = orderService.cancelOrder(user, request);

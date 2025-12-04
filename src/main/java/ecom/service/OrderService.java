@@ -8,6 +8,7 @@ import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.mapper.OrderItemMapper;
+import ecom.model.OrderStatus;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import java.math.BigDecimal;
@@ -74,7 +75,9 @@ public class OrderService implements OrderServiceInterface {
       throw new UnauthorizedAccess("You do not have the rights to perform this action.");
     }
 
-    orderRepository.deleteById(request.orderId());
+    order.setStatus(OrderStatus.CANCELLED);
+
+    orderRepository.save(order);
 
     BigDecimal orderTotal = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
 
