@@ -1,5 +1,6 @@
 package ecom.entity;
 
+import ecom.model.OrderStatus;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -30,6 +31,11 @@ public class Order {
   @Builder.Default
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> orderItems = new ArrayList<>();
+
+  @Builder.Default
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private OrderStatus status = OrderStatus.PENDING;
 
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
