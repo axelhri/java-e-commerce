@@ -21,9 +21,9 @@ public class OrderController {
   private final OrderServiceInterface orderService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
+  public ResponseEntity<ApiResponse<OrderResponse>> initiateOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody OrderRequest dto) {
-    OrderResponse response = orderService.createOrder(user, dto);
+    OrderResponse response = orderService.initiateOrder(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiResponse<>(
