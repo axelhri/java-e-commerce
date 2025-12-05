@@ -84,5 +84,34 @@ public class OrderServiceUnitTest {
       assertNotNull(response);
       assertEquals(Set.of(product.getId()), response.productsIds());
     }
+
+    @Test
+    void should_throw_exception_if_cart_item_ownership_validation_fails() {
+      // Arrange
+      User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
+
+      Cart otherCart = Cart.builder().user(otherUser).build();
+
+      CartItem invalidCartItem =
+          CartItem.builder()
+              .id(UUID.randomUUID())
+              .product(product)
+              .cart(otherCart)
+              .quantity(3)
+              .build();
+
+      when(cartItemRepository.findAllById(orderRequest.productIds()))
+          .thenReturn(List.of(invalidCartItem));
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> orderService.initiateOrder(user, orderRequest));
+
+      // Assert
+      assertEquals("Product not found in cart.", exception.getMessage());
+      verify(orderRepository, never()).save(any(Order.class));
+    }
   }
 }
