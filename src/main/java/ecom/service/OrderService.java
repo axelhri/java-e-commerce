@@ -4,6 +4,7 @@ import ecom.dto.CancelOrderRequest;
 import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
+import ecom.exception.EmptyCartException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
@@ -30,6 +31,10 @@ public class OrderService implements OrderServiceInterface {
   @Transactional
   public OrderResponse initiateOrder(User user, OrderRequest request) {
     List<CartItem> foundItems = cartItemRepository.findAllById(request.productIds());
+
+    if (foundItems.isEmpty()) {
+      throw new EmptyCartException("No products were found in cart.");
+    }
 
     for (CartItem cartItem : foundItems) {
       validateCartItemOwnership(user, cartItem);

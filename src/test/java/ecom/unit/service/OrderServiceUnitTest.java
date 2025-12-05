@@ -6,11 +6,13 @@ import static org.mockito.Mockito.*;
 import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
+import ecom.exception.EmptyCartException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.mapper.OrderItemMapper;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import ecom.service.OrderService;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -109,8 +111,22 @@ public class OrderServiceUnitTest {
               ResourceNotFoundException.class,
               () -> orderService.initiateOrder(user, orderRequest));
 
-      // Assert
       assertEquals("Product not found in cart.", exception.getMessage());
+      verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    void should_throw_exception_if_cart_item_is_empty() {
+      // Arrange
+      when(cartItemRepository.findAllById(orderRequest.productIds()))
+          .thenReturn(Collections.emptyList());
+
+      // Act & Assert
+      EmptyCartException exception =
+          assertThrows(
+              EmptyCartException.class, () -> orderService.initiateOrder(user, orderRequest));
+
+      assertEquals("No products were found in cart.", exception.getMessage());
       verify(orderRepository, never()).save(any(Order.class));
     }
   }
