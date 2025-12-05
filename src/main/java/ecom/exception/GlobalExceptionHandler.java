@@ -63,7 +63,7 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(ex.getMessage(), HttpStatus.FORBIDDEN);
   }
 
-  @ExceptionHandler(UnauthorizedAccess.class)
+  @ExceptionHandler(EmptyCartException.class)
   public ResponseEntity<ErrorResponse> handleEmptyCart(EmptyCartException ex) {
     return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
   }
