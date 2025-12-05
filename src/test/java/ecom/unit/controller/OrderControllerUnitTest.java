@@ -13,8 +13,12 @@ import ecom.entity.User;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.service.JwtService;
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
+
+import org.hibernate.validator.cfg.defs.UUIDDef;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -62,6 +66,18 @@ public class OrderControllerUnitTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(orderRequest)))
           .andExpect(status().isCreated());
+    }
+
+    @Test
+    void should_return_bad_request_if_validation_fails() throws Exception {
+        OrderRequest invalidRequest = new OrderRequest(Set.of());
+        when(orderService.initiateOrder(user, invalidRequest)).thenReturn(orderResponse);
+
+        mockMvc.perform(
+                post("/api/v1/orders")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest))
+        ).andExpect(status().isBadRequest());
     }
   }
 }
