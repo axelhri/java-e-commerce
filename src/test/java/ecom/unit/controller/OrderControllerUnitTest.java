@@ -27,7 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(OrderController.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class OrderControllerUnitTest {
+class OrderControllerUnitTest {
   @MockitoBean private OrderServiceInterface orderService;
   @MockitoBean private JwtService jwtService;
   @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;

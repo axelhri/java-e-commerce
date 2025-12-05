@@ -25,15 +25,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class OrderServiceUnitTest {
+class OrderServiceUnitTest {
   @Mock private CartItemRepository cartItemRepository;
   @Mock private OrderRepository orderRepository;
   @Mock private OrderItemMapper orderItemMapper;
   @InjectMocks private OrderService orderService;
 
   private OrderRequest orderRequest;
-
-  private OrderResponse orderResponse;
 
   private User user;
 
