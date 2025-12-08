@@ -143,6 +143,28 @@ class OrderControllerUnitTest {
     }
 
     @Test
+    void should_return_not_found_if_order_does_not_exist() throws Exception {
+      // Arrange
+      SecurityContextHolder.getContext()
+          .setAuthentication(new TestingAuthenticationToken(user, null));
+
+      when(orderService.cancelOrder(user, cancelRequest))
+          .thenThrow(
+              new ecom.exception.ResourceNotFoundException(
+                  "Issue encountered while searching for this order."));
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/orders/cancel")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(cancelRequest)))
+          .andExpect(status().isNotFound())
+          .andExpect(
+              jsonPath("$.message").value("Issue encountered while searching for this order."));
+    }
+
+    @Test
     void should_return_forbidden_if_user_is_not_owner() throws Exception {
       // Arrange
       SecurityContextHolder.getContext()
