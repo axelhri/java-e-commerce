@@ -123,5 +123,20 @@ class OrderControllerUnitTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.message").value("Order cancelled successfully"));
     }
+
+    @Test
+    void should_return_bad_request_if_request_is_null() throws Exception {
+      // Arrange
+      CancelOrderRequest invalidRequest = new CancelOrderRequest(null);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/orders/cancel")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(invalidRequest)))
+          .andExpect(status().isBadRequest())
+          .andExpect(jsonPath("$.orderId").value("Order ID must not be null."));
+    }
   }
 }
