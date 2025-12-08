@@ -170,5 +170,20 @@ class OrderServiceUnitTest {
 
       verify(orderRepository).save(existingOrder);
     }
+
+    @Test
+    void should_throw_exception_if_order_not_found() {
+      // Arrange
+      when(orderRepository.findById(cancelRequest.orderId())).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> orderService.cancelOrder(user, cancelRequest));
+
+      assertEquals("Issue encountered while searching for this order.", exception.getMessage());
+
+      verify(orderRepository, never()).save(any(Order.class));
+    }
   }
 }
