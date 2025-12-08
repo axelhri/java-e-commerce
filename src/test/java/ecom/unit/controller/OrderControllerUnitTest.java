@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecom.config.JwtAuthenticationFilter;
 import ecom.controller.OrderController;
+import ecom.dto.CancelOrderRequest;
 import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.User;
@@ -95,6 +96,32 @@ class OrderControllerUnitTest {
                   .content(objectMapper.writeValueAsString(invalidRequest)))
           .andExpect(status().isBadRequest())
           .andExpect(jsonPath("$.productIds").value("You must order at least 1 product."));
+    }
+  }
+
+  @Nested
+  class cancelOrderUnitTest {
+
+    private CancelOrderRequest cancelRequest;
+
+    @BeforeEach
+    void setupCancel() {
+      cancelRequest = new CancelOrderRequest(UUID.randomUUID());
+    }
+
+    @Test
+    void should_cancel_order_successfully_and_return_200_ok() throws Exception {
+      // Arrange
+      when(orderService.cancelOrder(user, cancelRequest)).thenReturn(orderResponse);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              post("/api/v1/orders/cancel")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(cancelRequest)))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.message").value("Order cancelled successfully"));
     }
   }
 }
