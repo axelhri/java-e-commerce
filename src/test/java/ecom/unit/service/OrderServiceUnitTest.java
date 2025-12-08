@@ -9,6 +9,7 @@ import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.EmptyCartException;
 import ecom.exception.ResourceNotFoundException;
+import ecom.exception.UnauthorizedAccess;
 import ecom.mapper.OrderItemMapper;
 import ecom.model.OrderStatus;
 import ecom.repository.CartItemRepository;
@@ -182,6 +183,31 @@ class OrderServiceUnitTest {
               ResourceNotFoundException.class, () -> orderService.cancelOrder(user, cancelRequest));
 
       assertEquals("Issue encountered while searching for this order.", exception.getMessage());
+
+      verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    void should_throw_unauthorized_access_if_user_not_owner() {
+      // Arrange
+      User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
+
+      Order someoneElsesOrder =
+          Order.builder()
+              .id(cancelRequest.orderId())
+              .user(otherUser)
+              .status(OrderStatus.PENDING)
+              .build();
+
+      when(orderRepository.findById(cancelRequest.orderId()))
+          .thenReturn(Optional.of(someoneElsesOrder));
+
+      // Act & Assert
+      UnauthorizedAccess exception =
+          assertThrows(
+              UnauthorizedAccess.class, () -> orderService.cancelOrder(user, cancelRequest));
+
+      assertEquals("You do not have the rights to perform this action.", exception.getMessage());
 
       verify(orderRepository, never()).save(any(Order.class));
     }
