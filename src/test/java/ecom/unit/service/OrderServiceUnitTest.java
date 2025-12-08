@@ -3,19 +3,19 @@ package ecom.unit.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import ecom.dto.CancelOrderRequest;
 import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.EmptyCartException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.mapper.OrderItemMapper;
+import ecom.model.OrderStatus;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import ecom.service.OrderService;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -126,6 +126,49 @@ class OrderServiceUnitTest {
 
       assertEquals("No products were found in cart.", exception.getMessage());
       verify(orderRepository, never()).save(any(Order.class));
+    }
+  }
+
+  @Nested
+  class cancelOrderUnitTest {
+    private CancelOrderRequest cancelRequest;
+    private Order existingOrder;
+    private OrderItem existingOrderItem;
+
+    @BeforeEach
+    void setupCancelOrder() {
+      cancelRequest = new CancelOrderRequest(UUID.randomUUID());
+
+      existingOrder =
+          Order.builder()
+              .id(cancelRequest.orderId())
+              .user(user)
+              .status(OrderStatus.PENDING)
+              .build();
+
+      existingOrderItem =
+          OrderItem.builder().product(product).order(existingOrder).quantity(5).build();
+
+      existingOrder.getOrderItems().add(existingOrderItem);
+    }
+
+    @Test
+    void should_cancel_order_successfully() {
+      // Arrange
+      when(orderRepository.findById(cancelRequest.orderId()))
+          .thenReturn(Optional.of(existingOrder));
+      when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
+
+      // Act
+      OrderResponse response = orderService.cancelOrder(user, cancelRequest);
+
+      // Assert
+      assertNotNull(response);
+      assertEquals(Set.of(product.getId()), response.productsIds());
+      assertEquals(new BigDecimal("75.00"), response.price());
+      assertEquals(OrderStatus.CANCELLED, existingOrder.getStatus());
+
+      verify(orderRepository).save(existingOrder);
     }
   }
 }
