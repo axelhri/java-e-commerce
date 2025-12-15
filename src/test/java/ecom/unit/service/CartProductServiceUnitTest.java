@@ -17,6 +17,7 @@ import ecom.service.CartProductService;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CartProductServiceUnitTest {
   @Mock private CartItemRepository cartItemRepository;
   @Mock private ProductRepository productRepository;
-  @Mock private CartProductService cartSelfService;
   @Spy @InjectMocks private CartProductService cartProductService;
 
   private User user;
@@ -44,11 +44,13 @@ class CartProductServiceUnitTest {
     user = User.builder().email("test@example.com").password("Password123!").build();
     product =
         Product.builder()
+            .id(UUID.randomUUID())
             .name("Wireless mouse")
             .price(1000)
             .description("Black wireless mouse.")
             .build();
-    cart = Cart.builder().user(user).build();
+    cart = Cart.builder().id(UUID.randomUUID()).user(user).build();
+    user.setCart(cart);
     request = new ManageCartRequest(product.getId(), 1);
     cartItem = CartItem.builder().product(product).cart(cart).quantity(1).build();
   }
@@ -209,6 +211,46 @@ class CartProductServiceUnitTest {
 
       // Assert
       assertThat(total).isEqualByComparingTo("0.00");
+    }
+  }
+
+  @Nested
+  class GetCartProductsUnitTest {
+
+    @Test
+    void should_return_list_of_cart_products_successfully() {
+      // Arrange
+      Product product2 =
+          Product.builder()
+              .id(UUID.randomUUID())
+              .name("Laptop")
+              .description("16 inch blue laptop")
+              .price(1500)
+              .build();
+      CartItem cartItem1 = CartItem.builder().cart(cart).product(product).quantity(1).build();
+      CartItem cartItem2 = CartItem.builder().cart(cart).product(product2).quantity(2).build();
+      List<CartItem> cartItems = List.of(cartItem1, cartItem2);
+
+      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(cartItems);
+
+      // Act
+      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertEquals(2, responses.size());
+
+      assertEquals(product.getId(), responses.get(0).productId());
+      assertEquals(product.getName(), responses.get(0).productName());
+      assertEquals(1, responses.get(0).quantity());
+      assertEquals(product.getPrice(), responses.get(0).price());
+
+      assertEquals(product2.getId(), responses.get(1).productId());
+      assertEquals(product2.getName(), responses.get(1).productName());
+      assertEquals(2, responses.get(1).quantity());
+      assertEquals(product2.getPrice(), responses.get(1).price());
+
+      verify(cartItemRepository).findByCartId(cart.getId());
     }
   }
 }
