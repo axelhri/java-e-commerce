@@ -265,5 +265,18 @@ class OrderServiceUnitTest {
       assertTrue(responses.get(1).productsIds().contains(product2.getId()));
       assertEquals(new BigDecimal("10.00"), responses.get(1).price());
     }
+
+    @Test
+    void should_return_empty_list_when_user_has_no_orders() {
+      // Arrange
+      when(orderRepository.findByUser(user)).thenReturn(Collections.emptyList());
+
+      // Act
+      List<OrderResponse> responses = orderService.getUserOrders(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertTrue(responses.isEmpty());
+    }
   }
 }
