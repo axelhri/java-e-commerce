@@ -72,6 +72,7 @@ public class OrderService implements OrderServiceInterface {
   }
 
   @Override
+  @Transactional
   public OrderResponse cancelOrder(User user, CancelOrderRequest request) {
     Order order =
         orderRepository
@@ -88,6 +89,11 @@ public class OrderService implements OrderServiceInterface {
     order.setStatus(OrderStatus.CANCELLED);
 
     orderRepository.save(order);
+
+    for (OrderItem orderItem : order.getOrderItems()) {
+      stockService.createStockMovement(
+          orderItem.getProduct(), orderItem.getQuantity(), StockType.IN, StockReason.RETURN);
+    }
 
     BigDecimal orderTotal = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
 
