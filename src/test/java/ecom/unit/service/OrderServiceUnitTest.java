@@ -10,6 +10,7 @@ import ecom.entity.*;
 import ecom.exception.EmptyCartException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
+import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.OrderItemMapper;
 import ecom.model.OrderStatus;
 import ecom.repository.CartItemRepository;
@@ -30,6 +31,7 @@ class OrderServiceUnitTest {
   @Mock private CartItemRepository cartItemRepository;
   @Mock private OrderRepository orderRepository;
   @Mock private OrderItemMapper orderItemMapper;
+  @Mock private StockServiceInterface stockService;
   @InjectMocks private OrderService orderService;
 
   private OrderRequest orderRequest;

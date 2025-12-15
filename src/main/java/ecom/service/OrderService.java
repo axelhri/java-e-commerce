@@ -8,8 +8,11 @@ import ecom.exception.EmptyCartException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
+import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.OrderItemMapper;
 import ecom.model.OrderStatus;
+import ecom.model.StockReason;
+import ecom.model.StockType;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import java.math.BigDecimal;
@@ -26,6 +29,7 @@ public class OrderService implements OrderServiceInterface {
   private CartItemRepository cartItemRepository;
   private OrderRepository orderRepository;
   private OrderItemMapper orderItemMapper;
+  private StockServiceInterface stockService;
 
   @Override
   @Transactional
@@ -52,6 +56,11 @@ public class OrderService implements OrderServiceInterface {
     order.getOrderItems().addAll(orderItems);
 
     orderRepository.save(order);
+
+    for (OrderItem orderItem : orderItems) {
+      stockService.createStockMovement(
+          orderItem.getProduct(), orderItem.getQuantity(), StockType.OUT, StockReason.SALE);
+    }
 
     cartItemRepository.deleteAll(cartItems);
 
