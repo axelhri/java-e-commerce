@@ -121,6 +121,25 @@ public class OrderService implements OrderServiceInterface {
         .collect(Collectors.toList());
   }
 
+  @Override
+  public OrderResponse getOrderById(User user, UUID orderId) {
+    Order order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Issue encountered while searching for this order."));
+
+    if (!order.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedAccess("You do not have the rights to perform this action.");
+    }
+
+    return new OrderResponse(
+        extractProductIds(order.getOrderItems()),
+        getOrderTotalAmount(new HashSet<>(order.getOrderItems())));
+  }
+
   private void validateCartItemOwnership(User user, CartItem cartItem) {
     if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
       throw new ResourceNotFoundException("Product not found in cart.");
