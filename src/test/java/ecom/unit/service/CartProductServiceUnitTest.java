@@ -15,6 +15,7 @@ import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
 import ecom.service.CartProductService;
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -250,6 +251,20 @@ class CartProductServiceUnitTest {
       assertEquals(2, responses.get(1).quantity());
       assertEquals(product2.getPrice(), responses.get(1).price());
 
+      verify(cartItemRepository).findByCartId(cart.getId());
+    }
+
+    @Test
+    void should_return_empty_list_when_cart_is_empty() {
+      // Arrange
+      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(Collections.emptyList());
+
+      // Act
+      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertTrue(responses.isEmpty());
       verify(cartItemRepository).findByCartId(cart.getId());
     }
   }
