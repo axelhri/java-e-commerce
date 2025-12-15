@@ -45,7 +45,12 @@ class ProductControllerUnitTest {
   void setUp() {
     productRequest =
         new ProductRequest(
-            "Black trench coat", 80000, "Black comfortable trench coat.", vendorId, categoryId);
+            "Black trench coat",
+            80000,
+            "Black comfortable trench coat.",
+            100,
+            vendorId,
+            categoryId);
     product =
         Product.builder()
             .name(productRequest.name())
@@ -78,7 +83,7 @@ class ProductControllerUnitTest {
     void createProductShouldReturn400BadRequestIfNameIsIncorrect() throws Exception {
       // Arrange
       productRequest =
-          new ProductRequest("d", 5000, "Random product description.", vendorId, categoryId);
+          new ProductRequest("d", 5000, "Random product description.", 100, vendorId, categoryId);
 
       // Act & Assert
       mockMvc
@@ -95,7 +100,8 @@ class ProductControllerUnitTest {
     @Test
     void createProductShouldReturn400BadRequestIfDescriptionIsIncorrect() throws Exception {
       // Arrange
-      productRequest = new ProductRequest("Random product name.", 5000, "d", vendorId, categoryId);
+      productRequest =
+          new ProductRequest("Random product name.", 5000, "d", 100, vendorId, categoryId);
 
       // Act & Assert
       mockMvc
@@ -114,7 +120,7 @@ class ProductControllerUnitTest {
       // Arrange
       productRequest =
           new ProductRequest(
-              "Football gloves", null, "Red and white football gloves.", vendorId, categoryId);
+              "Football gloves", null, "Red and white football gloves.", 100, vendorId, categoryId);
 
       // Act & Assert
       mockMvc
@@ -133,7 +139,7 @@ class ProductControllerUnitTest {
       // Arrange
       productRequest =
           new ProductRequest(
-              "Black trench coat", 80000, "Black comfortable trench coat.", null, categoryId);
+              "Black trench coat", 80000, "Black comfortable trench coat.", 100, null, categoryId);
 
       // Act & Assert
       mockMvc
@@ -152,7 +158,7 @@ class ProductControllerUnitTest {
       // Arrange
       productRequest =
           new ProductRequest(
-              "Black trench coat", 80000, "Black comfortable trench coat.", vendorId, null);
+              "Black trench coat", 80000, "Black comfortable trench coat.", 100, vendorId, null);
 
       // Act & Assert
       mockMvc

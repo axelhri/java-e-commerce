@@ -8,6 +8,7 @@ import ecom.entity.Category;
 import ecom.entity.Product;
 import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
+import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.ProductMapper;
 import ecom.repository.CategoryRepository;
 import ecom.repository.ProductRepository;
@@ -30,6 +31,7 @@ class ProductServiceUnitTest {
   @Mock private CategoryRepository categoryRepository;
   @Mock private VendorRepository vendorRepository;
   @Mock private ProductMapper productMapper;
+  @Mock private StockServiceInterface stockService;
   @InjectMocks private ProductService productService;
 
   private Product product;
@@ -44,6 +46,7 @@ class ProductServiceUnitTest {
             "Black trench coat",
             80000,
             "Black trench coat very comfortable made out of wool",
+            100,
             UUID.randomUUID(),
             UUID.randomUUID());
     product =

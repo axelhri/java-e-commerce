@@ -15,5 +15,9 @@ public record ProductRequest(
         @NotBlank(message = "Description is required.")
         @Size(min = 10, max = 100)
         String description,
+    @JsonProperty("stock")
+        @Positive(message = "Stock must be a positive number.")
+        @NotNull(message = "Stock is required.")
+        Integer stock,
     @JsonProperty("vendor") @NotNull(message = "Vendor is required.") UUID vendor,
     @JsonProperty("category") @NotNull(message = "Category is required.") UUID category) {}
