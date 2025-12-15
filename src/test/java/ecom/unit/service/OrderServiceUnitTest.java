@@ -8,8 +8,10 @@ import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.EmptyCartException;
+import ecom.exception.InsufficientStockException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
+import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.OrderItemMapper;
 import ecom.model.OrderStatus;
 import ecom.repository.CartItemRepository;
@@ -30,6 +32,7 @@ class OrderServiceUnitTest {
   @Mock private CartItemRepository cartItemRepository;
   @Mock private OrderRepository orderRepository;
   @Mock private OrderItemMapper orderItemMapper;
+  @Mock private StockServiceInterface stockService;
   @InjectMocks private OrderService orderService;
 
   private OrderRequest orderRequest;
@@ -77,6 +80,7 @@ class OrderServiceUnitTest {
       when(cartItemRepository.findAllById(orderRequest.productIds())).thenReturn(List.of(cartItem));
       when(orderItemMapper.fromCartItem(eq(cartItem), any(Order.class))).thenReturn(orderItem);
       when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
+      when(stockService.getCurrentStock(product)).thenReturn(100);
 
       // Act
       OrderResponse response = orderService.initiateOrder(user, orderRequest);
@@ -127,6 +131,23 @@ class OrderServiceUnitTest {
 
       assertEquals("No products were found in cart.", exception.getMessage());
       verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    void should_throw_exception_if_stock_is_insufficient_during_order_initiation() {
+      // Arrange
+      when(cartItemRepository.findAllById(orderRequest.productIds())).thenReturn(List.of(cartItem));
+      when(stockService.getCurrentStock(product)).thenReturn(2);
+
+      // Act & Assert
+      InsufficientStockException exception =
+          assertThrows(
+              InsufficientStockException.class,
+              () -> orderService.initiateOrder(user, orderRequest));
+
+      assertEquals("Insufficient stock for product: " + product.getName(), exception.getMessage());
+      verify(orderRepository, never()).save(any(Order.class));
+      verify(stockService, never()).createStockMovement(any(), any(), any(), any());
     }
   }
 
@@ -210,6 +231,86 @@ class OrderServiceUnitTest {
       assertEquals("You do not have the rights to perform this action.", exception.getMessage());
 
       verify(orderRepository, never()).save(any(Order.class));
+    }
+  }
+
+  @Nested
+  class GetUserOrders {
+
+    @Test
+    void should_return_user_orders_successfully() {
+      // Arrange
+      Product product2 = Product.builder().id(UUID.randomUUID()).name("Mouse").price(500).build();
+      OrderItem orderItem2 = OrderItem.builder().product(product2).quantity(2).build();
+      Order order2 =
+          Order.builder().user(user).orderItems(new ArrayList<>(List.of(orderItem2))).build();
+      orderItem2.setOrder(order2);
+
+      order.setOrderItems(new ArrayList<>(List.of(orderItem)));
+
+      List<Order> userOrders = List.of(order, order2);
+      when(orderRepository.findByUser(user)).thenReturn(userOrders);
+
+      // Act
+      List<OrderResponse> responses = orderService.getUserOrders(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertEquals(2, responses.size());
+
+      assertEquals(1, responses.get(0).productsIds().size());
+      assertTrue(responses.get(0).productsIds().contains(product.getId()));
+      assertEquals(new BigDecimal("15.00"), responses.get(0).price());
+
+      assertEquals(1, responses.get(1).productsIds().size());
+      assertTrue(responses.get(1).productsIds().contains(product2.getId()));
+      assertEquals(new BigDecimal("10.00"), responses.get(1).price());
+    }
+
+    @Test
+    void should_return_empty_list_when_user_has_no_orders() {
+      // Arrange
+      when(orderRepository.findByUser(user)).thenReturn(Collections.emptyList());
+
+      // Act
+      List<OrderResponse> responses = orderService.getUserOrders(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertTrue(responses.isEmpty());
+    }
+  }
+
+  @Nested
+  class GetOrderById {
+    @Test
+    void should_throw_exception_if_order_not_found() {
+      // Arrange
+      UUID randomId = UUID.randomUUID();
+      when(orderRepository.findById(randomId)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> orderService.getOrderById(user, randomId));
+
+      assertEquals("Issue encountered while searching for this order.", exception.getMessage());
+    }
+
+    @Test
+    void should_throw_unauthorized_access_if_user_not_owner() {
+      // Arrange
+      User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
+      Order otherOrder = Order.builder().id(UUID.randomUUID()).user(otherUser).build();
+
+      when(orderRepository.findById(otherOrder.getId())).thenReturn(Optional.of(otherOrder));
+
+      // Act & Assert
+      UnauthorizedAccess exception =
+          assertThrows(
+              UnauthorizedAccess.class, () -> orderService.getOrderById(user, otherOrder.getId()));
+
+      assertEquals("You do not have the rights to perform this action.", exception.getMessage());
     }
   }
 }

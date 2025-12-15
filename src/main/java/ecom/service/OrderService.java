@@ -5,11 +5,15 @@ import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.EmptyCartException;
+import ecom.exception.InsufficientStockException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
+import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.OrderItemMapper;
 import ecom.model.OrderStatus;
+import ecom.model.StockReason;
+import ecom.model.StockType;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
 import java.math.BigDecimal;
@@ -26,6 +30,7 @@ public class OrderService implements OrderServiceInterface {
   private CartItemRepository cartItemRepository;
   private OrderRepository orderRepository;
   private OrderItemMapper orderItemMapper;
+  private StockServiceInterface stockService;
 
   @Override
   @Transactional
@@ -38,6 +43,12 @@ public class OrderService implements OrderServiceInterface {
 
     for (CartItem cartItem : foundItems) {
       validateCartItemOwnership(user, cartItem);
+
+      int currentStock = stockService.getCurrentStock(cartItem.getProduct());
+      if (currentStock < cartItem.getQuantity()) {
+        throw new InsufficientStockException(
+            "Insufficient stock for product: " + cartItem.getProduct().getName());
+      }
     }
 
     Set<CartItem> cartItems = new HashSet<>(foundItems);
@@ -53,6 +64,11 @@ public class OrderService implements OrderServiceInterface {
 
     orderRepository.save(order);
 
+    for (OrderItem orderItem : orderItems) {
+      stockService.createStockMovement(
+          orderItem.getProduct(), orderItem.getQuantity(), StockType.OUT, StockReason.SALE);
+    }
+
     cartItemRepository.deleteAll(cartItems);
 
     BigDecimal orderTotal = getOrderTotalAmount(orderItems);
@@ -63,6 +79,7 @@ public class OrderService implements OrderServiceInterface {
   }
 
   @Override
+  @Transactional
   public OrderResponse cancelOrder(User user, CancelOrderRequest request) {
     Order order =
         orderRepository
@@ -80,11 +97,47 @@ public class OrderService implements OrderServiceInterface {
 
     orderRepository.save(order);
 
+    for (OrderItem orderItem : order.getOrderItems()) {
+      stockService.createStockMovement(
+          orderItem.getProduct(), orderItem.getQuantity(), StockType.IN, StockReason.RETURN);
+    }
+
     BigDecimal orderTotal = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
 
     Set<UUID> productIds = extractProductIds(order.getOrderItems());
 
     return new OrderResponse(productIds, orderTotal);
+  }
+
+  @Override
+  public List<OrderResponse> getUserOrders(User user) {
+    List<Order> orders = orderRepository.findByUser(user);
+    return orders.stream()
+        .map(
+            order ->
+                new OrderResponse(
+                    extractProductIds(order.getOrderItems()),
+                    getOrderTotalAmount(new HashSet<>(order.getOrderItems()))))
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public OrderResponse getOrderById(User user, UUID orderId) {
+    Order order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Issue encountered while searching for this order."));
+
+    if (!order.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedAccess("You do not have the rights to perform this action.");
+    }
+
+    return new OrderResponse(
+        extractProductIds(order.getOrderItems()),
+        getOrderTotalAmount(new HashSet<>(order.getOrderItems())));
   }
 
   private void validateCartItemOwnership(User user, CartItem cartItem) {

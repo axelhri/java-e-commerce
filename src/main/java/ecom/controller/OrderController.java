@@ -8,6 +8,8 @@ import ecom.entity.User;
 import ecom.interfaces.OrderServiceInterface;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,5 +40,23 @@ public class OrderController {
         .body(
             new ApiResponse<>(
                 Instant.now(), HttpStatus.OK.value(), "Order cancelled successfully", response));
+  }
+
+  @GetMapping
+  public ResponseEntity<ApiResponse<List<OrderResponse>>> getUserOrders(
+      @AuthenticationPrincipal User user) {
+    List<OrderResponse> orders = orderService.getUserOrders(user);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Orders fetched successfully", orders));
+  }
+
+  @GetMapping("/{orderId}")
+  public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(
+      @AuthenticationPrincipal User user, @PathVariable UUID orderId) {
+    OrderResponse order = orderService.getOrderById(user, orderId);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Order fetched successfully", order));
   }
 }
