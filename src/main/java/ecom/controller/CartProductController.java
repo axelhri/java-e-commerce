@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,5 +48,17 @@ public class CartProductController {
       @AuthenticationPrincipal User user) {
     BigDecimal total = cartProductService.getCartTotalAmount(user);
     return ResponseEntity.ok(Collections.singletonMap("total", total));
+  }
+
+  @GetMapping
+  public ResponseEntity<ApiResponse<List<CartItemResponse>>> getCartProducts(
+      @AuthenticationPrincipal User user) {
+    List<CartItemResponse> cartProducts = cartProductService.getCartProducts(user);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(),
+            HttpStatus.OK.value(),
+            "Cart products fetched successfully",
+            cartProducts));
   }
 }
