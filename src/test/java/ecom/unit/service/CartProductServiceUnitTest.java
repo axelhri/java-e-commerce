@@ -281,5 +281,23 @@ class CartProductServiceUnitTest {
       assertTrue(responses.isEmpty());
       verify(cartItemRepository).findByCartId(cart.getId());
     }
+
+    @Test
+    void should_ignore_cart_item_if_product_is_null() {
+      // Arrange
+      CartItem cartItemWithNullProduct =
+          CartItem.builder().cart(cart).product(null).quantity(1).build();
+      List<CartItem> cartItems = List.of(cartItemWithNullProduct);
+
+      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(cartItems);
+
+      // Act
+      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertTrue(responses.isEmpty());
+      verify(cartItemRepository).findByCartId(cart.getId());
+    }
   }
 }
