@@ -15,6 +15,7 @@ import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.service.JwtService;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -182,6 +183,23 @@ class OrderControllerUnitTest {
           .andExpect(status().isForbidden())
           .andExpect(
               jsonPath("$.message").value("You do not have the rights to perform this action."));
+    }
+  }
+
+  @Nested
+  class getUserOrders {
+    @Test
+    void should_get_user_orders_successfully() throws Exception {
+      // Arrange
+      List<OrderResponse> orders = List.of(orderResponse);
+      when(orderService.getUserOrders(any())).thenReturn(orders);
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/orders"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data").isArray())
+          .andExpect(jsonPath("$.data[0].order_price").value(50.00));
     }
   }
 }
