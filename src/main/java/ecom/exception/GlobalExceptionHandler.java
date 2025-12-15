@@ -68,6 +68,11 @@ public class GlobalExceptionHandler {
     return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
   }
 
+  @ExceptionHandler(InsufficientStockException.class)
+  public ResponseEntity<ErrorResponse> handleInsufficientStock(InsufficientStockException ex) {
+    return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+  }
+
   private ResponseEntity<ErrorResponse> buildErrorResponse(String message, HttpStatus status) {
     ErrorResponse error = new ErrorResponse(message, status.value(), Instant.now().toEpochMilli());
     return new ResponseEntity<>(error, status);

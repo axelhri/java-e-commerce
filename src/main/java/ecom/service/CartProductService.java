@@ -6,8 +6,10 @@ import ecom.entity.Cart;
 import ecom.entity.CartItem;
 import ecom.entity.Product;
 import ecom.entity.User;
+import ecom.exception.InsufficientStockException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.CartProductServiceInterface;
+import ecom.interfaces.StockServiceInterface;
 import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
 import java.math.BigDecimal;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -24,8 +27,10 @@ public class CartProductService implements CartProductServiceInterface {
 
   private final CartItemRepository cartItemRepository;
   private final ProductRepository productRepository;
+  private final StockServiceInterface stockService;
 
   @Override
+  @Transactional
   public CartItemResponse addProductToCart(User user, ManageCartRequest request) {
     Product product =
         productRepository
@@ -37,14 +42,22 @@ public class CartProductService implements CartProductServiceInterface {
             .findByCartIdAndProductId(getUserCart(user).getId(), request.productId())
             .orElse(null);
 
+    int currentQuantityInCart = (cartItem != null) ? cartItem.getQuantity() : 0;
+    int requestedQuantity = request.quantity();
+    int availableStock = stockService.getCurrentStock(product);
+
+    if (availableStock < (currentQuantityInCart + requestedQuantity)) {
+      throw new InsufficientStockException("Insufficient stock for product: " + product.getName());
+    }
+
     if (cartItem != null) {
-      cartItem.setQuantity(cartItem.getQuantity() + request.quantity());
+      cartItem.setQuantity(currentQuantityInCart + requestedQuantity);
     } else {
       cartItem =
           CartItem.builder()
               .cart(getUserCart(user))
               .product(product)
-              .quantity(request.quantity())
+              .quantity(requestedQuantity)
               .build();
     }
     cartItemRepository.save(cartItem);
