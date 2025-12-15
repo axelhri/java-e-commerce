@@ -5,6 +5,7 @@ import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.EmptyCartException;
+import ecom.exception.InsufficientStockException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
@@ -42,6 +43,12 @@ public class OrderService implements OrderServiceInterface {
 
     for (CartItem cartItem : foundItems) {
       validateCartItemOwnership(user, cartItem);
+
+      int currentStock = stockService.getCurrentStock(cartItem.getProduct());
+      if (currentStock < cartItem.getQuantity()) {
+        throw new InsufficientStockException(
+            "Insufficient stock for product: " + cartItem.getProduct().getName());
+      }
     }
 
     Set<CartItem> cartItems = new HashSet<>(foundItems);
