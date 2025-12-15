@@ -8,6 +8,7 @@ import ecom.dto.OrderRequest;
 import ecom.dto.OrderResponse;
 import ecom.entity.*;
 import ecom.exception.EmptyCartException;
+import ecom.exception.InsufficientStockException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.StockServiceInterface;
@@ -129,6 +130,23 @@ class OrderServiceUnitTest {
 
       assertEquals("No products were found in cart.", exception.getMessage());
       verify(orderRepository, never()).save(any(Order.class));
+    }
+
+    @Test
+    void should_throw_exception_if_stock_is_insufficient_during_order_initiation() {
+      // Arrange
+      when(cartItemRepository.findAllById(orderRequest.productIds())).thenReturn(List.of(cartItem));
+      when(stockService.getCurrentStock(product)).thenReturn(2);
+
+      // Act & Assert
+      InsufficientStockException exception =
+          assertThrows(
+              InsufficientStockException.class,
+              () -> orderService.initiateOrder(user, orderRequest));
+
+      assertEquals("Insufficient stock for product: " + product.getName(), exception.getMessage());
+      verify(orderRepository, never()).save(any(Order.class));
+      verify(stockService, never()).createStockMovement(any(), any(), any(), any());
     }
   }
 
