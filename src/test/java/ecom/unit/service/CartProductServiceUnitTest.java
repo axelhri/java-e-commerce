@@ -11,13 +11,11 @@ import ecom.entity.CartItem;
 import ecom.entity.Product;
 import ecom.entity.User;
 import ecom.exception.ResourceNotFoundException;
+import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
 import ecom.service.CartProductService;
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,7 +31,8 @@ class CartProductServiceUnitTest {
   @Mock private CartItemRepository cartItemRepository;
   @Mock private ProductRepository productRepository;
   @Mock private StockServiceInterface stockService;
-  @Spy @InjectMocks private CartProductService cartProductService;
+  @Mock private CartServiceInterface cartService;
+  @InjectMocks private CartProductService cartProductService;
 
   private User user;
   private Cart cart;
@@ -64,7 +62,7 @@ class CartProductServiceUnitTest {
     @Test
     void should_add_product_to_cart_successfully() {
       // Arrange
-      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartService.getUserCart(user)).thenReturn(cart);
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
           .thenReturn(Optional.empty());
@@ -86,7 +84,7 @@ class CartProductServiceUnitTest {
     @Test
     void should_increase_product_quantity_if_it_already_exists() {
       // Arrange
-      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartService.getUserCart(user)).thenReturn(cart);
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
           .thenReturn(Optional.of(cartItem));
@@ -120,7 +118,7 @@ class CartProductServiceUnitTest {
     @Test
     void should_remove_product_from_cart_successfully() {
       // Arrange
-      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartService.getUserCart(user)).thenReturn(cart);
       when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
           .thenReturn(Optional.of(cartItem));
 
@@ -128,7 +126,8 @@ class CartProductServiceUnitTest {
       cartProductService.removeProductFromCart(user, request);
 
       // Assert
-      verify(cartProductService, times(1)).removeProductFromCart(user, request);
+      verify(cartItemRepository, times(1)).delete(cartItem);
+      verify(cartItemRepository, never()).save(any());
     }
 
     @Test
@@ -136,7 +135,8 @@ class CartProductServiceUnitTest {
       // Arrange
       cartItem.setQuantity(5);
       request = new ManageCartRequest(product.getId(), 4);
-      doReturn(cart).when(cartProductService).getUserCart(user);
+
+      when(cartService.getUserCart(user)).thenReturn(cart);
       when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
           .thenReturn(Optional.of(cartItem));
 
@@ -145,13 +145,14 @@ class CartProductServiceUnitTest {
 
       // Assert
       assertEquals(1, cartItem.getQuantity());
-      verify(cartProductService, times(1)).removeProductFromCart(user, request);
+      verify(cartItemRepository, times(1)).save(cartItem);
+      verify(cartItemRepository, never()).delete(any());
     }
 
     @Test
     void should_throw_exception_if_product_is_not_in_cart() {
       // Arrange
-      doReturn(cart).when(cartProductService).getUserCart(user);
+      when(cartService.getUserCart(user)).thenReturn(cart);
       when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
           .thenReturn(Optional.empty());
 
@@ -162,146 +163,6 @@ class CartProductServiceUnitTest {
               () -> cartProductService.removeProductFromCart(user, request));
 
       assertEquals("Product not found in cart", exception.getMessage());
-    }
-  }
-
-  @Nested
-  class getCartTotalAmount {
-
-    @Test
-    void should_get_cart_total_amount() {
-      // Arrange
-      when(cartProductService.getUserCart(user)).thenReturn(cart);
-
-      Product product2 =
-          Product.builder().name("product2").price(800).description("random description.").build();
-
-      cartItem.setProduct(product);
-      CartItem cartItem2 = CartItem.builder().product(product2).cart(cart).quantity(1).build();
-
-      cartItem2.setProduct(product2);
-
-      List<CartItem> items = List.of(cartItem, cartItem2);
-
-      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(items);
-
-      // Act
-      BigDecimal total = cartProductService.getCartTotalAmount(user);
-
-      // Assert
-      assertEquals(new BigDecimal("18.00"), total);
-    }
-
-    @Test
-    void should_not_calculate_empty_cart_total_amount() {
-      // Arrange
-      doReturn(cart).when(cartProductService).getUserCart(user);
-      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(List.of());
-
-      // Act
-      BigDecimal total = cartProductService.getCartTotalAmount(user);
-
-      // Assert
-      assertThat(total).isEqualByComparingTo("0.00");
-    }
-
-    @Test
-    void should_not_calculate_null_cart_total_amount() {
-      // Arrange
-      doReturn(cart).when(cartProductService).getUserCart(user);
-      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(null);
-
-      // Act
-      BigDecimal total = cartProductService.getCartTotalAmount(user);
-
-      // Assert
-      assertThat(total).isEqualByComparingTo("0.00");
-    }
-  }
-
-  @Nested
-  class GetCartProductsUnitTest {
-
-    @Test
-    void should_return_list_of_cart_products_successfully() {
-      // Arrange
-      Product product2 =
-          Product.builder()
-              .id(UUID.randomUUID())
-              .name("Laptop")
-              .description("16 inch blue laptop")
-              .price(1500)
-              .build();
-      CartItem cartItem1 = CartItem.builder().cart(cart).product(product).quantity(1).build();
-      CartItem cartItem2 = CartItem.builder().cart(cart).product(product2).quantity(2).build();
-      List<CartItem> cartItems = List.of(cartItem1, cartItem2);
-
-      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(cartItems);
-
-      // Act
-      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
-
-      // Assert
-      assertNotNull(responses);
-      assertEquals(2, responses.size());
-
-      assertEquals(product.getId(), responses.get(0).productId());
-      assertEquals(product.getName(), responses.get(0).productName());
-      assertEquals(1, responses.get(0).quantity());
-      assertEquals(product.getPrice(), responses.get(0).price());
-
-      assertEquals(product2.getId(), responses.get(1).productId());
-      assertEquals(product2.getName(), responses.get(1).productName());
-      assertEquals(2, responses.get(1).quantity());
-      assertEquals(product2.getPrice(), responses.get(1).price());
-
-      verify(cartItemRepository).findByCartId(cart.getId());
-    }
-
-    @Test
-    void should_return_empty_list_when_cart_is_empty() {
-      // Arrange
-      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(Collections.emptyList());
-
-      // Act
-      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
-
-      // Assert
-      assertNotNull(responses);
-      assertTrue(responses.isEmpty());
-      verify(cartItemRepository).findByCartId(cart.getId());
-    }
-
-    @Test
-    void should_return_empty_list_when_cart_items_are_null() {
-      // Arrange
-      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(null);
-
-      // Act
-      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
-
-      // Assert
-      assertNotNull(responses);
-      assertTrue(responses.isEmpty());
-      verify(cartItemRepository).findByCartId(cart.getId());
-    }
-
-    @Test
-    void should_ignore_cart_item_if_product_is_null() {
-      // Arrange
-      CartItem cartItemWithNullProduct =
-          CartItem.builder().cart(cart).product(null).quantity(1).build();
-      List<CartItem> cartItems = List.of(cartItemWithNullProduct);
-
-      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(cartItems);
-
-      // Act
-      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
-
-      // Assert
-      assertNotNull(responses);
-      assertTrue(responses.isEmpty());
-      verify(cartItemRepository).findByCartId(cart.getId());
     }
   }
 }
