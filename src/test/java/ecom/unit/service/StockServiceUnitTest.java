@@ -1,6 +1,8 @@
 package ecom.unit.service;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -10,6 +12,7 @@ import ecom.model.StockReason;
 import ecom.model.StockType;
 import ecom.repository.StockMovementRepository;
 import ecom.service.StockService;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -46,6 +49,24 @@ class StockServiceUnitTest {
 
       // Assert
       verify(stockMovementRepository, times(1)).save(any(StockMovement.class));
+    }
+  }
+
+  @Nested
+  class getCurrentStock {
+    @Test
+    void should_return_zero_when_no_stock_movements() {
+      // Arrange
+      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.IN))
+          .thenReturn(Optional.empty());
+      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.OUT))
+          .thenReturn(Optional.empty());
+
+      // Act
+      Integer currentStock = stockService.getCurrentStock(product);
+
+      // Assert
+      assertEquals(0, currentStock);
     }
   }
 }
