@@ -232,4 +232,38 @@ class OrderServiceUnitTest {
       verify(orderRepository, never()).save(any(Order.class));
     }
   }
+
+  @Nested
+  class GetUserOrders {
+
+    @Test
+    void should_return_user_orders_successfully() {
+      // Arrange
+      Product product2 = Product.builder().id(UUID.randomUUID()).name("Mouse").price(500).build();
+      OrderItem orderItem2 = OrderItem.builder().product(product2).quantity(2).build();
+      Order order2 =
+          Order.builder().user(user).orderItems(new ArrayList<>(List.of(orderItem2))).build();
+      orderItem2.setOrder(order2);
+
+      order.setOrderItems(new ArrayList<>(List.of(orderItem)));
+
+      List<Order> userOrders = List.of(order, order2);
+      when(orderRepository.findByUser(user)).thenReturn(userOrders);
+
+      // Act
+      List<OrderResponse> responses = orderService.getUserOrders(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertEquals(2, responses.size());
+
+      assertEquals(1, responses.get(0).productsIds().size());
+      assertTrue(responses.get(0).productsIds().contains(product.getId()));
+      assertEquals(new BigDecimal("15.00"), responses.get(0).price());
+
+      assertEquals(1, responses.get(1).productsIds().size());
+      assertTrue(responses.get(1).productsIds().contains(product2.getId()));
+      assertEquals(new BigDecimal("10.00"), responses.get(1).price());
+    }
+  }
 }
