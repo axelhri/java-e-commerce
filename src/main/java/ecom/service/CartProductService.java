@@ -12,7 +12,9 @@ import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -82,6 +84,26 @@ public class CartProductService implements CartProductServiceInterface {
             .mapToInt(item -> item.getProduct().getPrice() * item.getQuantity())
             .sum();
     return BigDecimal.valueOf(total).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+  }
+
+  @Override
+  public List<CartItemResponse> getCartProducts(User user) {
+    List<CartItem> cartItems = cartItemRepository.findByCartId(getUserCart(user).getId());
+
+    if (cartItems == null || cartItems.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return cartItems.stream()
+        .filter(item -> item.getProduct() != null)
+        .map(
+            item ->
+                new CartItemResponse(
+                    item.getProduct().getId(),
+                    item.getProduct().getName(),
+                    item.getQuantity(),
+                    item.getProduct().getPrice()))
+        .collect(Collectors.toList());
   }
 
   public Cart getUserCart(User user) {
