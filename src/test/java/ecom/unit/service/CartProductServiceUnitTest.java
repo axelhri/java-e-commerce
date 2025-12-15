@@ -11,6 +11,7 @@ import ecom.entity.CartItem;
 import ecom.entity.Product;
 import ecom.entity.User;
 import ecom.exception.ResourceNotFoundException;
+import ecom.interfaces.StockServiceInterface;
 import ecom.repository.CartItemRepository;
 import ecom.repository.ProductRepository;
 import ecom.service.CartProductService;
@@ -32,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class CartProductServiceUnitTest {
   @Mock private CartItemRepository cartItemRepository;
   @Mock private ProductRepository productRepository;
+  @Mock private StockServiceInterface stockService;
   @Spy @InjectMocks private CartProductService cartProductService;
 
   private User user;
@@ -66,6 +68,7 @@ class CartProductServiceUnitTest {
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
           .thenReturn(Optional.empty());
+      when(stockService.getCurrentStock(product)).thenReturn(100);
       when(cartItemRepository.save(any(CartItem.class))).thenReturn(cartItem);
 
       // Act
@@ -87,6 +90,7 @@ class CartProductServiceUnitTest {
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(cartItemRepository.findByCartIdAndProductId(cart.getId(), product.getId()))
           .thenReturn(Optional.of(cartItem));
+      when(stockService.getCurrentStock(product)).thenReturn(100);
 
       // Act
       CartItemResponse response = cartProductService.addProductToCart(user, request);
