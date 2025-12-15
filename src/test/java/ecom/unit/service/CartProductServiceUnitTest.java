@@ -267,5 +267,19 @@ class CartProductServiceUnitTest {
       assertTrue(responses.isEmpty());
       verify(cartItemRepository).findByCartId(cart.getId());
     }
+
+    @Test
+    void should_return_empty_list_when_cart_items_are_null() {
+      // Arrange
+      when(cartItemRepository.findByCartId(cart.getId())).thenReturn(null);
+
+      // Act
+      List<CartItemResponse> responses = cartProductService.getCartProducts(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertTrue(responses.isEmpty());
+      verify(cartItemRepository).findByCartId(cart.getId());
+    }
   }
 }
