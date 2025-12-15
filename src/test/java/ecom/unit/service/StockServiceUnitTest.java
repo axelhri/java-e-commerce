@@ -68,5 +68,20 @@ class StockServiceUnitTest {
       // Assert
       assertEquals(0, currentStock);
     }
+
+    @Test
+    void should_return_in_quantity_when_no_out_movements() {
+      // Arrange
+      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.IN))
+          .thenReturn(Optional.of(50));
+      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.OUT))
+          .thenReturn(Optional.empty());
+
+      // Act
+      Integer currentStock = stockService.getCurrentStock(product);
+
+      // Assert
+      assertEquals(50, currentStock);
+    }
   }
 }
