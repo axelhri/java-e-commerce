@@ -37,7 +37,6 @@ class CartServiceUnitTest {
   private User user;
   private Cart cart;
   private Product product;
-  private ManageCartRequest request;
   private CartItem cartItem;
 
   @BeforeEach
