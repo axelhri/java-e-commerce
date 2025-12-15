@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -73,5 +74,12 @@ public class CartService implements CartServiceInterface {
   @Override
   public Cart getUserCart(User user) {
     return user.getCart();
+  }
+
+  @Override
+  @Transactional
+  public void clearCart(User user) {
+    Cart cart = getUserCart(user);
+    cartItemRepository.deleteByCartId(cart.getId());
   }
 }

@@ -39,4 +39,10 @@ public class CartController {
             "Cart products fetched successfully",
             cartProducts));
   }
+
+  @DeleteMapping
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void clearCart(@AuthenticationPrincipal User user) {
+    cartService.clearCart(user);
+  }
 }

@@ -14,4 +14,6 @@ public interface CartServiceInterface {
   List<CartItemResponse> getCartProducts(User user);
 
   Cart getUserCart(User user);
+
+  void clearCart(User user);
 }
