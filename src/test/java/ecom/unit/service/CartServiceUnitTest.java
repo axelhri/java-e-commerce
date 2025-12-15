@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import ecom.dto.CartItemResponse;
-import ecom.dto.ManageCartRequest;
 import ecom.entity.Cart;
 import ecom.entity.CartItem;
 import ecom.entity.Product;
