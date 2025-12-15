@@ -80,6 +80,7 @@ class OrderServiceUnitTest {
       when(cartItemRepository.findAllById(orderRequest.productIds())).thenReturn(List.of(cartItem));
       when(orderItemMapper.fromCartItem(eq(cartItem), any(Order.class))).thenReturn(orderItem);
       when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
+      when(stockService.getCurrentStock(product)).thenReturn(100);
 
       // Act
       OrderResponse response = orderService.initiateOrder(user, orderRequest);
