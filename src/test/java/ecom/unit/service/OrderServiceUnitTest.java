@@ -279,4 +279,21 @@ class OrderServiceUnitTest {
       assertTrue(responses.isEmpty());
     }
   }
+
+  @Nested
+  class GetOrderById {
+    @Test
+    void should_throw_exception_if_order_not_found() {
+      // Arrange
+      UUID randomId = UUID.randomUUID();
+      when(orderRepository.findById(randomId)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> orderService.getOrderById(user, randomId));
+
+      assertEquals("Issue encountered while searching for this order.", exception.getMessage());
+    }
+  }
 }
