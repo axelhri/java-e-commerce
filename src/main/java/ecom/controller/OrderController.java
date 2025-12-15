@@ -8,6 +8,7 @@ import ecom.entity.User;
 import ecom.interfaces.OrderServiceInterface;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,5 +39,14 @@ public class OrderController {
         .body(
             new ApiResponse<>(
                 Instant.now(), HttpStatus.OK.value(), "Order cancelled successfully", response));
+  }
+
+  @GetMapping
+  public ResponseEntity<ApiResponse<List<OrderResponse>>> getUserOrders(
+      @AuthenticationPrincipal User user) {
+    List<OrderResponse> orders = orderService.getUserOrders(user);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Orders fetched successfully", orders));
   }
 }
