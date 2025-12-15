@@ -295,5 +295,21 @@ class OrderServiceUnitTest {
 
       assertEquals("Issue encountered while searching for this order.", exception.getMessage());
     }
+
+    @Test
+    void should_throw_unauthorized_access_if_user_not_owner() {
+      // Arrange
+      User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
+      Order otherOrder = Order.builder().id(UUID.randomUUID()).user(otherUser).build();
+
+      when(orderRepository.findById(otherOrder.getId())).thenReturn(Optional.of(otherOrder));
+
+      // Act & Assert
+      UnauthorizedAccess exception =
+          assertThrows(
+              UnauthorizedAccess.class, () -> orderService.getOrderById(user, otherOrder.getId()));
+
+      assertEquals("You do not have the rights to perform this action.", exception.getMessage());
+    }
   }
 }
