@@ -51,7 +51,6 @@ class CartServiceUnitTest {
             .build();
     cart = Cart.builder().id(UUID.randomUUID()).user(user).build();
     user.setCart(cart);
-    request = new ManageCartRequest(product.getId(), 1);
     cartItem = CartItem.builder().product(product).cart(cart).quantity(1).build();
   }
 
