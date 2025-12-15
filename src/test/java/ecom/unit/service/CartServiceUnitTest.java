@@ -234,4 +234,16 @@ class CartServiceUnitTest {
       verify(cartItemRepository).findByCartId(cart.getId());
     }
   }
+
+  @Nested
+  class ClearCart {
+    @Test
+    void should_clear_cart_successfully() {
+      // Act
+      cartService.clearCart(user);
+
+      // Assert
+      verify(cartItemRepository, times(1)).deleteByCartId(cart.getId());
+    }
+  }
 }
