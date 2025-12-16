@@ -323,4 +323,35 @@ class OrderServiceUnitTest {
       assertEquals("You do not have the rights to perform this action.", exception.getMessage());
     }
   }
+
+  @Nested
+  class GetUserCancelledOrders {
+    @Test
+    void should_return_user_cancelled_orders_successfully() {
+      // Arrange
+      Order cancelledOrder =
+          Order.builder()
+              .id(UUID.randomUUID())
+              .user(user)
+              .status(OrderStatus.CANCELLED)
+              .orderItems(new ArrayList<>(List.of(orderItem)))
+              .build();
+      orderItem.setOrder(cancelledOrder);
+
+      when(orderRepository.findByUserAndStatus(user, OrderStatus.CANCELLED))
+          .thenReturn(List.of(cancelledOrder));
+
+      when(orderMapper.toOrderResponse(any(), any()))
+          .thenReturn(new OrderResponse(Set.of(product.getId()), new BigDecimal("75.00")));
+
+      // Act
+      List<OrderResponse> responses = orderService.getUserCancelledOrders(user);
+
+      // Assert
+      assertNotNull(responses);
+      assertEquals(1, responses.size());
+      assertEquals(new BigDecimal("75.00"), responses.get(0).price());
+      verify(orderRepository).findByUserAndStatus(user, OrderStatus.CANCELLED);
+    }
+  }
 }
