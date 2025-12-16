@@ -194,7 +194,7 @@ class ProductControllerUnitTest {
           .perform(get("/api/v1/products").param("page", "0").param("size", "10"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.content").isArray())
-          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop")) // Correction ici
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop"))
           .andExpect(jsonPath("$.data.page").value(0))
           .andExpect(jsonPath("$.data.size").value(1));
     }
@@ -215,7 +215,20 @@ class ProductControllerUnitTest {
                   .param("size", "10"))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.content").isArray())
-          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop")); // Correction ici
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop"));
+    }
+
+    @Test
+    void should_return_empty_page_when_no_products_found() throws Exception {
+      // Arrange
+      when(productService.getAllProducts(any(), any(Pageable.class))).thenReturn(Page.empty());
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.content").isEmpty())
+          .andExpect(jsonPath("$.data.totalElements").value(0));
     }
   }
 }
