@@ -4,12 +4,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import ecom.dto.CategoryRequest;
+import ecom.dto.CategoryResponse;
 import ecom.entity.Category;
 import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.mapper.CategoryMapper;
 import ecom.repository.CategoryRepository;
 import ecom.service.CategoryService;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -103,6 +105,26 @@ public class CategoryServiceUnitTest {
               () -> categoryService.createCategory(categoryRequest));
 
       assertEquals("A category with this name already exists", exception.getMessage());
+    }
+  }
+
+  @Nested
+  class GetAllCategories {
+    @Test
+    void should_return_all_categories() {
+      // Arrange
+      Category category1 = Category.builder().id(UUID.randomUUID()).name("Electronics").build();
+      Category category2 = Category.builder().id(UUID.randomUUID()).name("Books").build();
+      when(categoryRepository.findAll()).thenReturn(List.of(category1, category2));
+
+      // Act
+      List<CategoryResponse> responses = categoryService.getAllCategories();
+
+      // Assert
+      assertNotNull(responses);
+      assertEquals(2, responses.size());
+      assertEquals("Electronics", responses.get(0).name());
+      assertEquals("Books", responses.get(1).name());
     }
   }
 }
