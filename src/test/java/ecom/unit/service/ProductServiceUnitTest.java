@@ -176,4 +176,26 @@ class ProductServiceUnitTest {
       verify(productRepository, times(1)).findByCategoryId(categoryId, pageable);
     }
   }
+
+  @Nested
+  class GetProductById {
+    @Test
+    void should_return_product_when_found() {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      Product foundProduct =
+          Product.builder().id(productId).name("Found Product").price(100).build();
+      when(productRepository.findById(productId)).thenReturn(Optional.of(foundProduct));
+      when(stockService.getCurrentStock(foundProduct)).thenReturn(20);
+
+      // Act
+      ProductResponse result = productService.getProductById(productId);
+
+      // Assert
+      assertNotNull(result);
+      assertEquals(productId, result.id());
+      assertEquals("Found Product", result.name());
+      assertEquals(20, result.stock());
+    }
+  }
 }
