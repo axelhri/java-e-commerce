@@ -10,6 +10,7 @@ import ecom.controller.ProductController;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.entity.Product;
+import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.ProductServiceInterface;
 import ecom.service.JwtService;
 import java.util.List;
@@ -269,6 +270,17 @@ class ProductControllerUnitTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.product_id").value(productId.toString()))
           .andExpect(jsonPath("$.data.product_name").value("Found Product"));
+    }
+
+    @Test
+    void should_return_not_found_when_product_does_not_exist() throws Exception {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      when(productService.getProductById(productId))
+          .thenThrow(new ResourceNotFoundException("Product not found"));
+
+      // Act & Assert
+      mockMvc.perform(get("/api/v1/products/{id}", productId)).andExpect(status().isNotFound());
     }
   }
 }
