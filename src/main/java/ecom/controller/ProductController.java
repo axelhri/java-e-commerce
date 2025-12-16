@@ -49,4 +49,12 @@ public class ProductController {
         new ApiResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Products fetched successfully", response));
   }
+
+  @GetMapping("/{productId}")
+  public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable UUID productId) {
+    ProductResponse product = productService.getProductById(productId);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Product fetched successfully", product));
+  }
 }
