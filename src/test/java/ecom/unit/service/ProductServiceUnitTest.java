@@ -43,9 +43,11 @@ class ProductServiceUnitTest {
   private ProductRequest productRequest;
   private Category category;
   private Vendor vendor;
+  private UUID categoryId;
 
   @BeforeEach
   void setUp() {
+    categoryId = UUID.randomUUID();
     productRequest =
         new ProductRequest(
             "Black trench coat",
@@ -154,6 +156,24 @@ class ProductServiceUnitTest {
       assertEquals(50, result.getContent().get(0).stock());
       verify(productRepository, times(1)).findAll(pageable);
       verify(productRepository, never()).findByCategoryId(any(), any());
+    }
+
+    @Test
+    void should_get_products_by_category_when_category_is_not_null() {
+      // Arrange
+      Pageable pageable = Pageable.unpaged();
+      Page<Product> productPage = new PageImpl<>(List.of(product));
+      when(productRepository.findByCategoryId(categoryId, pageable)).thenReturn(productPage);
+      when(stockService.getCurrentStock(product)).thenReturn(50);
+
+      // Act
+      Page<ProductResponse> result = productService.getAllProducts(categoryId, pageable);
+
+      // Assert
+      assertEquals(1, result.getTotalElements());
+      assertEquals(50, result.getContent().get(0).stock());
+      verify(productRepository, never()).findAll(pageable);
+      verify(productRepository, times(1)).findByCategoryId(categoryId, pageable);
     }
   }
 }
