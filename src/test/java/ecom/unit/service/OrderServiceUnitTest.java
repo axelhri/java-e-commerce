@@ -13,6 +13,7 @@ import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.OrderItemMapper;
+import ecom.mapper.OrderMapper;
 import ecom.model.OrderStatus;
 import ecom.repository.CartItemRepository;
 import ecom.repository.OrderRepository;
@@ -33,6 +34,7 @@ class OrderServiceUnitTest {
   @Mock private OrderRepository orderRepository;
   @Mock private OrderItemMapper orderItemMapper;
   @Mock private StockServiceInterface stockService;
+  @Mock private OrderMapper orderMapper;
   @InjectMocks private OrderService orderService;
 
   private OrderRequest orderRequest;
@@ -81,6 +83,8 @@ class OrderServiceUnitTest {
       when(orderItemMapper.fromCartItem(eq(cartItem), any(Order.class))).thenReturn(orderItem);
       when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
       when(stockService.getCurrentStock(product)).thenReturn(100);
+      when(orderMapper.toOrderResponse(any(), any()))
+          .thenReturn(new OrderResponse(Set.of(product.getId()), new BigDecimal("75.00")));
 
       // Act
       OrderResponse response = orderService.initiateOrder(user, orderRequest);
@@ -180,6 +184,8 @@ class OrderServiceUnitTest {
       when(orderRepository.findById(cancelRequest.orderId()))
           .thenReturn(Optional.of(existingOrder));
       when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
+      when(orderMapper.toOrderResponse(any(), any()))
+          .thenReturn(new OrderResponse(Set.of(product.getId()), new BigDecimal("75.00")));
 
       // Act
       OrderResponse response = orderService.cancelOrder(user, cancelRequest);
@@ -250,6 +256,10 @@ class OrderServiceUnitTest {
 
       List<Order> userOrders = List.of(order, order2);
       when(orderRepository.findByUser(user)).thenReturn(userOrders);
+      when(orderMapper.toOrderResponse(any(), any()))
+          .thenReturn(
+              new OrderResponse(Set.of(product.getId()), new BigDecimal("15.00")),
+              new OrderResponse(Set.of(product2.getId()), new BigDecimal("10.00")));
 
       // Act
       List<OrderResponse> responses = orderService.getUserOrders(user);
