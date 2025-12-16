@@ -202,4 +202,18 @@ class OrderControllerUnitTest {
           .andExpect(jsonPath("$.data[0].order_price").value(50.00));
     }
   }
+
+  @Test
+  void should_get_user_cancelled_orders_successfully() throws Exception {
+    // Arrange
+    List<OrderResponse> cancelledOrders = List.of(orderResponse);
+    when(orderService.getUserCancelledOrders(any())).thenReturn(cancelledOrders);
+
+    // Act & Assert
+    mockMvc
+        .perform(get("/api/v1/orders/cancelled"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data").isArray())
+        .andExpect(jsonPath("$.data[0].order_price").value(50.00));
+  }
 }
