@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import ecom.dto.ProductRequest;
+import ecom.dto.ProductResponse;
 import ecom.entity.Category;
 import ecom.entity.Product;
 import ecom.entity.Vendor;
@@ -14,6 +15,7 @@ import ecom.repository.CategoryRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import ecom.service.ProductService;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceUnitTest {
@@ -38,9 +43,11 @@ class ProductServiceUnitTest {
   private ProductRequest productRequest;
   private Category category;
   private Vendor vendor;
+  private UUID categoryId;
 
   @BeforeEach
   void setUp() {
+    categoryId = UUID.randomUUID();
     productRequest =
         new ProductRequest(
             "Black trench coat",
@@ -128,6 +135,45 @@ class ProductServiceUnitTest {
       verify(productMapper).productToEntity(productRequest);
 
       verify(productRepository, never()).save(any());
+    }
+  }
+
+  @Nested
+  class GetAllProducts {
+    @Test
+    void should_get_all_products_when_category_is_null() {
+      // Arrange
+      Pageable pageable = Pageable.unpaged();
+      Page<Product> productPage = new PageImpl<>(List.of(product));
+      when(productRepository.findAll(pageable)).thenReturn(productPage);
+      when(stockService.getCurrentStock(product)).thenReturn(50);
+
+      // Act
+      Page<ProductResponse> result = productService.getAllProducts(null, pageable);
+
+      // Assert
+      assertEquals(1, result.getTotalElements());
+      assertEquals(50, result.getContent().get(0).stock());
+      verify(productRepository, times(1)).findAll(pageable);
+      verify(productRepository, never()).findByCategoryId(any(), any());
+    }
+
+    @Test
+    void should_get_products_by_category_when_category_is_not_null() {
+      // Arrange
+      Pageable pageable = Pageable.unpaged();
+      Page<Product> productPage = new PageImpl<>(List.of(product));
+      when(productRepository.findByCategoryId(categoryId, pageable)).thenReturn(productPage);
+      when(stockService.getCurrentStock(product)).thenReturn(50);
+
+      // Act
+      Page<ProductResponse> result = productService.getAllProducts(categoryId, pageable);
+
+      // Assert
+      assertEquals(1, result.getTotalElements());
+      assertEquals(50, result.getContent().get(0).stock());
+      verify(productRepository, never()).findAll(pageable);
+      verify(productRepository, times(1)).findByCategoryId(categoryId, pageable);
     }
   }
 }

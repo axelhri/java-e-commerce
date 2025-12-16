@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,6 +22,16 @@ public class GlobalExceptionHandler {
         .getFieldErrors()
         .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
     return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    assert ex.getRequiredType() != null;
+    String message =
+        String.format(
+            "The parameter '%s' of value '%s' could not be converted to type '%s'",
+            ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName());
+    return buildErrorResponse(message, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(ResourceAlreadyExistsException.class)

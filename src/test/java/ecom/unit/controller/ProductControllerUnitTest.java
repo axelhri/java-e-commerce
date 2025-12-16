@@ -8,9 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ecom.config.JwtAuthenticationFilter;
 import ecom.controller.ProductController;
 import ecom.dto.ProductRequest;
+import ecom.dto.ProductResponse;
 import ecom.entity.Product;
 import ecom.interfaces.ProductServiceInterface;
 import ecom.service.JwtService;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -18,6 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,6 +42,7 @@ class ProductControllerUnitTest {
   @Autowired private ObjectMapper objectMapper;
 
   private ProductRequest productRequest;
+  private ProductResponse productResponse;
   private Product product;
   private UUID categoryId = UUID.randomUUID();
   private UUID vendorId = UUID.randomUUID();
@@ -57,6 +63,8 @@ class ProductControllerUnitTest {
             .price(productRequest.price())
             .description(productRequest.description())
             .build();
+    productResponse =
+        new ProductResponse(UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100);
   }
 
   @Nested
@@ -170,6 +178,78 @@ class ProductControllerUnitTest {
           .andExpect(jsonPath("$.category").value("Category is required."));
 
       verify(productService, never()).createProduct(any(ProductRequest.class));
+    }
+  }
+
+  @Nested
+  class getAllProducts {
+    @Test
+    void should_get_all_products_paginated() throws Exception {
+      // Arrange
+      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      when(productService.getAllProducts(eq(null), any(Pageable.class))).thenReturn(page);
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products").param("page", "0").param("size", "10"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.content").isArray())
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop"))
+          .andExpect(jsonPath("$.data.page").value(0))
+          .andExpect(jsonPath("$.data.size").value(1));
+    }
+
+    @Test
+    void should_get_products_by_category_paginated() throws Exception {
+      // Arrange
+      UUID categoryId = UUID.randomUUID();
+      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      when(productService.getAllProducts(eq(categoryId), any(Pageable.class))).thenReturn(page);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              get("/api/v1/products")
+                  .param("categoryId", categoryId.toString())
+                  .param("page", "0")
+                  .param("size", "10"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.content").isArray())
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop"));
+    }
+
+    @Test
+    void should_return_empty_page_when_no_products_found() throws Exception {
+      // Arrange
+      when(productService.getAllProducts(any(), any(Pageable.class))).thenReturn(Page.empty());
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.content").isEmpty())
+          .andExpect(jsonPath("$.data.totalElements").value(0));
+    }
+
+    @Test
+    void should_use_default_pagination_when_params_are_missing() throws Exception {
+      // Arrange
+      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      when(productService.getAllProducts(eq(null), any(Pageable.class))).thenReturn(page);
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.content").isArray());
+    }
+
+    @Test
+    void should_return_bad_request_when_category_id_is_invalid() throws Exception {
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products").param("categoryId", "invalid-uuid-format"))
+          .andExpect(status().isBadRequest());
     }
   }
 }
