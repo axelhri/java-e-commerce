@@ -197,5 +197,19 @@ class ProductServiceUnitTest {
       assertEquals("Found Product", result.name());
       assertEquals(20, result.stock());
     }
+
+    @Test
+    void should_throw_exception_when_product_not_found() {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      when(productRepository.findById(productId)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> productService.getProductById(productId));
+
+      assertEquals("Product not found.", exception.getMessage());
+    }
   }
 }
