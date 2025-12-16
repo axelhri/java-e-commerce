@@ -198,5 +198,24 @@ class ProductControllerUnitTest {
           .andExpect(jsonPath("$.data.page").value(0))
           .andExpect(jsonPath("$.data.size").value(1));
     }
+
+    @Test
+    void should_get_products_by_category_paginated() throws Exception {
+      // Arrange
+      UUID categoryId = UUID.randomUUID();
+      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      when(productService.getAllProducts(eq(categoryId), any(Pageable.class))).thenReturn(page);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              get("/api/v1/products")
+                  .param("categoryId", categoryId.toString())
+                  .param("page", "0")
+                  .param("size", "10"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.content").isArray())
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop")); // Correction ici
+    }
   }
 }
