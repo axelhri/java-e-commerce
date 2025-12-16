@@ -230,5 +230,18 @@ class ProductControllerUnitTest {
           .andExpect(jsonPath("$.data.content").isEmpty())
           .andExpect(jsonPath("$.data.totalElements").value(0));
     }
+
+    @Test
+    void should_use_default_pagination_when_params_are_missing() throws Exception {
+      // Arrange
+      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      when(productService.getAllProducts(eq(null), any(Pageable.class))).thenReturn(page);
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.content").isArray());
+    }
   }
 }
