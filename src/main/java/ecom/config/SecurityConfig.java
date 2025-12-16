@@ -35,10 +35,10 @@ public class SecurityConfig {
                     .hasRole(Role.ADMIN.name())
                     .requestMatchers("/api/v1/categories")
                     .hasRole(Role.ADMIN.name())
-                    .requestMatchers(HttpMethod.GET, "/api/v1/products")
-                    .permitAll()
-                    .requestMatchers("/api/v1/products")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/products")
                     .hasRole(Role.ADMIN.name())
+                    .requestMatchers(HttpMethod.GET, "/api/v1/products/**")
+                    .permitAll()
                     .anyRequest()
                     .authenticated())
         .sessionManagement(

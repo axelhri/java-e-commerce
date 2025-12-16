@@ -10,6 +10,7 @@ import ecom.controller.ProductController;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.entity.Product;
+import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.ProductServiceInterface;
 import ecom.service.JwtService;
 import java.util.List;
@@ -202,7 +203,6 @@ class ProductControllerUnitTest {
     @Test
     void should_get_products_by_category_paginated() throws Exception {
       // Arrange
-      UUID categoryId = UUID.randomUUID();
       Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
       when(productService.getAllProducts(eq(categoryId), any(Pageable.class))).thenReturn(page);
 
@@ -250,6 +250,36 @@ class ProductControllerUnitTest {
       mockMvc
           .perform(get("/api/v1/products").param("categoryId", "invalid-uuid-format"))
           .andExpect(status().isBadRequest());
+    }
+  }
+
+  @Nested
+  class GetProductById {
+    @Test
+    void should_return_product_when_found() throws Exception {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      ProductResponse foundProduct =
+          new ProductResponse(productId, "Found Product", 100, "Desc", 10);
+      when(productService.getProductById(productId)).thenReturn(foundProduct);
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products/{id}", productId))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.product_id").value(productId.toString()))
+          .andExpect(jsonPath("$.data.product_name").value("Found Product"));
+    }
+
+    @Test
+    void should_return_not_found_when_product_does_not_exist() throws Exception {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      when(productService.getProductById(productId))
+          .thenThrow(new ResourceNotFoundException("Product not found"));
+
+      // Act & Assert
+      mockMvc.perform(get("/api/v1/products/{id}", productId)).andExpect(status().isNotFound());
     }
   }
 }

@@ -72,4 +72,19 @@ public class ProductService implements ProductServiceInterface {
                 product.getDescription(),
                 stockService.getCurrentStock(product)));
   }
+
+  @Override
+  public ProductResponse getProductById(UUID productId) {
+    Product product =
+        productRepository
+            .findById(productId)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found."));
+
+    return new ProductResponse(
+        product.getId(),
+        product.getName(),
+        product.getPrice(),
+        product.getDescription(),
+        stockService.getCurrentStock(product));
+  }
 }
