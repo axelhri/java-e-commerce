@@ -11,4 +11,6 @@ public interface ProductServiceInterface {
   Product createProduct(ProductRequest productRequest);
 
   Page<ProductResponse> getAllProducts(UUID categoryId, Pageable pageable);
+
+  ProductResponse getProductById(UUID productId);
 }
