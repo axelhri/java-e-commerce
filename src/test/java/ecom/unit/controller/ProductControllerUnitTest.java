@@ -243,5 +243,13 @@ class ProductControllerUnitTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.data.content").isArray());
     }
+
+    @Test
+    void should_return_bad_request_when_category_id_is_invalid() throws Exception {
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products").param("categoryId", "invalid-uuid-format"))
+          .andExpect(status().isBadRequest());
+    }
   }
 }
