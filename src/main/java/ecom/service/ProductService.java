@@ -1,6 +1,7 @@
 package ecom.service;
 
 import ecom.dto.ProductRequest;
+import ecom.dto.ProductResponse;
 import ecom.entity.Category;
 import ecom.entity.Product;
 import ecom.entity.Vendor;
@@ -13,7 +14,10 @@ import ecom.model.StockType;
 import ecom.repository.CategoryRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,5 +52,24 @@ public class ProductService implements ProductServiceInterface {
         savedProduct, productRequest.stock(), StockType.IN, StockReason.NEW);
 
     return savedProduct;
+  }
+
+  @Override
+  public Page<ProductResponse> getAllProducts(UUID categoryId, Pageable pageable) {
+    Page<Product> products;
+    if (categoryId != null) {
+      products = productRepository.findByCategoryId(categoryId, pageable);
+    } else {
+      products = productRepository.findAll(pageable);
+    }
+
+    return products.map(
+        product ->
+            new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getDescription(),
+                stockService.getCurrentStock(product)));
   }
 }
