@@ -15,4 +15,6 @@ public interface OrderServiceInterface {
   List<OrderResponse> getUserOrders(User user);
 
   OrderResponse getOrderById(User user, UUID orderId);
+
+  List<OrderResponse> getUserCancelledOrders(User user);
 }

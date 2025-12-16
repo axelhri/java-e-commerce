@@ -11,6 +11,7 @@ import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.OrderServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.OrderItemMapper;
+import ecom.mapper.OrderMapper;
 import ecom.model.OrderStatus;
 import ecom.model.StockReason;
 import ecom.model.StockType;
@@ -31,6 +32,7 @@ public class OrderService implements OrderServiceInterface {
   private OrderRepository orderRepository;
   private OrderItemMapper orderItemMapper;
   private StockServiceInterface stockService;
+  private OrderMapper orderMapper;
 
   @Override
   @Transactional
@@ -62,7 +64,7 @@ public class OrderService implements OrderServiceInterface {
 
     order.getOrderItems().addAll(orderItems);
 
-    orderRepository.save(order);
+    Order savedOrder = orderRepository.save(order);
 
     for (OrderItem orderItem : orderItems) {
       stockService.createStockMovement(
@@ -71,11 +73,7 @@ public class OrderService implements OrderServiceInterface {
 
     cartItemRepository.deleteAll(cartItems);
 
-    BigDecimal orderTotal = getOrderTotalAmount(orderItems);
-
-    Set<UUID> productIds = extractProductIds(orderItems);
-
-    return new OrderResponse(productIds, orderTotal);
+    return buildOrderResponse(savedOrder);
   }
 
   @Override
@@ -95,30 +93,20 @@ public class OrderService implements OrderServiceInterface {
 
     order.setStatus(OrderStatus.CANCELLED);
 
-    orderRepository.save(order);
+    Order savedOrder = orderRepository.save(order);
 
     for (OrderItem orderItem : order.getOrderItems()) {
       stockService.createStockMovement(
           orderItem.getProduct(), orderItem.getQuantity(), StockType.IN, StockReason.RETURN);
     }
 
-    BigDecimal orderTotal = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
-
-    Set<UUID> productIds = extractProductIds(order.getOrderItems());
-
-    return new OrderResponse(productIds, orderTotal);
+    return buildOrderResponse(savedOrder);
   }
 
   @Override
   public List<OrderResponse> getUserOrders(User user) {
     List<Order> orders = orderRepository.findByUser(user);
-    return orders.stream()
-        .map(
-            order ->
-                new OrderResponse(
-                    extractProductIds(order.getOrderItems()),
-                    getOrderTotalAmount(new HashSet<>(order.getOrderItems()))))
-        .collect(Collectors.toList());
+    return orders.stream().map(this::buildOrderResponse).collect(Collectors.toList());
   }
 
   @Override
@@ -135,9 +123,19 @@ public class OrderService implements OrderServiceInterface {
       throw new UnauthorizedAccess("You do not have the rights to perform this action.");
     }
 
-    return new OrderResponse(
-        extractProductIds(order.getOrderItems()),
-        getOrderTotalAmount(new HashSet<>(order.getOrderItems())));
+    return buildOrderResponse(order);
+  }
+
+  @Override
+  public List<OrderResponse> getUserCancelledOrders(User user) {
+    List<Order> orders = orderRepository.findByUserAndStatus(user, OrderStatus.CANCELLED);
+    return orders.stream().map(this::buildOrderResponse).collect(Collectors.toList());
+  }
+
+  private OrderResponse buildOrderResponse(Order order) {
+    BigDecimal total = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
+    Set<UUID> ids = extractProductIds(order.getOrderItems());
+    return orderMapper.toOrderResponse(ids, total);
   }
 
   private void validateCartItemOwnership(User user, CartItem cartItem) {

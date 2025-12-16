@@ -59,4 +59,13 @@ public class OrderController {
         new ApiResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Order fetched successfully", order));
   }
+
+  @GetMapping("/cancelled")
+  public ResponseEntity<ApiResponse<List<OrderResponse>>> getUserCancelledOrders(
+      @AuthenticationPrincipal User user) {
+    List<OrderResponse> orders = orderService.getUserCancelledOrders(user);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Cancelled orders fetched successfully", orders));
+  }
 }
