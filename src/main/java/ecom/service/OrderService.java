@@ -140,6 +140,18 @@ public class OrderService implements OrderServiceInterface {
         getOrderTotalAmount(new HashSet<>(order.getOrderItems())));
   }
 
+  @Override
+  public List<OrderResponse> getUserCancelledOrders(User user) {
+    List<Order> orders = orderRepository.findByUserAndStatus(user, OrderStatus.CANCELLED);
+    return orders.stream()
+        .map(
+            order ->
+                new OrderResponse(
+                    extractProductIds(order.getOrderItems()),
+                    getOrderTotalAmount(new HashSet<>(order.getOrderItems()))))
+        .collect(Collectors.toList());
+  }
+
   private void validateCartItemOwnership(User user, CartItem cartItem) {
     if (!cartItem.getCart().getUser().getId().equals(user.getId())) {
       throw new ResourceNotFoundException("Product not found in cart.");
