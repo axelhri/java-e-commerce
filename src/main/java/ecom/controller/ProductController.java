@@ -1,6 +1,7 @@
 package ecom.controller;
 
 import ecom.dto.ApiResponse;
+import ecom.dto.PagedResponse;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.interfaces.ProductServiceInterface;
@@ -32,11 +33,20 @@ public class ProductController {
   }
 
   @GetMapping
-  public ResponseEntity<ApiResponse<Page<ProductResponse>>> getAllProducts(
+  public ResponseEntity<ApiResponse<PagedResponse<ProductResponse>>> getAllProducts(
       @RequestParam(required = false) UUID categoryId, Pageable pageable) {
-    Page<ProductResponse> products = productService.getAllProducts(categoryId, pageable);
+    Page<ProductResponse> page = productService.getAllProducts(categoryId, pageable);
+    PagedResponse<ProductResponse> response =
+        new PagedResponse<>(
+            page.getContent(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.isLast());
+
     return ResponseEntity.ok(
         new ApiResponse<>(
-            Instant.now(), HttpStatus.OK.value(), "Products fetched successfully", products));
+            Instant.now(), HttpStatus.OK.value(), "Products fetched successfully", response));
   }
 }
