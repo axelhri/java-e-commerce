@@ -26,11 +26,12 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
   public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-    assert ex.getRequiredType() != null;
+    String requiredType =
+        ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
     String message =
         String.format(
             "The parameter '%s' of value '%s' could not be converted to type '%s'",
-            ex.getName(), ex.getValue(), ex.getRequiredType().getSimpleName());
+            ex.getName(), ex.getValue(), requiredType);
     return buildErrorResponse(message, HttpStatus.BAD_REQUEST);
   }
 

@@ -203,7 +203,6 @@ class ProductControllerUnitTest {
     @Test
     void should_get_products_by_category_paginated() throws Exception {
       // Arrange
-      UUID categoryId = UUID.randomUUID();
       Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
       when(productService.getAllProducts(eq(categoryId), any(Pageable.class))).thenReturn(page);
 
