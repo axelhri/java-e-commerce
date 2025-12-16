@@ -252,4 +252,23 @@ class ProductControllerUnitTest {
           .andExpect(status().isBadRequest());
     }
   }
+
+  @Nested
+  class GetProductById {
+    @Test
+    void should_return_product_when_found() throws Exception {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      ProductResponse foundProduct =
+          new ProductResponse(productId, "Found Product", 100, "Desc", 10);
+      when(productService.getProductById(productId)).thenReturn(foundProduct);
+
+      // Act & Assert
+      mockMvc
+          .perform(get("/api/v1/products/{id}", productId))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.product_id").value(productId.toString()))
+          .andExpect(jsonPath("$.data.product_name").value("Found Product"));
+    }
+  }
 }
