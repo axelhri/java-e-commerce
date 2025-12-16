@@ -1,12 +1,14 @@
 package ecom.service;
 
 import ecom.dto.CategoryRequest;
+import ecom.dto.CategoryResponse;
 import ecom.entity.Category;
 import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.CategoryServiceInterface;
 import ecom.mapper.CategoryMapper;
 import ecom.repository.CategoryRepository;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
@@ -42,5 +44,12 @@ public class CategoryService implements CategoryServiceInterface {
     } catch (DataIntegrityViolationException e) {
       throw new ResourceAlreadyExistsException("A category with this name already exists");
     }
+  }
+
+  @Override
+  public List<CategoryResponse> getAllCategories() {
+    return categoryRepository.findAll().stream()
+        .map(category -> new CategoryResponse(category.getId(), category.getName()))
+        .collect(Collectors.toList());
   }
 }

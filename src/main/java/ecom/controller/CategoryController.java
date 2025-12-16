@@ -2,16 +2,15 @@ package ecom.controller;
 
 import ecom.dto.ApiResponse;
 import ecom.dto.CategoryRequest;
+import ecom.dto.CategoryResponse;
 import ecom.interfaces.CategoryServiceInterface;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
@@ -27,5 +26,13 @@ public class CategoryController {
         .body(
             new ApiResponse<>(
                 Instant.now(), HttpStatus.CREATED.value(), "Category created successfully", dto));
+  }
+
+  @GetMapping
+  public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories() {
+    List<CategoryResponse> categories = categoryService.getAllCategories();
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Categories fetched successfully", categories));
   }
 }
