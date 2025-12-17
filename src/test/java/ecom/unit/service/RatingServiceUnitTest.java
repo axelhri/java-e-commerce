@@ -8,9 +8,7 @@ import ecom.dto.RatingResponse;
 import ecom.entity.Product;
 import ecom.entity.ProductRating;
 import ecom.entity.User;
-import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
-import ecom.exception.UnauthorizedAccess;
 import ecom.model.OrderStatus;
 import ecom.repository.OrderRepository;
 import ecom.repository.ProductRatingRepository;
@@ -73,6 +71,21 @@ class RatingServiceUnitTest {
       assertEquals(product.getId(), response.productId());
       assertEquals(5, response.ratingStars());
       verify(productRatingRepository).save(any(ProductRating.class));
+    }
+
+    @Test
+    void should_throw_exception_if_product_not_found() {
+      // Arrange
+      when(productRepository.findById(product.getId())).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> ratingService.sendProductRating(user, ratingRequest));
+
+      assertEquals("Product not found", exception.getMessage());
+      verify(productRatingRepository, never()).save(any());
     }
   }
 }
