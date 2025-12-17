@@ -164,5 +164,18 @@ class RatingServiceUnitTest {
       // Assert
       assertEquals(4.5, averageRating);
     }
+
+    @Test
+    void should_return_zero_when_no_ratings_exist() {
+      // Arrange
+      UUID vendorId = UUID.randomUUID();
+      when(productRatingRepository.getAverageRatingByVendorId(vendorId)).thenReturn(null);
+
+      // Act
+      Double averageRating = ratingService.getVendorRating(vendorId);
+
+      // Assert
+      assertEquals(0.0, averageRating);
+    }
   }
 }
