@@ -5,6 +5,7 @@ import ecom.entity.User;
 import ecom.interfaces.RatingServiceInterface;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,5 +29,14 @@ public class RatingController {
                 HttpStatus.CREATED.value(),
                 "Product rating created successfully",
                 response));
+  }
+
+  @GetMapping("/vendor/{id}")
+  public ResponseEntity<ApiResponse<VendorRatingResponse>> getVendorRating(@PathVariable UUID id) {
+    Double averageRating = ratingService.getVendorRating(id);
+    VendorRatingResponse response = new VendorRatingResponse(id, averageRating);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Vendor rating fetched successfully", response));
   }
 }

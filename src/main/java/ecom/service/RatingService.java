@@ -15,6 +15,7 @@ import ecom.repository.OrderRepository;
 import ecom.repository.ProductRatingRepository;
 import ecom.repository.ProductRepository;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class RatingService implements RatingServiceInterface {
   private final ProductRatingRepository productRatingRepository;
   private final OrderRepository orderRepository;
 
+  @Override
   @Transactional
   public RatingResponse sendProductRating(User user, RatingRequest request) {
     Product product =
@@ -58,5 +60,11 @@ public class RatingService implements RatingServiceInterface {
         productRating.getId(),
         productRating.getProduct().getId(),
         productRating.getRatingEnum().getRating());
+  }
+
+  @Override
+  public Double getVendorRating(UUID vendorId) {
+    return Optional.ofNullable(productRatingRepository.getAverageRatingByVendorId(vendorId))
+        .orElse(0.0);
   }
 }
