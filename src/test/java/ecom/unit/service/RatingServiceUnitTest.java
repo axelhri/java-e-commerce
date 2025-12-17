@@ -127,5 +127,26 @@ class RatingServiceUnitTest {
       assertEquals("You have already rated this product.", exception.getMessage());
       verify(productRatingRepository, never()).save(any());
     }
+
+    @Test
+    void should_throw_exception_if_rating_value_is_invalid() {
+      // Arrange
+      RatingRequest invalidRequest = new RatingRequest(product.getId(), 10); // Note invalide
+      when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+      when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
+              user, product, OrderStatus.DELIVERED))
+          .thenReturn(true);
+      when(productRatingRepository.findByUserAndProduct(user, product))
+          .thenReturn(Optional.empty());
+
+      // Act & Assert
+      IllegalArgumentException exception =
+          assertThrows(
+              IllegalArgumentException.class,
+              () -> ratingService.sendProductRating(user, invalidRequest));
+
+      assertEquals("Invalid rating value: 10", exception.getMessage());
+      verify(productRatingRepository, never()).save(any());
+    }
   }
 }
