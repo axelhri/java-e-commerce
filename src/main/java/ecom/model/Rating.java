@@ -12,4 +12,13 @@ public enum Rating {
   FIVE_STAR(5);
 
   @Getter private final Integer rating;
+
+  public static Rating fromValue(int value) {
+    for (Rating r : values()) {
+      if (r.rating == value) {
+        return r;
+      }
+    }
+    throw new IllegalArgumentException("Invalid rating value: " + value);
+  }
 }
