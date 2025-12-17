@@ -8,6 +8,7 @@ import ecom.dto.RatingResponse;
 import ecom.entity.Product;
 import ecom.entity.ProductRating;
 import ecom.entity.User;
+import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.model.OrderStatus;
@@ -104,6 +105,26 @@ class RatingServiceUnitTest {
 
       assertEquals(
           "You can only rate products you have purchased and received.", exception.getMessage());
+      verify(productRatingRepository, never()).save(any());
+    }
+
+    @Test
+    void should_throw_exception_if_user_already_rated_product() {
+      // Arrange
+      when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+      when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
+              user, product, OrderStatus.DELIVERED))
+          .thenReturn(true);
+      when(productRatingRepository.findByUserAndProduct(user, product))
+          .thenReturn(Optional.of(new ProductRating()));
+
+      // Act & Assert
+      ResourceAlreadyExistsException exception =
+          assertThrows(
+              ResourceAlreadyExistsException.class,
+              () -> ratingService.sendProductRating(user, ratingRequest));
+
+      assertEquals("You have already rated this product.", exception.getMessage());
       verify(productRatingRepository, never()).save(any());
     }
   }
