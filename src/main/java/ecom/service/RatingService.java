@@ -48,14 +48,15 @@ public class RatingService implements RatingServiceInterface {
 
     Rating ratingValue = Rating.fromValue(request.ratingStars());
 
-    ProductRating productRating =
-        ProductRating.builder().product(product).rating(ratingValue).user(user).build();
+    ProductRating productRating = ProductRating.builder().product(product).user(user).build();
+
+    productRating.setRating(ratingValue);
 
     productRatingRepository.save(productRating);
 
     return new RatingResponse(
         productRating.getId(),
         productRating.getProduct().getId(),
-        productRating.getRating().getRating());
+        productRating.getRatingEnum().getRating());
   }
 }

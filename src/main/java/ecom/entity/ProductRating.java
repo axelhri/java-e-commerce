@@ -29,11 +29,18 @@ public class ProductRating {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Enumerated(EnumType.ORDINAL)
-  @Column(nullable = false)
-  private Rating rating;
+  @Column(name = "rating", nullable = false)
+  private Integer ratingValue;
 
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
+
+  public void setRating(Rating rating) {
+    this.ratingValue = rating.getRating();
+  }
+
+  public Rating getRatingEnum() {
+    return Rating.fromValue(this.ratingValue);
+  }
 }
