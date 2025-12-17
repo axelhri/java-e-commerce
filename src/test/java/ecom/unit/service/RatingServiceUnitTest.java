@@ -9,6 +9,7 @@ import ecom.entity.Product;
 import ecom.entity.ProductRating;
 import ecom.entity.User;
 import ecom.exception.ResourceNotFoundException;
+import ecom.exception.UnauthorizedAccess;
 import ecom.model.OrderStatus;
 import ecom.repository.OrderRepository;
 import ecom.repository.ProductRatingRepository;
@@ -85,6 +86,24 @@ class RatingServiceUnitTest {
               () -> ratingService.sendProductRating(user, ratingRequest));
 
       assertEquals("Product not found", exception.getMessage());
+      verify(productRatingRepository, never()).save(any());
+    }
+
+    @Test
+    void should_throw_exception_if_user_has_not_purchased_product() {
+      // Arrange
+      when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+      when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
+              user, product, OrderStatus.DELIVERED))
+          .thenReturn(false);
+
+      // Act & Assert
+      UnauthorizedAccess exception =
+          assertThrows(
+              UnauthorizedAccess.class, () -> ratingService.sendProductRating(user, ratingRequest));
+
+      assertEquals(
+          "You can only rate products you have purchased and received.", exception.getMessage());
       verify(productRatingRepository, never()).save(any());
     }
   }
