@@ -17,6 +17,8 @@ import ecom.repository.ProductRepository;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -66,5 +68,14 @@ public class RatingService implements RatingServiceInterface {
   public Double getVendorRating(UUID vendorId) {
     return Optional.ofNullable(productRatingRepository.getAverageRatingByVendorId(vendorId))
         .orElse(0.0);
+  }
+
+  @Override
+  public Page<RatingResponse> getProductRatings(UUID productId, Pageable pageable) {
+    Page<ProductRating> ratings = productRatingRepository.findByProductId(productId, pageable);
+    return ratings.map(
+        rating ->
+            new RatingResponse(
+                rating.getId(), rating.getProduct().getId(), rating.getRatingEnum().getRating()));
   }
 }
