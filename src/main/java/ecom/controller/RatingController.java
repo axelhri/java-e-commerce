@@ -18,15 +18,15 @@ public class RatingController {
   private RatingServiceInterface ratingService;
 
   @PostMapping("/products")
-  public ResponseEntity<ApiResponse<RatingRequest>> sendProductRating(
+  public ResponseEntity<ApiResponse<RatingResponse>> sendProductRating(
       @AuthenticationPrincipal User user, @Valid @RequestBody RatingRequest dto) {
-    ratingService.sendProductRating(user, dto);
+    RatingResponse response = ratingService.sendProductRating(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiResponse<>(
                 Instant.now(),
                 HttpStatus.CREATED.value(),
                 "Product rating created successfully",
-                dto));
+                response));
   }
 }

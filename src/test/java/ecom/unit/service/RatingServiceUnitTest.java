@@ -131,7 +131,7 @@ class RatingServiceUnitTest {
     @Test
     void should_throw_exception_if_rating_value_is_invalid() {
       // Arrange
-      RatingRequest invalidRequest = new RatingRequest(product.getId(), 10); // Note invalide
+      RatingRequest invalidRequest = new RatingRequest(product.getId(), 10);
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
               user, product, OrderStatus.DELIVERED))
