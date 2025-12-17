@@ -149,4 +149,20 @@ class RatingServiceUnitTest {
       verify(productRatingRepository, never()).save(any());
     }
   }
+
+  @Nested
+  class GetVendorRating {
+    @Test
+    void should_return_average_rating_when_ratings_exist() {
+      // Arrange
+      UUID vendorId = UUID.randomUUID();
+      when(productRatingRepository.getAverageRatingByVendorId(vendorId)).thenReturn(4.5);
+
+      // Act
+      Double averageRating = ratingService.getVendorRating(vendorId);
+
+      // Assert
+      assertEquals(4.5, averageRating);
+    }
+  }
 }
