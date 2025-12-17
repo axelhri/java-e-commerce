@@ -2,7 +2,9 @@ package ecom.unit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,6 +77,23 @@ class RatingControllerUnitTest {
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(invalidRequest)))
           .andExpect(status().isBadRequest());
+    }
+  }
+
+  @Nested
+  class getVendorAverageRating {
+
+    @Test
+    void should_get_vendor_rating_successfully() throws Exception {
+      UUID vendorId = UUID.randomUUID();
+      Double averageRating = 4.5;
+      when(ratingService.getVendorRating(vendorId)).thenReturn(averageRating);
+
+      mockMvc
+          .perform(get("/api/v1/ratings/vendor/{id}", vendorId))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.data.vendor_id").value(vendorId.toString()))
+          .andExpect(jsonPath("$.data.average_rating").value(averageRating));
     }
   }
 }
