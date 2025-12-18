@@ -225,5 +225,22 @@ class RatingServiceUnitTest {
       assertEquals(ratingResponse, result.content().get(0));
       verify(productRatingRepository).findByProductId(productId, pageable);
     }
+
+    @Test
+    void should_throw_exception_if_product_not_found() {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      Pageable pageable = Pageable.unpaged();
+      when(productRepository.existsById(productId)).thenReturn(false);
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> ratingService.getProductRatings(productId, pageable));
+
+      assertEquals("Product not found", exception.getMessage());
+      verify(productRatingRepository, never()).findByProductId(any(), any());
+    }
   }
 }
