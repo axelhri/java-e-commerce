@@ -9,6 +9,7 @@ import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.RatingServiceInterface;
+import ecom.mapper.RatingMapper;
 import ecom.model.OrderStatus;
 import ecom.model.Rating;
 import ecom.repository.OrderRepository;
@@ -28,6 +29,7 @@ public class RatingService implements RatingServiceInterface {
   private final ProductRepository productRepository;
   private final ProductRatingRepository productRatingRepository;
   private final OrderRepository orderRepository;
+  private final RatingMapper ratingMapper;
 
   @Override
   @Transactional
@@ -39,7 +41,7 @@ public class RatingService implements RatingServiceInterface {
 
     boolean hasPurchased =
         orderRepository.existsByUserAndOrderItemsProductAndStatus(
-            user, product, OrderStatus.DELIVERED);
+            user, product, OrderStatus.PENDING);
     if (!hasPurchased) {
       throw new UnauthorizedAccess("You can only rate products you have purchased and received.");
     }
@@ -58,10 +60,7 @@ public class RatingService implements RatingServiceInterface {
 
     productRatingRepository.save(productRating);
 
-    return new RatingResponse(
-        productRating.getId(),
-        productRating.getProduct().getId(),
-        productRating.getRatingEnum().getRating());
+    return ratingMapper.productRatingToRatingResponse(productRating);
   }
 
   @Override
@@ -72,10 +71,8 @@ public class RatingService implements RatingServiceInterface {
 
   @Override
   public Page<RatingResponse> getProductRatings(UUID productId, Pageable pageable) {
-    Page<ProductRating> ratings = productRatingRepository.findByProductId(productId, pageable);
-    return ratings.map(
-        rating ->
-            new RatingResponse(
-                rating.getId(), rating.getProduct().getId(), rating.getRatingEnum().getRating()));
+    return productRatingRepository
+        .findByProductId(productId, pageable)
+        .map(ratingMapper::productRatingToRatingResponse);
   }
 }

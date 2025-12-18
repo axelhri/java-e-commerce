@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/ratings")
 public class RatingController {
-  private RatingServiceInterface ratingService;
+  private final RatingServiceInterface ratingService;
 
   @PostMapping("/products")
   public ResponseEntity<ApiResponse<RatingResponse>> sendProductRating(
