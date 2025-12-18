@@ -74,6 +74,10 @@ public class RatingService implements RatingServiceInterface {
 
   @Override
   public PagedResponse<RatingResponse> getProductRatings(UUID productId, Pageable pageable) {
+    if (!productRepository.existsById(productId)) {
+      throw new ResourceNotFoundException("Product not found");
+    }
+
     Page<RatingResponse> page =
         productRatingRepository
             .findByProductId(productId, pageable)
