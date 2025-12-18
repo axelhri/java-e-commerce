@@ -1,5 +1,6 @@
 package ecom.service;
 
+import ecom.dto.PagedResponse;
 import ecom.dto.RatingRequest;
 import ecom.dto.RatingResponse;
 import ecom.entity.Product;
@@ -9,6 +10,7 @@ import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.RatingServiceInterface;
+import ecom.mapper.PageMapper;
 import ecom.mapper.RatingMapper;
 import ecom.model.OrderStatus;
 import ecom.model.Rating;
@@ -30,6 +32,7 @@ public class RatingService implements RatingServiceInterface {
   private final ProductRatingRepository productRatingRepository;
   private final OrderRepository orderRepository;
   private final RatingMapper ratingMapper;
+  private final PageMapper pageMapper;
 
   @Override
   @Transactional
@@ -41,7 +44,7 @@ public class RatingService implements RatingServiceInterface {
 
     boolean hasPurchased =
         orderRepository.existsByUserAndOrderItemsProductAndStatus(
-            user, product, OrderStatus.PENDING);
+            user, product, OrderStatus.DELIVERED);
     if (!hasPurchased) {
       throw new UnauthorizedAccess("You can only rate products you have purchased and received.");
     }
@@ -70,9 +73,11 @@ public class RatingService implements RatingServiceInterface {
   }
 
   @Override
-  public Page<RatingResponse> getProductRatings(UUID productId, Pageable pageable) {
-    return productRatingRepository
-        .findByProductId(productId, pageable)
-        .map(ratingMapper::productRatingToRatingResponse);
+  public PagedResponse<RatingResponse> getProductRatings(UUID productId, Pageable pageable) {
+    Page<RatingResponse> page =
+        productRatingRepository
+            .findByProductId(productId, pageable)
+            .map(ratingMapper::productRatingToRatingResponse);
+    return pageMapper.toPagedResponse(page);
   }
 }

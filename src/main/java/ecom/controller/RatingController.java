@@ -3,11 +3,11 @@ package ecom.controller;
 import ecom.dto.*;
 import ecom.entity.User;
 import ecom.interfaces.RatingServiceInterface;
+import ecom.mapper.PageMapper;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/ratings")
 public class RatingController {
   private final RatingServiceInterface ratingService;
+  private final PageMapper pageMapper;
 
   @PostMapping("/products")
   public ResponseEntity<ApiResponse<RatingResponse>> sendProductRating(
@@ -45,21 +46,10 @@ public class RatingController {
   @GetMapping("product/{id}")
   public ResponseEntity<ApiResponse<PagedResponse<RatingResponse>>> getProductRatings(
       @PathVariable UUID id, Pageable pageable) {
-    Page<RatingResponse> page = ratingService.getProductRatings(id, pageable);
-    PagedResponse<RatingResponse> response =
-        new PagedResponse<>(
-            page.getContent(),
-            page.getNumber(),
-            page.getSize(),
-            page.getTotalElements(),
-            page.getTotalPages(),
-            page.isLast());
+    PagedResponse<RatingResponse> page = ratingService.getProductRatings(id, pageable);
 
     return ResponseEntity.ok(
         new ApiResponse<>(
-            Instant.now(),
-            HttpStatus.OK.value(),
-            "Product ratings fetched successfully",
-            response));
+            Instant.now(), HttpStatus.OK.value(), "Product ratings fetched successfully", page));
   }
 }
