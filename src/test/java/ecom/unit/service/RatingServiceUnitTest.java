@@ -3,6 +3,7 @@ package ecom.unit.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import ecom.dto.PagedResponse;
 import ecom.dto.RatingRequest;
 import ecom.dto.RatingResponse;
 import ecom.entity.Product;
@@ -18,6 +19,7 @@ import ecom.repository.OrderRepository;
 import ecom.repository.ProductRatingRepository;
 import ecom.repository.ProductRepository;
 import ecom.service.RatingService;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +29,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 @ExtendWith(MockitoExtension.class)
 class RatingServiceUnitTest {
@@ -190,6 +195,35 @@ class RatingServiceUnitTest {
 
       // Assert
       assertEquals(0.0, averageRating);
+    }
+  }
+
+  @Nested
+  class GetProductRatings {
+    @Test
+    void should_return_product_ratings_paginated() {
+      // Arrange
+      UUID productId = UUID.randomUUID();
+      Pageable pageable = Pageable.unpaged();
+      ProductRating rating = ProductRating.builder().id(UUID.randomUUID()).build();
+      Page<ProductRating> ratingPage = new PageImpl<>(List.of(rating));
+      RatingResponse ratingResponse = new RatingResponse(rating.getId(), productId, 5);
+      PagedResponse<RatingResponse> pagedResponse =
+          new PagedResponse<>(List.of(ratingResponse), 0, 1, 1, 1, true);
+
+      when(productRepository.existsById(productId)).thenReturn(true);
+      when(productRatingRepository.findByProductId(productId, pageable)).thenReturn(ratingPage);
+      when(ratingMapper.productRatingToRatingResponse(rating)).thenReturn(ratingResponse);
+      when(pageMapper.toPagedResponse(any(Page.class))).thenReturn(pagedResponse);
+
+      // Act
+      PagedResponse<RatingResponse> result = ratingService.getProductRatings(productId, pageable);
+
+      // Assert
+      assertNotNull(result);
+      assertEquals(1, result.content().size());
+      assertEquals(ratingResponse, result.content().get(0));
+      verify(productRatingRepository).findByProductId(productId, pageable);
     }
   }
 }
