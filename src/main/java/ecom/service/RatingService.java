@@ -1,5 +1,6 @@
 package ecom.service;
 
+import ecom.dto.PagedResponse;
 import ecom.dto.RatingRequest;
 import ecom.dto.RatingResponse;
 import ecom.entity.Product;
@@ -9,6 +10,8 @@ import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
 import ecom.interfaces.RatingServiceInterface;
+import ecom.mapper.PageMapper;
+import ecom.mapper.RatingMapper;
 import ecom.model.OrderStatus;
 import ecom.model.Rating;
 import ecom.repository.OrderRepository;
@@ -17,6 +20,8 @@ import ecom.repository.ProductRepository;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +31,8 @@ public class RatingService implements RatingServiceInterface {
   private final ProductRepository productRepository;
   private final ProductRatingRepository productRatingRepository;
   private final OrderRepository orderRepository;
+  private final RatingMapper ratingMapper;
+  private final PageMapper pageMapper;
 
   @Override
   @Transactional
@@ -56,15 +63,25 @@ public class RatingService implements RatingServiceInterface {
 
     productRatingRepository.save(productRating);
 
-    return new RatingResponse(
-        productRating.getId(),
-        productRating.getProduct().getId(),
-        productRating.getRatingEnum().getRating());
+    return ratingMapper.productRatingToRatingResponse(productRating);
   }
 
   @Override
   public Double getVendorRating(UUID vendorId) {
     return Optional.ofNullable(productRatingRepository.getAverageRatingByVendorId(vendorId))
         .orElse(0.0);
+  }
+
+  @Override
+  public PagedResponse<RatingResponse> getProductRatings(UUID productId, Pageable pageable) {
+    if (!productRepository.existsById(productId)) {
+      throw new ResourceNotFoundException("Product not found");
+    }
+
+    Page<RatingResponse> page =
+        productRatingRepository
+            .findByProductId(productId, pageable)
+            .map(ratingMapper::productRatingToRatingResponse);
+    return pageMapper.toPagedResponse(page);
   }
 }

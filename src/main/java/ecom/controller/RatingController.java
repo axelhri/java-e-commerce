@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/ratings")
 public class RatingController {
-  private RatingServiceInterface ratingService;
+  private final RatingServiceInterface ratingService;
 
   @PostMapping("/products")
   public ResponseEntity<ApiResponse<RatingResponse>> sendProductRating(
@@ -38,5 +39,15 @@ public class RatingController {
     return ResponseEntity.ok(
         new ApiResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Vendor rating fetched successfully", response));
+  }
+
+  @GetMapping("product/{id}")
+  public ResponseEntity<ApiResponse<PagedResponse<RatingResponse>>> getProductRatings(
+      @PathVariable UUID id, Pageable pageable) {
+    PagedResponse<RatingResponse> page = ratingService.getProductRatings(id, pageable);
+
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Product ratings fetched successfully", page));
   }
 }
