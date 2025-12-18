@@ -3,7 +3,6 @@ package ecom.controller;
 import ecom.dto.*;
 import ecom.entity.User;
 import ecom.interfaces.RatingServiceInterface;
-import ecom.mapper.PageMapper;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.UUID;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/ratings")
 public class RatingController {
   private final RatingServiceInterface ratingService;
-  private final PageMapper pageMapper;
 
   @PostMapping("/products")
   public ResponseEntity<ApiResponse<RatingResponse>> sendProductRating(

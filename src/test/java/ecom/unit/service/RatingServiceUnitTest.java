@@ -11,6 +11,8 @@ import ecom.entity.User;
 import ecom.exception.ResourceAlreadyExistsException;
 import ecom.exception.ResourceNotFoundException;
 import ecom.exception.UnauthorizedAccess;
+import ecom.mapper.PageMapper;
+import ecom.mapper.RatingMapper;
 import ecom.model.OrderStatus;
 import ecom.repository.OrderRepository;
 import ecom.repository.ProductRatingRepository;
@@ -32,6 +34,8 @@ class RatingServiceUnitTest {
   @Mock private ProductRepository productRepository;
   @Mock private ProductRatingRepository productRatingRepository;
   @Mock private OrderRepository orderRepository;
+  @Mock private PageMapper pageMapper;
+  @Mock private RatingMapper ratingMapper;
   @InjectMocks private RatingService ratingService;
 
   private User user;
@@ -63,6 +67,16 @@ class RatingServiceUnitTest {
                 ProductRating pr = invocation.getArgument(0);
                 pr.setId(UUID.randomUUID());
                 return pr;
+              });
+
+      when(ratingMapper.productRatingToRatingResponse(any(ProductRating.class)))
+          .thenAnswer(
+              invocation -> {
+                ProductRating pr = invocation.getArgument(0);
+                return new RatingResponse(
+                    pr.getProduct().getId(),
+                    pr.getProduct().getId(),
+                    pr.getRatingEnum().getRating());
               });
 
       // Act
