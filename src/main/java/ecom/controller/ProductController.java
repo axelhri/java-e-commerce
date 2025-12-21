@@ -6,7 +6,9 @@ import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.interfaces.ProductServiceInterface;
 import jakarta.validation.Valid;
+import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
@@ -23,13 +26,18 @@ public class ProductController {
   private final ProductServiceInterface productService;
 
   @PostMapping
-  public ResponseEntity<ApiResponse<ProductRequest>> createProduct(
-      @Valid @RequestBody ProductRequest dto) {
-    productService.createProduct(dto);
+  public ResponseEntity<ApiResponse<ProductResponse>> createProduct(
+      @Valid @RequestPart("product") ProductRequest dto,
+      @RequestPart("files") List<MultipartFile> files)
+      throws IOException {
+    ProductResponse product = productService.createProduct(dto, files);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiResponse<>(
-                Instant.now(), HttpStatus.CREATED.value(), "Product created successfully", dto));
+                Instant.now(),
+                HttpStatus.CREATED.value(),
+                "Product created successfully",
+                product));
   }
 
   @GetMapping
