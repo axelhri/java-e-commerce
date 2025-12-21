@@ -2,6 +2,8 @@ package ecom.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -30,6 +32,10 @@ public class Product {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OrderBy("displayOrder ASC")
+  private List<ProductImage> images = new ArrayList<>();
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "vendor_id", nullable = false)
   private Vendor vendor;
@@ -43,4 +49,18 @@ public class Product {
   private Instant createdAt;
 
   @UpdateTimestamp @Column private Instant updatedAt;
+
+  public ProductImage getPrimaryImage() {
+    return images.isEmpty() ? null : images.get(0);
+  }
+
+  public void addImage(ProductImage image) {
+    images.add(image);
+    image.setProduct(this);
+  }
+
+  public void removeImage(ProductImage image) {
+    images.remove(image);
+    image.setProduct(null);
+  }
 }
