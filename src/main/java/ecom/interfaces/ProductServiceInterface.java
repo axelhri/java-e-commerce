@@ -2,13 +2,16 @@ package ecom.interfaces;
 
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
-import ecom.entity.Product;
+import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ProductServiceInterface {
-  Product createProduct(ProductRequest productRequest);
+  ProductResponse createProduct(ProductRequest productRequest, List<MultipartFile> images)
+      throws IOException;
 
   Page<ProductResponse> getAllProducts(UUID categoryId, Pageable pageable);
 
