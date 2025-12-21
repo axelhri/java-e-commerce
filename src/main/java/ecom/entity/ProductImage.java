@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
+@Table(name = "products_images")
 public class ProductImage extends AbstractImage {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
