@@ -1,6 +1,7 @@
 package ecom.repository;
 
 import ecom.entity.Order;
+import ecom.entity.Product;
 import ecom.entity.User;
 import ecom.model.OrderStatus;
 import java.util.List;
@@ -13,4 +14,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
   List<Order> findByUser(User user);
 
   List<Order> findByUserAndStatus(User user, OrderStatus status);
+
+  boolean existsByUserAndOrderItemsProductAndStatus(User user, Product product, OrderStatus status);
 }
