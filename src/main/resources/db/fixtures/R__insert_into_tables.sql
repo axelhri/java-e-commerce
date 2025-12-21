@@ -72,12 +72,6 @@ VALUES
     ('22222222-eeee-eeee-eeee-eeeeeeeeeeee', '11111111-dddd-dddd-dddd-dddddddddddd', '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1),
     ('33333333-eeee-eeee-eeee-eeeeeeeeeeee', '22222222-dddd-dddd-dddd-dddddddddddd', '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2);
 
--- VENDOR RATINGS
-INSERT INTO vendors_ratings (id, vendor_id, user_id, rating)
-VALUES
-    ('11111111-ffff-ffff-ffff-ffffffffffff', 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '22222222-2222-2222-2222-222222222222', 5),
-    ('22222222-ffff-ffff-ffff-ffffffffffff', 'aaaa2222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '33333333-3333-3333-3333-333333333333', 4);
-
 -- PRODUCT RATINGS
 INSERT INTO products_ratings (id, product_id, user_id, rating)
 VALUES
