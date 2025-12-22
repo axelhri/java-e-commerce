@@ -6,8 +6,10 @@ import static org.mockito.Mockito.*;
 import ecom.controller.VendorController;
 import ecom.dto.ApiResponse;
 import ecom.dto.VendorRequest;
-import ecom.entity.Vendor;
+import ecom.dto.VendorResponse;
 import ecom.interfaces.VendorServiceInterface;
+import java.io.IOException;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 public class VendorControllerUnitTest {
@@ -28,29 +31,36 @@ public class VendorControllerUnitTest {
   @Nested
   class createVendorUnitTest {
     private VendorRequest vendorRequest;
-
-    private Vendor vendor;
+    private VendorResponse vendorResponse;
+    private MultipartFile mockFile;
 
     @BeforeEach
     void setUp() {
       vendorRequest = new VendorRequest("HyperX");
-      vendor = Vendor.builder().name(vendorRequest.name()).build();
+      vendorResponse = new VendorResponse(UUID.randomUUID(), "HyperX");
+      mockFile = mock(MultipartFile.class);
     }
 
     @Test
-    void createVendorShouldReturnCode200() {
+    void createVendorShouldReturnCode201() throws IOException {
       // Arrange
-      when(vendorService.createVendor(vendorRequest)).thenReturn(vendor);
+      when(vendorService.createVendor(eq(vendorRequest), eq(mockFile))).thenReturn(vendorResponse);
 
       // Act
-      ResponseEntity<ApiResponse<VendorRequest>> response =
-          vendorController.createVendor(vendorRequest);
+      ResponseEntity<ApiResponse<VendorResponse>> response =
+          vendorController.createVendor(vendorRequest, mockFile);
 
       // Assert
-      verify(vendorService, times(1)).createVendor(vendorRequest);
       assertNotNull(response);
       assertEquals(HttpStatus.CREATED, response.getStatusCode());
-      assertEquals("Vendor created successfully", response.getBody().message());
+
+      ApiResponse<VendorResponse> body = response.getBody();
+      assertNotNull(body);
+      assertEquals("Vendor created successfully", body.message());
+      assertEquals(vendorResponse.id(), body.data().id());
+      assertEquals(vendorResponse.name(), body.data().name());
+
+      verify(vendorService, times(1)).createVendor(vendorRequest, mockFile);
     }
   }
 }

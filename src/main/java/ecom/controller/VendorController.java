@@ -5,7 +5,6 @@ import ecom.dto.VendorRequest;
 import ecom.dto.VendorResponse;
 import ecom.interfaces.VendorServiceInterface;
 import jakarta.validation.Valid;
-
 import java.io.IOException;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -22,7 +21,8 @@ public class VendorController {
 
   @PostMapping
   public ResponseEntity<ApiResponse<VendorResponse>> createVendor(
-      @Valid @RequestPart("vendor") VendorRequest dto, @RequestPart("file") MultipartFile file) throws IOException {
+      @Valid @RequestPart("vendor") VendorRequest dto, @RequestPart("file") MultipartFile file)
+      throws IOException {
     VendorResponse vendor = vendorService.createVendor(dto, file);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
