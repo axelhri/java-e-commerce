@@ -8,6 +8,7 @@ import ecom.entity.Product;
 import ecom.entity.ProductImage;
 import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
+import ecom.interfaces.CloudinaryServiceInterface;
 import ecom.interfaces.ProductServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.ProductMapper;
@@ -36,7 +37,7 @@ public class ProductService implements ProductServiceInterface {
   private final VendorRepository vendorRepository;
   private final ProductMapper productMapper;
   private final StockServiceInterface stockService;
-  private final CloudinaryService cloudinaryService;
+  private final CloudinaryServiceInterface cloudinaryService;
   private final ProductImageRepository productImageRepository;
 
   @Override
