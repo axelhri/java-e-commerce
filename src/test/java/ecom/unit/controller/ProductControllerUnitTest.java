@@ -39,7 +39,6 @@ class ProductControllerUnitTest {
 
   @Autowired private MockMvc mockMvc;
   @MockitoBean private ProductServiceInterface productService;
-  @MockitoBean private RatingServiceInterface ratingService;
   @MockitoBean private JwtService jwtService;
   @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
   @Autowired private ObjectMapper objectMapper;
