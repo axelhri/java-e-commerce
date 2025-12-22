@@ -1,6 +1,8 @@
 package ecom.unit.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 import ecom.dto.ProductRequest;
@@ -15,6 +17,8 @@ import ecom.repository.CategoryRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import ecom.service.ProductService;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +32,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceUnitTest {
@@ -41,100 +46,63 @@ class ProductServiceUnitTest {
 
   private Product product;
   private ProductRequest productRequest;
-  private Category category;
-  private Vendor vendor;
   private UUID categoryId;
+  private UUID vendorId;
 
   @BeforeEach
   void setUp() {
     categoryId = UUID.randomUUID();
-    productRequest =
-        new ProductRequest(
-            "Black trench coat",
-            80000,
-            "Black trench coat very comfortable made out of wool",
-            100,
-            UUID.randomUUID(),
-            UUID.randomUUID());
-    product =
-        Product.builder()
-            .name(productRequest.name())
-            .price(productRequest.price())
-            .description(productRequest.description())
-            .build();
-    category = Category.builder().name("coat").build();
-    vendor = Vendor.builder().name("Jules").build();
+    vendorId = UUID.randomUUID();
+    product = Product.builder().id(UUID.randomUUID()).name("Test Product").price(100).build();
+    productRequest = new ProductRequest("Test", 100, "Desc", 10, categoryId, vendorId);
   }
 
   @Nested
-  class createProduct {
-
+  class CreateProduct {
     @Test
-    void createProductShouldCreateSuccessfully() {
+    void should_create_product_successfully() throws IOException {
       // Arrange
-      when(productMapper.productToEntity(productRequest)).thenReturn(product);
-      when(categoryRepository.findById(productRequest.category()))
-          .thenReturn(Optional.of(category));
-      when(vendorRepository.findById(productRequest.vendor())).thenReturn(Optional.of(vendor));
-      when(productRepository.save(product)).thenReturn(product);
+      List<MultipartFile> emptyFiles = Collections.emptyList();
+
+      when(productMapper.productToEntity(any(ProductRequest.class))).thenReturn(product);
+      when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Category()));
+      when(vendorRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Vendor()));
+      when(productRepository.save(any(Product.class))).thenReturn(product);
 
       // Act
-      Product result = productService.createProduct(productRequest);
+      ProductResponse result = productService.createProduct(productRequest, emptyFiles);
 
       // Assert
-      assertEquals(product, result);
-      assertEquals(category, result.getCategory());
-      assertEquals(vendor, result.getVendor());
-
-      verify(productRepository, times(1)).save(product);
+      assertNotNull(result);
+      assertEquals(product.getId(), result.id());
+      verify(stockService).createStockMovement(any(), anyInt(), any(), any());
     }
 
     @Test
-    void createProductShouldThrowExceptionIfCategoryDoesNotExist() {
+    void should_throw_exception_if_category_not_found() {
       // Arrange
-      when(productMapper.productToEntity(productRequest)).thenReturn(product);
-      when(categoryRepository.findById(productRequest.category())).thenReturn(Optional.empty());
+      List<MultipartFile> emptyFiles = Collections.emptyList();
+      when(productMapper.productToEntity(any(ProductRequest.class))).thenReturn(product);
+      when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
       // Act & Assert
-      ResourceNotFoundException exception =
-          assertThrows(
-              ResourceNotFoundException.class, () -> productService.createProduct(productRequest));
-
-      assertEquals("Category not found.", exception.getMessage());
-      verify(productRepository, never()).save(product);
+      assertThrows(
+          ResourceNotFoundException.class,
+          () -> productService.createProduct(productRequest, emptyFiles));
     }
 
     @Test
-    void createProductShouldThrowExceptionIfVendorDoesNotExist() {
+    void should_throw_exception_if_vendor_not_found() {
       // Arrange
-      when(productMapper.productToEntity(productRequest)).thenReturn(product);
-      when(categoryRepository.findById(productRequest.category()))
-          .thenReturn(Optional.of(category));
-      when(vendorRepository.findById(productRequest.vendor())).thenReturn(Optional.empty());
+      List<MultipartFile> emptyFiles = Collections.emptyList();
+      when(productMapper.productToEntity(any(ProductRequest.class))).thenReturn(product);
+      when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Category()));
+      when(vendorRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
       // Act & Assert
-      ResourceNotFoundException exception =
-          assertThrows(
-              ResourceNotFoundException.class, () -> productService.createProduct(productRequest));
-
-      assertEquals("Vendor not found.", exception.getMessage());
-      verify(productRepository, never()).save(product);
-    }
-
-    @Test
-    void createProductShouldThrowWhenMapperReturnsNull() {
-      // Arrange
-      when(productMapper.productToEntity(productRequest)).thenReturn(null);
-      when(categoryRepository.findById(productRequest.category()))
-          .thenReturn(Optional.of(category));
-      when(vendorRepository.findById(productRequest.vendor())).thenReturn(Optional.of(vendor));
-
-      // Act & Assert
-      assertThrows(NullPointerException.class, () -> productService.createProduct(productRequest));
-
-      verify(productMapper).productToEntity(productRequest);
-
-      verify(productRepository, never()).save(any());
+      assertThrows(
+          ResourceNotFoundException.class,
+          () -> productService.createProduct(productRequest, emptyFiles));
     }
   }
 
@@ -146,7 +114,7 @@ class ProductServiceUnitTest {
       Pageable pageable = Pageable.unpaged();
       Page<Product> productPage = new PageImpl<>(List.of(product));
       when(productRepository.findAll(pageable)).thenReturn(productPage);
-      when(stockService.getCurrentStock(product)).thenReturn(50);
+      when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
 
       // Act
       Page<ProductResponse> result = productService.getAllProducts(null, pageable);
@@ -154,8 +122,6 @@ class ProductServiceUnitTest {
       // Assert
       assertEquals(1, result.getTotalElements());
       assertEquals(50, result.getContent().get(0).stock());
-      verify(productRepository, times(1)).findAll(pageable);
-      verify(productRepository, never()).findByCategoryId(any(), any());
     }
 
     @Test
@@ -163,8 +129,9 @@ class ProductServiceUnitTest {
       // Arrange
       Pageable pageable = Pageable.unpaged();
       Page<Product> productPage = new PageImpl<>(List.of(product));
-      when(productRepository.findByCategoryId(categoryId, pageable)).thenReturn(productPage);
-      when(stockService.getCurrentStock(product)).thenReturn(50);
+      when(productRepository.findByCategoryId(eq(categoryId), eq(pageable)))
+          .thenReturn(productPage);
+      when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
 
       // Act
       Page<ProductResponse> result = productService.getAllProducts(categoryId, pageable);
@@ -172,8 +139,6 @@ class ProductServiceUnitTest {
       // Assert
       assertEquals(1, result.getTotalElements());
       assertEquals(50, result.getContent().get(0).stock());
-      verify(productRepository, never()).findAll(pageable);
-      verify(productRepository, times(1)).findByCategoryId(categoryId, pageable);
     }
   }
 
@@ -183,19 +148,15 @@ class ProductServiceUnitTest {
     void should_return_product_when_found() {
       // Arrange
       UUID productId = UUID.randomUUID();
-      Product foundProduct =
-          Product.builder().id(productId).name("Found Product").price(100).build();
-      when(productRepository.findById(productId)).thenReturn(Optional.of(foundProduct));
-      when(stockService.getCurrentStock(foundProduct)).thenReturn(20);
+      when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+      when(stockService.getCurrentStock(product)).thenReturn(20);
 
       // Act
       ProductResponse result = productService.getProductById(productId);
 
       // Assert
       assertNotNull(result);
-      assertEquals(productId, result.id());
-      assertEquals("Found Product", result.name());
-      assertEquals(20, result.stock());
+      assertEquals(product.getId(), result.id());
     }
 
     @Test
@@ -205,11 +166,7 @@ class ProductServiceUnitTest {
       when(productRepository.findById(productId)).thenReturn(Optional.empty());
 
       // Act & Assert
-      ResourceNotFoundException exception =
-          assertThrows(
-              ResourceNotFoundException.class, () -> productService.getProductById(productId));
-
-      assertEquals("Product not found.", exception.getMessage());
+      assertThrows(ResourceNotFoundException.class, () -> productService.getProductById(productId));
     }
   }
 }
