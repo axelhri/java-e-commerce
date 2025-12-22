@@ -37,4 +37,7 @@ public class Vendor {
   @Builder.Default
   @OneToMany(mappedBy = "vendor", fetch = FetchType.LAZY)
   private List<Product> products = new ArrayList<>();
+
+  @OneToOne(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
+  private VendorImage vendorImage;
 }

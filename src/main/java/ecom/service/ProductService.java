@@ -60,7 +60,8 @@ public class ProductService implements ProductServiceInterface {
     Product savedProduct = productRepository.save(product);
 
     if (images != null && !images.isEmpty()) {
-      List<CloudinaryResponse> uploads = cloudinaryService.uploadMultiple(images);
+      List<CloudinaryResponse> uploads =
+          cloudinaryService.uploadMultiple(images, "products/product_" + savedProduct.getId());
 
       List<ProductImage> productImages = new ArrayList<>();
       for (int i = 0; i < uploads.size(); i++) {
