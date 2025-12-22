@@ -11,9 +11,11 @@ import ecom.entity.Category;
 import ecom.entity.Product;
 import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
+import ecom.interfaces.CloudinaryServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.ProductMapper;
 import ecom.repository.CategoryRepository;
+import ecom.repository.ProductImageRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import ecom.service.ProductService;
@@ -42,6 +44,8 @@ class ProductServiceUnitTest {
   @Mock private VendorRepository vendorRepository;
   @Mock private ProductMapper productMapper;
   @Mock private StockServiceInterface stockService;
+  @Mock private CloudinaryServiceInterface cloudinaryService;
+  @Mock private ProductImageRepository productImageRepository;
   @InjectMocks private ProductService productService;
 
   private Product product;
