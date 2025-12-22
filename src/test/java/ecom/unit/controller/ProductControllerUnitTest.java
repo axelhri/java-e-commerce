@@ -16,7 +16,7 @@ import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.ProductServiceInterface;
-import ecom.interfaces.RatingServiceInterface; // Import ajouté
+// Import ajouté
 import ecom.service.JwtService;
 import java.util.List;
 import java.util.UUID;
