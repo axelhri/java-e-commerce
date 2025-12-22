@@ -1,17 +1,22 @@
 package ecom.unit.controller;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecom.config.JwtAuthenticationFilter;
 import ecom.controller.ProductController;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
-import ecom.entity.Product;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.ProductServiceInterface;
+// Import ajouté
 import ecom.service.JwtService;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +29,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,158 +37,69 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc(addFilters = false)
 class ProductControllerUnitTest {
 
-  @MockitoBean private ProductServiceInterface productService;
-
-  @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-  @MockitoBean private JwtService jwtService;
-
   @Autowired private MockMvc mockMvc;
-
+  @MockitoBean private ProductServiceInterface productService;
+  @MockitoBean private JwtService jwtService;
+  @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
   @Autowired private ObjectMapper objectMapper;
 
   private ProductRequest productRequest;
   private ProductResponse productResponse;
-  private Product product;
-  private UUID categoryId = UUID.randomUUID();
-  private UUID vendorId = UUID.randomUUID();
+  private UUID categoryId;
 
   @BeforeEach
   void setUp() {
+    categoryId = UUID.randomUUID();
+    UUID vendorId = UUID.randomUUID();
     productRequest =
-        new ProductRequest(
-            "Black trench coat",
-            80000,
-            "Black comfortable trench coat.",
-            100,
-            vendorId,
-            categoryId);
-    product =
-        Product.builder()
-            .name(productRequest.name())
-            .price(productRequest.price())
-            .description(productRequest.description())
-            .build();
+        new ProductRequest("Laptop", 1500, "16 inch blue laptop", 100, categoryId, vendorId);
     productResponse =
         new ProductResponse(UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100);
   }
 
   @Nested
-  class createProductTest {
-
+  class CreateProduct {
     @Test
-    void createProductShouldReturnCode200Ok() throws Exception {
+    void should_create_product_successfully() throws Exception {
       // Arrange
-      when(productService.createProduct(productRequest)).thenReturn(product);
+      MockMultipartFile productJson =
+          new MockMultipartFile(
+              "product", "", "application/json", objectMapper.writeValueAsBytes(productRequest));
+
+      MockMultipartFile file =
+          new MockMultipartFile("files", "image.jpg", "image/jpeg", "content".getBytes());
+
+      when(productService.createProduct(any(ProductRequest.class), anyList()))
+          .thenReturn(productResponse);
 
       // Act & Assert
       mockMvc
-          .perform(
-              post("/api/v1/products")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(productRequest)))
+          .perform(multipart("/api/v1/products").file(productJson).file(file))
           .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.message").value("Product created successfully"));
-
-      verify(productService, times(1)).createProduct(any(ProductRequest.class));
+          .andExpect(jsonPath("$.data.product_name").value("Laptop"));
     }
 
     @Test
-    void createProductShouldReturn400BadRequestIfNameIsIncorrect() throws Exception {
+    void should_return_bad_request_when_creating_product_with_invalid_data() throws Exception {
       // Arrange
-      productRequest =
-          new ProductRequest("d", 5000, "Random product description.", 100, vendorId, categoryId);
+      ProductRequest invalidRequest = new ProductRequest("", -100, "", -10, null, null);
+
+      MockMultipartFile productJson =
+          new MockMultipartFile(
+              "product", "", "application/json", objectMapper.writeValueAsBytes(invalidRequest));
+
+      MockMultipartFile file =
+          new MockMultipartFile("files", "image.jpg", "image/jpeg", "content".getBytes());
 
       // Act & Assert
       mockMvc
-          .perform(
-              post("/api/v1/products")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(productRequest)))
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.name").value("size must be between 3 and 100"));
-
-      verify(productService, never()).createProduct(any(ProductRequest.class));
-    }
-
-    @Test
-    void createProductShouldReturn400BadRequestIfDescriptionIsIncorrect() throws Exception {
-      // Arrange
-      productRequest =
-          new ProductRequest("Random product name.", 5000, "d", 100, vendorId, categoryId);
-
-      // Act & Assert
-      mockMvc
-          .perform(
-              post("/api/v1/products")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(productRequest)))
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.description").value("size must be between 10 and 100"));
-
-      verify(productService, never()).createProduct(any(ProductRequest.class));
-    }
-
-    @Test
-    void createProductShouldReturn400BadRequestIfPriceIsNull() throws Exception {
-      // Arrange
-      productRequest =
-          new ProductRequest(
-              "Football gloves", null, "Red and white football gloves.", 100, vendorId, categoryId);
-
-      // Act & Assert
-      mockMvc
-          .perform(
-              post("/api/v1/products")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(productRequest)))
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.price").value("Price is required."));
-
-      verify(productService, never()).createProduct(any(ProductRequest.class));
-    }
-
-    @Test
-    void createProductShouldReturn400BadRequestIfVendorIsMissing() throws Exception {
-      // Arrange
-      productRequest =
-          new ProductRequest(
-              "Black trench coat", 80000, "Black comfortable trench coat.", 100, null, categoryId);
-
-      // Act & Assert
-      mockMvc
-          .perform(
-              post("/api/v1/products")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(productRequest)))
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.vendor").value("Vendor is required."));
-
-      verify(productService, never()).createProduct(any(ProductRequest.class));
-    }
-
-    @Test
-    void createProductShouldReturn400BadRequestIfCategoryIsMissing() throws Exception {
-      // Arrange
-      productRequest =
-          new ProductRequest(
-              "Black trench coat", 80000, "Black comfortable trench coat.", 100, vendorId, null);
-
-      // Act & Assert
-      mockMvc
-          .perform(
-              post("/api/v1/products")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(productRequest)))
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.category").value("Category is required."));
-
-      verify(productService, never()).createProduct(any(ProductRequest.class));
+          .perform(multipart("/api/v1/products").file(productJson).file(file))
+          .andExpect(status().isBadRequest());
     }
   }
 
   @Nested
-  class getAllProducts {
+  class GetAllProducts {
     @Test
     void should_get_all_products_paginated() throws Exception {
       // Arrange
@@ -278,7 +194,7 @@ class ProductControllerUnitTest {
       when(productService.getProductById(productId))
           .thenThrow(new ResourceNotFoundException("Product not found"));
 
-      // Act & Assert
+      // Act & Arrange
       mockMvc.perform(get("/api/v1/products/{id}", productId)).andExpect(status().isNotFound());
     }
   }

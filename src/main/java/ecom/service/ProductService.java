@@ -1,25 +1,33 @@
 package ecom.service;
 
+import ecom.dto.CloudinaryResponse;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.entity.Category;
 import ecom.entity.Product;
+import ecom.entity.ProductImage;
 import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
+import ecom.interfaces.CloudinaryServiceInterface;
 import ecom.interfaces.ProductServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.ProductMapper;
 import ecom.model.StockReason;
 import ecom.model.StockType;
 import ecom.repository.CategoryRepository;
+import ecom.repository.ProductImageRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @AllArgsConstructor
@@ -29,10 +37,13 @@ public class ProductService implements ProductServiceInterface {
   private final VendorRepository vendorRepository;
   private final ProductMapper productMapper;
   private final StockServiceInterface stockService;
+  private final CloudinaryServiceInterface cloudinaryService;
+  private final ProductImageRepository productImageRepository;
 
   @Override
   @Transactional
-  public Product createProduct(ProductRequest productRequest) {
+  public ProductResponse createProduct(ProductRequest productRequest, List<MultipartFile> images)
+      throws IOException {
     Product product = productMapper.productToEntity(productRequest);
     Category category =
         categoryRepository
@@ -48,10 +59,34 @@ public class ProductService implements ProductServiceInterface {
 
     Product savedProduct = productRepository.save(product);
 
+    if (images != null && !images.isEmpty()) {
+      List<CloudinaryResponse> uploads = cloudinaryService.uploadMultiple(images);
+
+      List<ProductImage> productImages = new ArrayList<>();
+      for (int i = 0; i < uploads.size(); i++) {
+        CloudinaryResponse res = uploads.get(i);
+        ProductImage img = new ProductImage();
+        img.setImageUrl(res.url());
+        img.setCloudinaryImageId(res.publicId());
+        img.setProduct(savedProduct);
+        img.setDisplayOrder(i);
+        productImages.add(img);
+      }
+
+      productImageRepository.saveAll(productImages);
+
+      savedProduct.setImages(productImages);
+    }
+
     stockService.createStockMovement(
         savedProduct, productRequest.stock(), StockType.IN, StockReason.NEW);
 
-    return savedProduct;
+    return new ProductResponse(
+        savedProduct.getId(),
+        savedProduct.getName(),
+        savedProduct.getPrice(),
+        savedProduct.getDescription(),
+        stockService.getCurrentStock(savedProduct));
   }
 
   @Override
