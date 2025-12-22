@@ -39,5 +39,5 @@ public class Vendor {
   private List<Product> products = new ArrayList<>();
 
   @OneToOne(mappedBy = "vendor", cascade = CascadeType.ALL, orphanRemoval = true)
-    private VendorImage vendorImage;
+  private VendorImage vendorImage;
 }

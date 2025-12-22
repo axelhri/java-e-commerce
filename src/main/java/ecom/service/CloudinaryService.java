@@ -19,22 +19,25 @@ public class CloudinaryService implements CloudinaryServiceInterface {
   private final Cloudinary cloudinary;
 
   @Override
-  public CloudinaryResponse upload(MultipartFile file) throws IOException {
+  public CloudinaryResponse upload(MultipartFile file, String folder) throws IOException {
     @SuppressWarnings("unchecked")
     Map<String, Object> result =
         (Map<String, Object>)
             cloudinary
                 .uploader()
-                .upload(file.getBytes(), ObjectUtils.asMap("resource_type", "auto"));
+                .upload(
+                    file.getBytes(),
+                    ObjectUtils.asMap("resource_type", "auto", "folder", folder, "tags", folder));
 
     return new CloudinaryResponse((String) result.get("public_id"), (String) result.get("url"));
   }
 
   @Override
-  public List<CloudinaryResponse> uploadMultiple(List<MultipartFile> files) throws IOException {
+  public List<CloudinaryResponse> uploadMultiple(List<MultipartFile> files, String folder)
+      throws IOException {
     List<CloudinaryResponse> responses = new ArrayList<>();
     for (MultipartFile file : files) {
-      responses.add(upload(file));
+      responses.add(upload(file, folder));
     }
     return responses;
   }
