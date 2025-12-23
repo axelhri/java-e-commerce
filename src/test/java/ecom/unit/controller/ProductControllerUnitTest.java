@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import ecom.config.JwtAuthenticationFilter;
 import ecom.controller.ProductController;
 import ecom.dto.AllProductsResponse;
+import ecom.dto.ProductImageResponse;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.exception.ResourceNotFoundException;
@@ -48,16 +49,21 @@ class ProductControllerUnitTest {
   private ProductResponse productResponse;
   private AllProductsResponse allProductsResponse;
   private UUID categoryId;
-  private List<String> images;
+  private List<ProductImageResponse> images;
 
   @BeforeEach
   void setUp() {
     categoryId = UUID.randomUUID();
     UUID vendorId = UUID.randomUUID();
+
+    images = List.of(new ProductImageResponse("http://image.url", 0));
+
     productRequest =
         new ProductRequest("Laptop", 1500, "16 inch blue laptop", 100, categoryId, vendorId);
+
     productResponse =
         new ProductResponse(UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100, images);
+
     allProductsResponse = new AllProductsResponse(UUID.randomUUID(), "Laptop", 1500, 100, "url");
   }
 

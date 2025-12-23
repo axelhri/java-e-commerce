@@ -77,3 +77,10 @@ INSERT INTO products_ratings (id, product_id, user_id, rating)
 VALUES
     ('11111111-9999-9999-9999-999999999999', '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '22222222-2222-2222-2222-222222222222', 5),
     ('22222222-9999-9999-9999-999999999999', '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '33333333-3333-3333-3333-333333333333', 4);
+
+-- PRODUCT IMAGES
+INSERT INTO products_images (id, image_url, cloudinary_image_id, display_order, product_id)
+VALUES
+    (gen_random_uuid(), 'mock_image', 'mock_id', 0, '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+    (gen_random_uuid(), 'mock_image', 'mock_id', 0, '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+    (gen_random_uuid(), 'mock_image', 'mock_id', 0, '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa');

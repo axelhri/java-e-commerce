@@ -1,9 +1,6 @@
 package ecom.service;
 
-import ecom.dto.AllProductsResponse;
-import ecom.dto.CloudinaryResponse;
-import ecom.dto.ProductRequest;
-import ecom.dto.ProductResponse;
+import ecom.dto.*;
 import ecom.entity.Category;
 import ecom.entity.Product;
 import ecom.entity.ProductImage;
@@ -21,6 +18,7 @@ import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -89,7 +87,7 @@ public class ProductService implements ProductServiceInterface {
         savedProduct.getPrice(),
         savedProduct.getDescription(),
         stockService.getCurrentStock(savedProduct),
-        savedProduct.getImages().stream().map(ProductImage::getImageUrl).toList());
+        mapImageResponses(savedProduct.getImages()));
   }
 
   @Override
@@ -124,6 +122,15 @@ public class ProductService implements ProductServiceInterface {
         product.getPrice(),
         product.getDescription(),
         stockService.getCurrentStock(product),
-        product.getImages().stream().map(ProductImage::getImageUrl).toList());
+        mapImageResponses(product.getImages()));
+  }
+
+  private List<ProductImageResponse> mapImageResponses(List<ProductImage> images) {
+    if (images == null || images.isEmpty()) {
+      return Collections.emptyList();
+    }
+    return images.stream()
+        .map(img -> new ProductImageResponse(img.getImageUrl(), img.getDisplayOrder()))
+        .toList();
   }
 }
