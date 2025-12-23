@@ -101,7 +101,8 @@ public class ProductService implements ProductServiceInterface {
                 product.getName(),
                 product.getPrice(),
                 stockService.getCurrentStock(product),
-                product.getPrimaryImage().getImageUrl()));
+                product.getPrimaryImage().getImageUrl(),
+                ratingService.getProductAverageRating(product.getId())));
   }
 
   @Override

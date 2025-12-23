@@ -13,4 +13,6 @@ public interface RatingServiceInterface {
   Double getVendorRating(UUID vendorId);
 
   PagedResponse<RatingResponse> getProductRatings(UUID productId, Pageable pageable);
+
+  Double getProductAverageRating(UUID productId);
 }
