@@ -185,7 +185,7 @@ class RatingServiceUnitTest {
     }
 
     @Test
-    void should_return_zero_when_no_ratings_exist() {
+    void should_return_five_when_no_ratings_exist() {
       // Arrange
       UUID vendorId = UUID.randomUUID();
       when(productRatingRepository.getAverageRatingByVendorId(vendorId)).thenReturn(null);
@@ -194,7 +194,7 @@ class RatingServiceUnitTest {
       Double averageRating = ratingService.getVendorRating(vendorId);
 
       // Assert
-      assertEquals(0.0, averageRating);
+      assertEquals(5.0, averageRating);
     }
   }
 

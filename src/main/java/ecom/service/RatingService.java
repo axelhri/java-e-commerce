@@ -69,7 +69,7 @@ public class RatingService implements RatingServiceInterface {
   @Override
   public Double getVendorRating(UUID vendorId) {
     return Optional.ofNullable(productRatingRepository.getAverageRatingByVendorId(vendorId))
-        .orElse(0.0);
+        .orElse(5.0);
   }
 
   @Override
@@ -83,5 +83,14 @@ public class RatingService implements RatingServiceInterface {
             .findByProductId(productId, pageable)
             .map(ratingMapper::productRatingToRatingResponse);
     return pageMapper.toPagedResponse(page);
+  }
+
+  @Override
+  public Double getProductAverageRating(UUID productId) {
+    if (!productRepository.existsById(productId)) {
+      throw new ResourceNotFoundException("Product not found");
+    }
+    return Optional.ofNullable(productRatingRepository.getAverageRatingByProductId(productId))
+        .orElse(5.0);
   }
 }
