@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecom.config.JwtAuthenticationFilter;
 import ecom.controller.ProductController;
+import ecom.dto.AllProductsResponse;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.exception.ResourceNotFoundException;
@@ -45,7 +46,9 @@ class ProductControllerUnitTest {
 
   private ProductRequest productRequest;
   private ProductResponse productResponse;
+  private AllProductsResponse allProductsResponse;
   private UUID categoryId;
+  private List<String> images;
 
   @BeforeEach
   void setUp() {
@@ -54,7 +57,8 @@ class ProductControllerUnitTest {
     productRequest =
         new ProductRequest("Laptop", 1500, "16 inch blue laptop", 100, categoryId, vendorId);
     productResponse =
-        new ProductResponse(UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100);
+        new ProductResponse(UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100, images);
+    allProductsResponse = new AllProductsResponse(UUID.randomUUID(), "Laptop", 1500, 100, "url");
   }
 
   @Nested
@@ -103,7 +107,7 @@ class ProductControllerUnitTest {
     @Test
     void should_get_all_products_paginated() throws Exception {
       // Arrange
-      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      Page<AllProductsResponse> page = new PageImpl<>(List.of(allProductsResponse));
       when(productService.getAllProducts(eq(null), any(Pageable.class))).thenReturn(page);
 
       // Act & Assert
@@ -119,7 +123,7 @@ class ProductControllerUnitTest {
     @Test
     void should_get_products_by_category_paginated() throws Exception {
       // Arrange
-      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      Page<AllProductsResponse> page = new PageImpl<>(List.of(allProductsResponse));
       when(productService.getAllProducts(eq(categoryId), any(Pageable.class))).thenReturn(page);
 
       // Act & Assert
@@ -150,7 +154,7 @@ class ProductControllerUnitTest {
     @Test
     void should_use_default_pagination_when_params_are_missing() throws Exception {
       // Arrange
-      Page<ProductResponse> page = new PageImpl<>(List.of(productResponse));
+      Page<AllProductsResponse> page = new PageImpl<>(List.of(allProductsResponse));
       when(productService.getAllProducts(eq(null), any(Pageable.class))).thenReturn(page);
 
       // Act & Assert
@@ -176,7 +180,7 @@ class ProductControllerUnitTest {
       // Arrange
       UUID productId = UUID.randomUUID();
       ProductResponse foundProduct =
-          new ProductResponse(productId, "Found Product", 100, "Desc", 10);
+          new ProductResponse(productId, "Found Product", 100, "Desc", 10, images);
       when(productService.getProductById(productId)).thenReturn(foundProduct);
 
       // Act & Assert
