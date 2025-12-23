@@ -1,9 +1,6 @@
 package ecom.controller;
 
-import ecom.dto.ApiResponse;
-import ecom.dto.PagedResponse;
-import ecom.dto.ProductRequest;
-import ecom.dto.ProductResponse;
+import ecom.dto.*;
 import ecom.interfaces.ProductServiceInterface;
 import jakarta.validation.Valid;
 import java.io.IOException;
@@ -41,10 +38,10 @@ public class ProductController {
   }
 
   @GetMapping
-  public ResponseEntity<ApiResponse<PagedResponse<ProductResponse>>> getAllProducts(
+  public ResponseEntity<ApiResponse<PagedResponse<AllProductsResponse>>> getAllProducts(
       @RequestParam(required = false) UUID categoryId, Pageable pageable) {
-    Page<ProductResponse> page = productService.getAllProducts(categoryId, pageable);
-    PagedResponse<ProductResponse> response =
+    Page<AllProductsResponse> page = productService.getAllProducts(categoryId, pageable);
+    PagedResponse<AllProductsResponse> response =
         new PagedResponse<>(
             page.getContent(),
             page.getNumber(),

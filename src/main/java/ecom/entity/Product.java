@@ -34,6 +34,7 @@ public class Product {
 
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("displayOrder ASC")
+  @Builder.Default
   private List<ProductImage> images = new ArrayList<>();
 
   @ManyToOne(fetch = FetchType.LAZY)

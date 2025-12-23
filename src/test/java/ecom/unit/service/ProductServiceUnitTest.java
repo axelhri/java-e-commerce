@@ -5,10 +5,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
+import ecom.dto.AllProductsResponse;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import ecom.entity.Category;
 import ecom.entity.Product;
+import ecom.entity.ProductImage;
 import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.CloudinaryServiceInterface;
@@ -57,7 +59,18 @@ class ProductServiceUnitTest {
   void setUp() {
     categoryId = UUID.randomUUID();
     vendorId = UUID.randomUUID();
-    product = Product.builder().id(UUID.randomUUID()).name("Test Product").price(100).build();
+
+    ProductImage dummyImage = new ProductImage();
+    dummyImage.setImageUrl("http://example.com/image.png");
+
+    product =
+        Product.builder()
+            .id(UUID.randomUUID())
+            .name("Test Product")
+            .price(100)
+            .images(List.of(dummyImage))
+            .build();
+
     productRequest = new ProductRequest("Test", 100, "Desc", 10, categoryId, vendorId);
   }
 
@@ -121,7 +134,7 @@ class ProductServiceUnitTest {
       when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
 
       // Act
-      Page<ProductResponse> result = productService.getAllProducts(null, pageable);
+      Page<AllProductsResponse> result = productService.getAllProducts(null, pageable);
 
       // Assert
       assertEquals(1, result.getTotalElements());
@@ -138,7 +151,7 @@ class ProductServiceUnitTest {
       when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
 
       // Act
-      Page<ProductResponse> result = productService.getAllProducts(categoryId, pageable);
+      Page<AllProductsResponse> result = productService.getAllProducts(categoryId, pageable);
 
       // Assert
       assertEquals(1, result.getTotalElements());
