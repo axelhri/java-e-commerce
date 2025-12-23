@@ -14,6 +14,7 @@ import ecom.entity.ProductImage;
 import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.CloudinaryServiceInterface;
+import ecom.interfaces.RatingServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.ProductMapper;
 import ecom.repository.CategoryRepository;
@@ -48,6 +49,8 @@ class ProductServiceUnitTest {
   @Mock private StockServiceInterface stockService;
   @Mock private CloudinaryServiceInterface cloudinaryService;
   @Mock private ProductImageRepository productImageRepository;
+  @Mock private RatingServiceInterface ratingService;
+
   @InjectMocks private ProductService productService;
 
   private Product product;
@@ -134,8 +137,11 @@ class ProductServiceUnitTest {
       // Arrange
       Pageable pageable = Pageable.unpaged();
       Page<Product> productPage = new PageImpl<>(List.of(product));
+
       when(productRepository.findAll(pageable)).thenReturn(productPage);
       when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
+
+      when(ratingService.getProductAverageRating(any(UUID.class))).thenReturn(4.5);
 
       // Act
       Page<AllProductsResponse> result = productService.getAllProducts(null, pageable);
@@ -143,6 +149,7 @@ class ProductServiceUnitTest {
       // Assert
       assertEquals(1, result.getTotalElements());
       assertEquals(50, result.getContent().get(0).stock());
+      assertEquals(4.5, result.getContent().get(0).rating()); // If rating is in your DTO
     }
 
     @Test

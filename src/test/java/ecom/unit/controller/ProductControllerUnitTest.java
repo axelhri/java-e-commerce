@@ -65,7 +65,8 @@ class ProductControllerUnitTest {
         new ProductResponse(
             UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100, images, vendorSummary);
 
-    allProductsResponse = new AllProductsResponse(UUID.randomUUID(), "Laptop", 1500, 100, "url");
+    allProductsResponse =
+        new AllProductsResponse(UUID.randomUUID(), "Laptop", 1500, 100, "url", 4.5);
   }
 
   @Nested
