@@ -1,5 +1,6 @@
 package ecom.service;
 
+import ecom.dto.AllProductsResponse;
 import ecom.dto.CloudinaryResponse;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
@@ -87,11 +88,12 @@ public class ProductService implements ProductServiceInterface {
         savedProduct.getName(),
         savedProduct.getPrice(),
         savedProduct.getDescription(),
-        stockService.getCurrentStock(savedProduct));
+        stockService.getCurrentStock(savedProduct),
+        savedProduct.getImages().stream().map(ProductImage::getImageUrl).toList());
   }
 
   @Override
-  public Page<ProductResponse> getAllProducts(UUID categoryId, Pageable pageable) {
+  public Page<AllProductsResponse> getAllProducts(UUID categoryId, Pageable pageable) {
     Page<Product> products;
     if (categoryId != null) {
       products = productRepository.findByCategoryId(categoryId, pageable);
@@ -101,12 +103,12 @@ public class ProductService implements ProductServiceInterface {
 
     return products.map(
         product ->
-            new ProductResponse(
+            new AllProductsResponse(
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
-                product.getDescription(),
-                stockService.getCurrentStock(product)));
+                stockService.getCurrentStock(product),
+                product.getPrimaryImage().getImageUrl()));
   }
 
   @Override
@@ -121,6 +123,7 @@ public class ProductService implements ProductServiceInterface {
         product.getName(),
         product.getPrice(),
         product.getDescription(),
-        stockService.getCurrentStock(product));
+        stockService.getCurrentStock(product),
+        product.getImages().stream().map(ProductImage::getImageUrl).toList());
   }
 }

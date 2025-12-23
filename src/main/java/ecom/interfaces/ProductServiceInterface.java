@@ -1,5 +1,6 @@
 package ecom.interfaces;
 
+import ecom.dto.AllProductsResponse;
 import ecom.dto.ProductRequest;
 import ecom.dto.ProductResponse;
 import java.io.IOException;
@@ -13,7 +14,7 @@ public interface ProductServiceInterface {
   ProductResponse createProduct(ProductRequest productRequest, List<MultipartFile> images)
       throws IOException;
 
-  Page<ProductResponse> getAllProducts(UUID categoryId, Pageable pageable);
+  Page<AllProductsResponse> getAllProducts(UUID categoryId, Pageable pageable);
 
   ProductResponse getProductById(UUID productId);
 }
