@@ -12,10 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ecom.config.JwtAuthenticationFilter;
 import ecom.controller.ProductController;
-import ecom.dto.AllProductsResponse;
-import ecom.dto.ProductImageResponse;
-import ecom.dto.ProductRequest;
-import ecom.dto.ProductResponse;
+import ecom.dto.*;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.ProductServiceInterface;
 // Import ajouté
@@ -50,11 +47,14 @@ class ProductControllerUnitTest {
   private AllProductsResponse allProductsResponse;
   private UUID categoryId;
   private List<ProductImageResponse> images;
+  private VendorSummary vendorSummary;
 
   @BeforeEach
   void setUp() {
     categoryId = UUID.randomUUID();
     UUID vendorId = UUID.randomUUID();
+
+    vendorSummary = new VendorSummary(UUID.randomUUID(), "Blizzard", 4.5, "mock_image");
 
     images = List.of(new ProductImageResponse("http://image.url", 0));
 
@@ -62,7 +62,8 @@ class ProductControllerUnitTest {
         new ProductRequest("Laptop", 1500, "16 inch blue laptop", 100, categoryId, vendorId);
 
     productResponse =
-        new ProductResponse(UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100, images);
+        new ProductResponse(
+            UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100, images, vendorSummary);
 
     allProductsResponse = new AllProductsResponse(UUID.randomUUID(), "Laptop", 1500, 100, "url");
   }
@@ -186,7 +187,7 @@ class ProductControllerUnitTest {
       // Arrange
       UUID productId = UUID.randomUUID();
       ProductResponse foundProduct =
-          new ProductResponse(productId, "Found Product", 100, "Desc", 10, images);
+          new ProductResponse(productId, "Found Product", 100, "Desc", 10, images, vendorSummary);
       when(productService.getProductById(productId)).thenReturn(foundProduct);
 
       // Act & Assert
