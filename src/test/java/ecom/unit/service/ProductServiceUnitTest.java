@@ -86,6 +86,10 @@ class ProductServiceUnitTest {
       when(vendorRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Vendor()));
       when(productRepository.save(any(Product.class))).thenReturn(product);
 
+      ProductResponse expectedResponse =
+          new ProductResponse(product.getId(), "Test", 100, "Desc", 10, List.of(), null);
+      when(productMapper.toResponse(any(Product.class), anyInt())).thenReturn(expectedResponse);
+
       // Act
       ProductResponse result = productService.createProduct(productRequest, emptyFiles);
 
@@ -167,6 +171,10 @@ class ProductServiceUnitTest {
       UUID productId = UUID.randomUUID();
       when(productRepository.findById(productId)).thenReturn(Optional.of(product));
       when(stockService.getCurrentStock(product)).thenReturn(20);
+
+      ProductResponse mockResponse =
+          new ProductResponse(product.getId(), "Test", 100, "Desc", 20, List.of(), null);
+      when(productMapper.toResponse(eq(product), eq(20))).thenReturn(mockResponse);
 
       // Act
       ProductResponse result = productService.getProductById(productId);
