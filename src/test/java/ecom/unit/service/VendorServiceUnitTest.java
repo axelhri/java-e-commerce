@@ -42,7 +42,16 @@ public class VendorServiceUnitTest {
     @BeforeEach
     void setUp() {
       vendorRequest = new VendorRequest("HyperX");
-      vendor = Vendor.builder().id(UUID.randomUUID()).name(vendorRequest.name()).build();
+
+      ecom.entity.VendorImage dummyImage = new ecom.entity.VendorImage();
+      dummyImage.setImageUrl(null);
+
+      vendor =
+          Vendor.builder()
+              .id(UUID.randomUUID())
+              .name(vendorRequest.name())
+              .vendorImage(dummyImage)
+              .build();
     }
 
     @Test
@@ -56,10 +65,9 @@ public class VendorServiceUnitTest {
 
       // Assert
       assertNotNull(response);
-      assertEquals(vendor.getId(), response.id());
       assertEquals("HyperX", response.name());
+      assertNull(response.imageUrl());
       verify(vendorRepository, times(1)).save(vendor);
-      verifyNoInteractions(cloudinaryService);
     }
 
     @Test

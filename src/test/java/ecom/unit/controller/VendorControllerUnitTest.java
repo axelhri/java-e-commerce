@@ -37,7 +37,7 @@ public class VendorControllerUnitTest {
     @BeforeEach
     void setUp() {
       vendorRequest = new VendorRequest("HyperX");
-      vendorResponse = new VendorResponse(UUID.randomUUID(), "HyperX");
+      vendorResponse = new VendorResponse(UUID.randomUUID(), "HyperX", "image_url");
       mockFile = mock(MultipartFile.class);
     }
 

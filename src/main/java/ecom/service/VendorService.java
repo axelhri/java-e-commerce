@@ -48,7 +48,8 @@ public class VendorService implements VendorServiceInterface {
         savedVendor.setVendorImage(vendorImage);
       }
 
-      return new VendorResponse(savedVendor.getId(), savedVendor.getName());
+      return new VendorResponse(
+          savedVendor.getId(), savedVendor.getName(), savedVendor.getVendorImage().getImageUrl());
 
     } catch (DataIntegrityViolationException e) {
 
