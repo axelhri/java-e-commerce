@@ -8,6 +8,7 @@ import ecom.entity.Vendor;
 import ecom.exception.ResourceNotFoundException;
 import ecom.interfaces.CloudinaryServiceInterface;
 import ecom.interfaces.ProductServiceInterface;
+import ecom.interfaces.RatingServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.ProductMapper;
 import ecom.model.StockReason;
@@ -18,7 +19,6 @@ import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -38,6 +38,7 @@ public class ProductService implements ProductServiceInterface {
   private final StockServiceInterface stockService;
   private final CloudinaryServiceInterface cloudinaryService;
   private final ProductImageRepository productImageRepository;
+  private final RatingServiceInterface ratingService;
 
   @Override
   @Transactional
@@ -81,13 +82,7 @@ public class ProductService implements ProductServiceInterface {
     stockService.createStockMovement(
         savedProduct, productRequest.stock(), StockType.IN, StockReason.NEW);
 
-    return new ProductResponse(
-        savedProduct.getId(),
-        savedProduct.getName(),
-        savedProduct.getPrice(),
-        savedProduct.getDescription(),
-        stockService.getCurrentStock(savedProduct),
-        mapImageResponses(savedProduct.getImages()));
+    return productMapper.toResponse(savedProduct, productRequest.stock());
   }
 
   @Override
@@ -116,21 +111,6 @@ public class ProductService implements ProductServiceInterface {
             .findById(productId)
             .orElseThrow(() -> new ResourceNotFoundException("Product not found."));
 
-    return new ProductResponse(
-        product.getId(),
-        product.getName(),
-        product.getPrice(),
-        product.getDescription(),
-        stockService.getCurrentStock(product),
-        mapImageResponses(product.getImages()));
-  }
-
-  private List<ProductImageResponse> mapImageResponses(List<ProductImage> images) {
-    if (images == null || images.isEmpty()) {
-      return Collections.emptyList();
-    }
-    return images.stream()
-        .map(img -> new ProductImageResponse(img.getImageUrl(), img.getDisplayOrder()))
-        .toList();
+    return productMapper.toResponse(product, stockService.getCurrentStock(product));
   }
 }
