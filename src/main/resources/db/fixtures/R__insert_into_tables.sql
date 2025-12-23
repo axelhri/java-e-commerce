@@ -84,3 +84,9 @@ VALUES
     (gen_random_uuid(), 'mock_image', 'mock_id', 0, '11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
     (gen_random_uuid(), 'mock_image', 'mock_id', 0, '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
     (gen_random_uuid(), 'mock_image', 'mock_id', 0, '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
+
+-- VENDOR IMAGES
+INSERT INTO vendors_images (id, image_url, cloudinary_image_id, vendor_id)
+VALUES
+    (gen_random_uuid(), 'mock_image', 'mock_id',  'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+    (gen_random_uuid(), 'mock_image', 'mock_id',  'aaaa2222-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
