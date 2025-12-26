@@ -1,11 +1,16 @@
 package ecom.service;
 
+import ecom.dto.ProductStock;
 import ecom.entity.Product;
 import ecom.entity.StockMovement;
 import ecom.interfaces.StockServiceInterface;
 import ecom.model.StockReason;
 import ecom.model.StockType;
 import ecom.repository.StockMovementRepository;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -30,10 +35,13 @@ public class StockService implements StockServiceInterface {
 
   @Override
   public Integer getCurrentStock(Product product) {
-    Integer stockIn =
-        stockMovementRepository.sumQuantityByProductAndType(product, StockType.IN).orElse(0);
-    Integer stockOut =
-        stockMovementRepository.sumQuantityByProductAndType(product, StockType.OUT).orElse(0);
-    return stockIn - stockOut;
+    Integer totalStock = stockMovementRepository.getStockForProduct(product.getId());
+    return (totalStock != null) ? totalStock : 0;
+  }
+
+  @Override
+  public Map<UUID, Integer> getStocks(List<UUID> productIds) {
+    return stockMovementRepository.getStockForProducts(productIds).stream()
+        .collect(Collectors.toMap(ProductStock::getProductId, ProductStock::getStock));
   }
 }

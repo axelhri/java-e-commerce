@@ -39,8 +39,10 @@ public class ProductController {
 
   @GetMapping
   public ResponseEntity<ApiResponse<PagedResponse<AllProductsResponse>>> getAllProducts(
-      @RequestParam(required = false) UUID categoryId, Pageable pageable) {
-    Page<AllProductsResponse> page = productService.getAllProducts(categoryId, pageable);
+      @RequestParam(required = false) UUID categoryId,
+      @RequestParam(required = false) String search,
+      Pageable pageable) {
+    Page<AllProductsResponse> page = productService.getAllProducts(categoryId, search, pageable);
     PagedResponse<AllProductsResponse> response =
         new PagedResponse<>(
             page.getContent(),

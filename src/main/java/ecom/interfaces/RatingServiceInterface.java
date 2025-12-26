@@ -4,6 +4,8 @@ import ecom.dto.PagedResponse;
 import ecom.dto.RatingRequest;
 import ecom.dto.RatingResponse;
 import ecom.entity.User;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 
@@ -14,5 +16,5 @@ public interface RatingServiceInterface {
 
   PagedResponse<RatingResponse> getProductRatings(UUID productId, Pageable pageable);
 
-  Double getProductAverageRating(UUID productId);
+  Map<UUID, Double> getRatings(List<UUID> productIds);
 }

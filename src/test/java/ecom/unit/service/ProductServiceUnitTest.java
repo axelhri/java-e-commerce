@@ -23,10 +23,7 @@ import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import ecom.service.ProductService;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -37,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
@@ -138,18 +136,18 @@ class ProductServiceUnitTest {
       Pageable pageable = Pageable.unpaged();
       Page<Product> productPage = new PageImpl<>(List.of(product));
 
-      when(productRepository.findAll(pageable)).thenReturn(productPage);
-      when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
-
-      when(ratingService.getProductAverageRating(any(UUID.class))).thenReturn(4.5);
+      when(productRepository.findAll(any(Specification.class), eq(pageable)))
+          .thenReturn(productPage);
+      when(stockService.getStocks(anyList())).thenReturn(Map.of(product.getId(), 50));
+      when(ratingService.getRatings(anyList())).thenReturn(Map.of(product.getId(), 4.5));
 
       // Act
-      Page<AllProductsResponse> result = productService.getAllProducts(null, pageable);
+      Page<AllProductsResponse> result = productService.getAllProducts(null, null, pageable);
 
       // Assert
       assertEquals(1, result.getTotalElements());
       assertEquals(50, result.getContent().get(0).stock());
-      assertEquals(4.5, result.getContent().get(0).rating()); // If rating is in your DTO
+      assertEquals(4.5, result.getContent().get(0).rating());
     }
 
     @Test
@@ -157,12 +155,14 @@ class ProductServiceUnitTest {
       // Arrange
       Pageable pageable = Pageable.unpaged();
       Page<Product> productPage = new PageImpl<>(List.of(product));
-      when(productRepository.findByCategoryId(eq(categoryId), eq(pageable)))
+
+      when(productRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(productPage);
-      when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
+      when(stockService.getStocks(anyList())).thenReturn(Map.of(product.getId(), 50));
+      when(ratingService.getRatings(anyList())).thenReturn(Map.of(product.getId(), 4.5));
 
       // Act
-      Page<AllProductsResponse> result = productService.getAllProducts(categoryId, pageable);
+      Page<AllProductsResponse> result = productService.getAllProducts(categoryId, null, pageable);
 
       // Assert
       assertEquals(1, result.getTotalElements());
