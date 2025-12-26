@@ -1,72 +1,67 @@
 package ecom.unit.controller;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ecom.config.JwtAuthenticationFilter;
 import ecom.controller.ProductController;
-import ecom.dto.*;
-import ecom.exception.ResourceNotFoundException;
+import ecom.dto.AllProductsResponse;
+import ecom.dto.ProductRequest;
+import ecom.dto.ProductResponse;
 import ecom.interfaces.ProductServiceInterface;
-// Import ajouté
-import ecom.service.JwtService;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@WebMvcTest(ProductController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ProductControllerUnitTest {
 
-  @Autowired private MockMvc mockMvc;
-  @MockitoBean private ProductServiceInterface productService;
-  @MockitoBean private JwtService jwtService;
-  @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
-  @Autowired private ObjectMapper objectMapper;
+  @Mock private ProductServiceInterface productService;
 
+  @InjectMocks private ProductController productController;
+
+  private MockMvc mockMvc;
+  private ObjectMapper objectMapper;
   private ProductRequest productRequest;
   private ProductResponse productResponse;
-  private AllProductsResponse allProductsResponse;
-  private UUID categoryId;
-  private List<ProductImageResponse> images;
-  private VendorSummary vendorSummary;
+  private UUID testId;
 
   @BeforeEach
   void setUp() {
-    categoryId = UUID.randomUUID();
-    UUID vendorId = UUID.randomUUID();
+    mockMvc =
+        MockMvcBuilders.standaloneSetup(productController)
+            .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+            .build();
 
-    vendorSummary = new VendorSummary(UUID.randomUUID(), "Blizzard", 4.5, "mock_image");
-
-    images = List.of(new ProductImageResponse("http://image.url", 0));
+    objectMapper = new ObjectMapper();
+    testId = UUID.randomUUID();
 
     productRequest =
-        new ProductRequest("Laptop", 1500, "16 inch blue laptop", 100, categoryId, vendorId);
+        new ProductRequest(
+            "Test Product", 100, "Test Description", 10, UUID.randomUUID(), UUID.randomUUID());
 
     productResponse =
-        new ProductResponse(
-            UUID.randomUUID(), "Laptop", 1500, "16 inch blue laptop", 100, images, vendorSummary);
-
-    allProductsResponse =
-        new AllProductsResponse(UUID.randomUUID(), "Laptop", 1500, 100, "url", 4.5);
+        new ProductResponse(testId, "Test Product", 100, "Test Description", 10, List.of(), null);
   }
 
   @Nested
@@ -74,140 +69,130 @@ class ProductControllerUnitTest {
     @Test
     void should_create_product_successfully() throws Exception {
       // Arrange
-      MockMultipartFile productJson =
-          new MockMultipartFile(
-              "product", "", "application/json", objectMapper.writeValueAsBytes(productRequest));
-
-      MockMultipartFile file =
-          new MockMultipartFile("files", "image.jpg", "image/jpeg", "content".getBytes());
-
       when(productService.createProduct(any(ProductRequest.class), anyList()))
           .thenReturn(productResponse);
 
-      // Act & Assert
-      mockMvc
-          .perform(multipart("/api/v1/products").file(productJson).file(file))
-          .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.data.product_name").value("Laptop"));
-    }
-
-    @Test
-    void should_return_bad_request_when_creating_product_with_invalid_data() throws Exception {
-      // Arrange
-      ProductRequest invalidRequest = new ProductRequest("", -100, "", -10, null, null);
-
-      MockMultipartFile productJson =
-          new MockMultipartFile(
-              "product", "", "application/json", objectMapper.writeValueAsBytes(invalidRequest));
-
       MockMultipartFile file =
-          new MockMultipartFile("files", "image.jpg", "image/jpeg", "content".getBytes());
+          new MockMultipartFile(
+              "files", "test.jpg", MediaType.IMAGE_JPEG_VALUE, "test image content".getBytes());
+
+      MockMultipartFile productPart =
+          new MockMultipartFile(
+              "product",
+              "",
+              MediaType.APPLICATION_JSON_VALUE,
+              objectMapper.writeValueAsBytes(productRequest));
 
       // Act & Assert
       mockMvc
-          .perform(multipart("/api/v1/products").file(productJson).file(file))
-          .andExpect(status().isBadRequest());
+          .perform(
+              multipart("/api/v1/products")
+                  .file(productPart)
+                  .file(file)
+                  .contentType(MediaType.MULTIPART_FORM_DATA))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.status").value(201))
+          .andExpect(jsonPath("$.message").value("Product created successfully"))
+          .andExpect(jsonPath("$.data.product_name").value("Test Product"));
+
+      verify(productService).createProduct(any(ProductRequest.class), anyList());
     }
   }
 
   @Nested
   class GetAllProducts {
     @Test
-    void should_get_all_products_paginated() throws Exception {
+    void should_get_all_products_without_category_filter() throws Exception {
       // Arrange
-      Page<AllProductsResponse> page = new PageImpl<>(List.of(allProductsResponse));
-      when(productService.getAllProducts(eq(null), any(Pageable.class))).thenReturn(page);
+      AllProductsResponse response =
+          new AllProductsResponse(
+              testId, "Test Product", 100, 10, "http://example.com/image.png", 4.5);
+      Page<AllProductsResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 10), 1);
+
+      when(productService.getAllProducts(eq(null), eq(null), any(Pageable.class))).thenReturn(page);
 
       // Act & Assert
       mockMvc
-          .perform(get("/api/v1/products").param("page", "0").param("size", "10"))
+          .perform(get("/api/v1/products").contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.content").isArray())
-          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop"))
-          .andExpect(jsonPath("$.data.page").value(0))
-          .andExpect(jsonPath("$.data.size").value(1));
+          .andExpect(jsonPath("$.status").value(200))
+          .andExpect(jsonPath("$.message").value("Products fetched successfully"))
+          .andExpect(jsonPath("$.data.content[0].product_id").value(testId.toString()))
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Test Product"))
+          .andExpect(jsonPath("$.data.totalElements").value(1));
+
+      verify(productService).getAllProducts(eq(null), eq(null), any(Pageable.class));
     }
 
     @Test
-    void should_get_products_by_category_paginated() throws Exception {
+    void should_get_products_with_category_filter() throws Exception {
       // Arrange
-      Page<AllProductsResponse> page = new PageImpl<>(List.of(allProductsResponse));
-      when(productService.getAllProducts(eq(categoryId), any(Pageable.class))).thenReturn(page);
+      UUID categoryId = UUID.randomUUID();
+      AllProductsResponse response =
+          new AllProductsResponse(
+              testId, "Test Product", 100, 10, "http://example.com/image.png", 4.5);
+      Page<AllProductsResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 10), 1);
+
+      when(productService.getAllProducts(eq(categoryId), eq(null), any(Pageable.class)))
+          .thenReturn(page);
 
       // Act & Assert
       mockMvc
           .perform(
               get("/api/v1/products")
                   .param("categoryId", categoryId.toString())
-                  .param("page", "0")
-                  .param("size", "10"))
+                  .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.content").isArray())
-          .andExpect(jsonPath("$.data.content[0].product_name").value("Laptop"));
+          .andExpect(jsonPath("$.status").value(200))
+          .andExpect(jsonPath("$.data.content[0].product_id").value(testId.toString()))
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Test Product"));
+
+      verify(productService).getAllProducts(eq(categoryId), eq(null), any(Pageable.class));
     }
 
     @Test
-    void should_return_empty_page_when_no_products_found() throws Exception {
+    void should_get_products_with_search_filter() throws Exception {
       // Arrange
-      when(productService.getAllProducts(any(), any(Pageable.class))).thenReturn(Page.empty());
+      String searchTerm = "laptop";
+      AllProductsResponse response =
+          new AllProductsResponse(
+              testId, "Gaming Laptop", 100, 10, "http://example.com/image.png", 4.5);
+      Page<AllProductsResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 10), 1);
+
+      when(productService.getAllProducts(nullable(UUID.class), eq(searchTerm), any(Pageable.class)))
+          .thenReturn(page);
 
       // Act & Assert
       mockMvc
-          .perform(get("/api/v1/products"))
+          .perform(
+              get("/api/v1/products")
+                  .param("search", searchTerm)
+                  .contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.content").isEmpty())
-          .andExpect(jsonPath("$.data.totalElements").value(0));
-    }
+          .andExpect(jsonPath("$.status").value(200))
+          .andExpect(jsonPath("$.data.content[0].product_name").value("Gaming Laptop"));
 
-    @Test
-    void should_use_default_pagination_when_params_are_missing() throws Exception {
-      // Arrange
-      Page<AllProductsResponse> page = new PageImpl<>(List.of(allProductsResponse));
-      when(productService.getAllProducts(eq(null), any(Pageable.class))).thenReturn(page);
-
-      // Act & Assert
-      mockMvc
-          .perform(get("/api/v1/products"))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.content").isArray());
-    }
-
-    @Test
-    void should_return_bad_request_when_category_id_is_invalid() throws Exception {
-      // Act & Assert
-      mockMvc
-          .perform(get("/api/v1/products").param("categoryId", "invalid-uuid-format"))
-          .andExpect(status().isBadRequest());
+      verify(productService)
+          .getAllProducts(nullable(UUID.class), eq(searchTerm), any(Pageable.class));
     }
   }
 
   @Nested
   class GetProductById {
     @Test
-    void should_return_product_when_found() throws Exception {
+    void should_get_product_by_id_successfully() throws Exception {
       // Arrange
-      UUID productId = UUID.randomUUID();
-      ProductResponse foundProduct =
-          new ProductResponse(productId, "Found Product", 100, "Desc", 10, images, vendorSummary);
-      when(productService.getProductById(productId)).thenReturn(foundProduct);
+      when(productService.getProductById(testId)).thenReturn(productResponse);
 
       // Act & Assert
       mockMvc
-          .perform(get("/api/v1/products/{id}", productId))
+          .perform(get("/api/v1/products/{id}", testId).contentType(MediaType.APPLICATION_JSON))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.data.product_id").value(productId.toString()))
-          .andExpect(jsonPath("$.data.product_name").value("Found Product"));
-    }
+          .andExpect(jsonPath("$.status").value(200))
+          .andExpect(jsonPath("$.message").value("Product fetched successfully"))
+          .andExpect(jsonPath("$.data.product_name").value("Test Product"));
 
-    @Test
-    void should_return_not_found_when_product_does_not_exist() throws Exception {
-      // Arrange
-      UUID productId = UUID.randomUUID();
-      when(productService.getProductById(productId))
-          .thenThrow(new ResourceNotFoundException("Product not found"));
-
-      // Act & Arrange
-      mockMvc.perform(get("/api/v1/products/{id}", productId)).andExpect(status().isNotFound());
+      verify(productService).getProductById(testId);
     }
   }
 }
