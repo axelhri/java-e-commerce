@@ -1,6 +1,7 @@
 package ecom.service;
 
 import ecom.dto.PagedResponse;
+import ecom.dto.ProductAverageRating;
 import ecom.dto.RatingRequest;
 import ecom.dto.RatingResponse;
 import ecom.entity.Product;
@@ -17,8 +18,12 @@ import ecom.model.Rating;
 import ecom.repository.OrderRepository;
 import ecom.repository.ProductRatingRepository;
 import ecom.repository.ProductRepository;
+import ecom.repository.RatingRepository;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +38,7 @@ public class RatingService implements RatingServiceInterface {
   private final OrderRepository orderRepository;
   private final RatingMapper ratingMapper;
   private final PageMapper pageMapper;
+  private final RatingRepository ratingRepository;
 
   @Override
   @Transactional
@@ -86,11 +92,10 @@ public class RatingService implements RatingServiceInterface {
   }
 
   @Override
-  public Double getProductAverageRating(UUID productId) {
-    if (!productRepository.existsById(productId)) {
-      throw new ResourceNotFoundException("Product not found");
-    }
-    return Optional.ofNullable(productRatingRepository.getAverageRatingByProductId(productId))
-        .orElse(5.0);
+  public Map<UUID, Double> getRatings(List<UUID> productIds) {
+    return ratingRepository.getAverageRatingForProducts(productIds).stream()
+        .collect(
+            Collectors.toMap(
+                ProductAverageRating::getProductId, ProductAverageRating::getAverageRating));
   }
 }
