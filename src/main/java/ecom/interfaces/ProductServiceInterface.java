@@ -14,7 +14,7 @@ public interface ProductServiceInterface {
   ProductResponse createProduct(ProductRequest productRequest, List<MultipartFile> images)
       throws IOException;
 
-  Page<AllProductsResponse> getAllProducts(UUID categoryId, Pageable pageable);
+  Page<AllProductsResponse> getAllProducts(UUID categoryId, String search, Pageable pageable);
 
   ProductResponse getProductById(UUID productId);
 }

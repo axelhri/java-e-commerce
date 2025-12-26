@@ -17,13 +17,16 @@ import ecom.repository.CategoryRepository;
 import ecom.repository.ProductImageRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
+import ecom.specification.ProductSpecification;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -86,13 +89,19 @@ public class ProductService implements ProductServiceInterface {
   }
 
   @Override
-  public Page<AllProductsResponse> getAllProducts(UUID categoryId, Pageable pageable) {
-    Page<Product> products;
-    if (categoryId != null) {
-      products = productRepository.findByCategoryId(categoryId, pageable);
-    } else {
-      products = productRepository.findAll(pageable);
-    }
+  public Page<AllProductsResponse> getAllProducts(
+      UUID categoryId, String search, Pageable pageable) {
+    Specification<Product> spec =
+        Specification.allOf(
+            ProductSpecification.hasCategory(categoryId),
+            ProductSpecification.nameContains(search));
+
+    Page<Product> products = productRepository.findAll(spec, pageable);
+
+    List<UUID> productIds = products.map(Product::getId).toList();
+
+    Map<UUID, Integer> stockMap = stockService.getStocks(productIds);
+    Map<UUID, Double> ratingMap = ratingService.getRatings(productIds);
 
     return products.map(
         product ->
@@ -100,9 +109,9 @@ public class ProductService implements ProductServiceInterface {
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
-                stockService.getCurrentStock(product),
+                stockMap.getOrDefault(product.getId(), 0),
                 product.getPrimaryImage().getImageUrl(),
-                ratingService.getProductAverageRating(product.getId())));
+                ratingMap.getOrDefault(product.getId(), 5.0)));
   }
 
   @Override
