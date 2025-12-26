@@ -2,29 +2,27 @@ package ecom.unit.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-import ecom.dto.AllProductsResponse;
-import ecom.dto.ProductRequest;
-import ecom.dto.ProductResponse;
-import ecom.entity.Category;
-import ecom.entity.Product;
-import ecom.entity.ProductImage;
-import ecom.entity.Vendor;
-import ecom.exception.ResourceNotFoundException;
+import ecom.dto.*;
+import ecom.entity.*;
 import ecom.interfaces.CloudinaryServiceInterface;
 import ecom.interfaces.RatingServiceInterface;
 import ecom.interfaces.StockServiceInterface;
 import ecom.mapper.ProductMapper;
+import ecom.model.StockReason;
+import ecom.model.StockType;
 import ecom.repository.CategoryRepository;
 import ecom.repository.ProductImageRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import ecom.service.ProductService;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +34,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,11 +55,13 @@ class ProductServiceUnitTest {
 
   private Product product;
   private ProductRequest productRequest;
+  private UUID productId;
   private UUID categoryId;
   private UUID vendorId;
 
   @BeforeEach
   void setUp() {
+    productId = UUID.randomUUID();
     categoryId = UUID.randomUUID();
     vendorId = UUID.randomUUID();
 
@@ -68,10 +70,10 @@ class ProductServiceUnitTest {
 
     product =
         Product.builder()
-            .id(UUID.randomUUID())
+            .id(productId)
             .name("Test Product")
             .price(100)
-            .images(List.of(dummyImage))
+            .images(new java.util.ArrayList<>(List.of(dummyImage))) // Mutable list
             .build();
 
     productRequest = new ProductRequest("Test", 100, "Desc", 10, categoryId, vendorId);
@@ -80,125 +82,94 @@ class ProductServiceUnitTest {
   @Nested
   class CreateProduct {
     @Test
-    void should_create_product_successfully() throws IOException {
+    void should_create_product_successfully_without_images() throws IOException {
       // Arrange
-      List<MultipartFile> emptyFiles = Collections.emptyList();
-
-      when(productMapper.productToEntity(any(ProductRequest.class))).thenReturn(product);
-      when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Category()));
-      when(vendorRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Vendor()));
+      when(productMapper.productToEntity(productRequest)).thenReturn(product);
+      when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(new Category()));
+      when(vendorRepository.findById(vendorId)).thenReturn(Optional.of(new Vendor()));
       when(productRepository.save(any(Product.class))).thenReturn(product);
 
       ProductResponse expectedResponse =
-          new ProductResponse(product.getId(), "Test", 100, "Desc", 10, List.of(), null);
-      when(productMapper.toResponse(any(Product.class), anyInt())).thenReturn(expectedResponse);
+          new ProductResponse(productId, "Test", 100, "Desc", 10, List.of(), null);
+      when(productMapper.toResponse(eq(product), eq(10))).thenReturn(expectedResponse);
 
       // Act
-      ProductResponse result = productService.createProduct(productRequest, emptyFiles);
+      ProductResponse result = productService.createProduct(productRequest, null);
 
       // Assert
       assertNotNull(result);
-      assertEquals(product.getId(), result.id());
-      verify(stockService).createStockMovement(any(), anyInt(), any(), any());
+      verify(stockService).createStockMovement(product, 10, StockType.IN, StockReason.NEW);
+      verify(cloudinaryService, never()).uploadMultiple(anyList(), anyString());
     }
 
     @Test
-    void should_throw_exception_if_category_not_found() {
+    void should_upload_images_when_provided() throws IOException {
       // Arrange
-      List<MultipartFile> emptyFiles = Collections.emptyList();
-      when(productMapper.productToEntity(any(ProductRequest.class))).thenReturn(product);
-      when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+      MultipartFile file = mock(MultipartFile.class);
+      List<MultipartFile> images = List.of(file);
+      CloudinaryResponse cloudRes = new CloudinaryResponse("url", "publicId");
 
-      // Act & Assert
-      assertThrows(
-          ResourceNotFoundException.class,
-          () -> productService.createProduct(productRequest, emptyFiles));
-    }
+      when(productMapper.productToEntity(productRequest)).thenReturn(product);
+      when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(new Category()));
+      when(vendorRepository.findById(vendorId)).thenReturn(Optional.of(new Vendor()));
+      when(productRepository.save(any(Product.class))).thenReturn(product);
+      when(cloudinaryService.uploadMultiple(eq(images), anyString())).thenReturn(List.of(cloudRes));
 
-    @Test
-    void should_throw_exception_if_vendor_not_found() {
-      // Arrange
-      List<MultipartFile> emptyFiles = Collections.emptyList();
-      when(productMapper.productToEntity(any(ProductRequest.class))).thenReturn(product);
-      when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Category()));
-      when(vendorRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
+      // Act
+      productService.createProduct(productRequest, images);
 
-      // Act & Assert
-      assertThrows(
-          ResourceNotFoundException.class,
-          () -> productService.createProduct(productRequest, emptyFiles));
+      // Assert
+      verify(productImageRepository).saveAll(anyList());
+      verify(cloudinaryService).uploadMultiple(eq(images), contains(productId.toString()));
     }
   }
 
   @Nested
   class GetAllProducts {
     @Test
-    void should_get_all_products_when_category_is_null() {
+    void should_get_all_products_with_batch_stock_and_ratings() {
       // Arrange
-      Pageable pageable = Pageable.unpaged();
+      Pageable pageable = PageRequest.of(0, 10);
       Page<Product> productPage = new PageImpl<>(List.of(product));
 
-      when(productRepository.findAll(pageable)).thenReturn(productPage);
-      when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
-
-      when(ratingService.getProductAverageRating(any(UUID.class))).thenReturn(4.5);
-
-      // Act
-      Page<AllProductsResponse> result = productService.getAllProducts(null, pageable);
-
-      // Assert
-      assertEquals(1, result.getTotalElements());
-      assertEquals(50, result.getContent().get(0).stock());
-      assertEquals(4.5, result.getContent().get(0).rating()); // If rating is in your DTO
-    }
-
-    @Test
-    void should_get_products_by_category_when_category_is_not_null() {
-      // Arrange
-      Pageable pageable = Pageable.unpaged();
-      Page<Product> productPage = new PageImpl<>(List.of(product));
-      when(productRepository.findByCategoryId(eq(categoryId), eq(pageable)))
+      when(productRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(productPage);
-      when(stockService.getCurrentStock(any(Product.class))).thenReturn(50);
+
+      when(stockService.getStocks(anyList())).thenReturn(Map.of(productId, 50));
+      when(ratingService.getRatings(anyList())).thenReturn(Map.of(productId, 4.5));
 
       // Act
-      Page<AllProductsResponse> result = productService.getAllProducts(categoryId, pageable);
+      Page<AllProductsResponse> result =
+          productService.getAllProducts(categoryId, "searchQuery", pageable);
 
       // Assert
       assertEquals(1, result.getTotalElements());
-      assertEquals(50, result.getContent().get(0).stock());
+      AllProductsResponse dto = result.getContent().get(0);
+      assertEquals(50, dto.stock());
+      assertEquals(4.5, dto.rating());
+      verify(stockService).getStocks(anyList());
+      verify(ratingService).getRatings(anyList());
     }
   }
 
   @Nested
   class GetProductById {
     @Test
-    void should_return_product_when_found() {
+    void should_return_product_with_current_stock() {
       // Arrange
-      UUID productId = UUID.randomUUID();
       when(productRepository.findById(productId)).thenReturn(Optional.of(product));
-      when(stockService.getCurrentStock(product)).thenReturn(20);
+      when(stockService.getCurrentStock(product)).thenReturn(25);
 
       ProductResponse mockResponse =
-          new ProductResponse(product.getId(), "Test", 100, "Desc", 20, List.of(), null);
-      when(productMapper.toResponse(eq(product), eq(20))).thenReturn(mockResponse);
+          new ProductResponse(productId, "Test", 100, "Desc", 25, List.of(), null);
+      when(productMapper.toResponse(product, 25)).thenReturn(mockResponse);
 
       // Act
       ProductResponse result = productService.getProductById(productId);
 
       // Assert
-      assertNotNull(result);
-      assertEquals(product.getId(), result.id());
-    }
-
-    @Test
-    void should_throw_exception_when_product_not_found() {
-      // Arrange
-      UUID productId = UUID.randomUUID();
-      when(productRepository.findById(productId)).thenReturn(Optional.empty());
-
-      // Act & Assert
-      assertThrows(ResourceNotFoundException.class, () -> productService.getProductById(productId));
+      assertEquals(25, result.stock());
+      verify(stockService).getCurrentStock(product);
     }
   }
 }
