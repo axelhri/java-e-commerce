@@ -1,23 +1,23 @@
 package ecom.unit.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
+import ecom.dto.ProductStock;
 import ecom.entity.Product;
 import ecom.entity.StockMovement;
 import ecom.model.StockReason;
 import ecom.model.StockType;
 import ecom.repository.StockMovementRepository;
 import ecom.service.StockService;
-import java.util.Optional;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -26,17 +26,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class StockServiceUnitTest {
 
   @Mock private StockMovementRepository stockMovementRepository;
+
   @InjectMocks private StockService stockService;
 
   private Product product;
+  private UUID productId;
 
   @BeforeEach
   void setUp() {
-    product = Product.builder().id(UUID.randomUUID()).name("Test Product").build();
+    productId = UUID.randomUUID();
+    product = Product.builder().id(productId).name("Test Product").build();
   }
 
   @Nested
-  class createStockMovement {
+  class CreateStockMovement {
     @Test
     void should_create_stock_movement_successfully() {
       // Arrange
@@ -44,44 +47,72 @@ class StockServiceUnitTest {
       StockType type = StockType.IN;
       StockReason reason = StockReason.NEW;
 
+      // On utilise un ArgumentCaptor pour vérifier l'objet construit
+      ArgumentCaptor<StockMovement> movementCaptor = ArgumentCaptor.forClass(StockMovement.class);
+
       // Act
       stockService.createStockMovement(product, quantity, type, reason);
 
       // Assert
-      verify(stockMovementRepository, times(1)).save(any(StockMovement.class));
+      verify(stockMovementRepository).save(movementCaptor.capture());
+      StockMovement savedMovement = movementCaptor.getValue();
+
+      assertEquals(product, savedMovement.getProduct());
+      assertEquals(quantity, savedMovement.getQuantity());
+      assertEquals(type, savedMovement.getType());
+      assertEquals(reason, savedMovement.getReason());
     }
   }
 
   @Nested
-  class getCurrentStock {
+  class GetCurrentStock {
     @Test
-    void should_return_zero_when_no_stock_movements() {
+    void should_return_zero_when_repository_returns_null() {
       // Arrange
-      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.IN))
-          .thenReturn(Optional.empty());
-      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.OUT))
-          .thenReturn(Optional.empty());
+      when(stockMovementRepository.getStockForProduct(productId)).thenReturn(null);
 
       // Act
       Integer currentStock = stockService.getCurrentStock(product);
 
       // Assert
       assertEquals(0, currentStock);
+      verify(stockMovementRepository).getStockForProduct(productId);
     }
 
     @Test
-    void should_return_in_quantity_when_no_out_movements() {
+    void should_return_quantity_from_repository() {
       // Arrange
-      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.IN))
-          .thenReturn(Optional.of(50));
-      when(stockMovementRepository.sumQuantityByProductAndType(product, StockType.OUT))
-          .thenReturn(Optional.empty());
+      Integer expectedStock = 42;
+      when(stockMovementRepository.getStockForProduct(productId)).thenReturn(expectedStock);
 
       // Act
       Integer currentStock = stockService.getCurrentStock(product);
 
       // Assert
-      assertEquals(50, currentStock);
+      assertEquals(expectedStock, currentStock);
+    }
+  }
+
+  @Nested
+  class GetStocks {
+    @Test
+    void should_return_map_of_stocks() {
+      // Arrange
+      UUID id2 = UUID.randomUUID();
+      List<UUID> ids = List.of(productId, id2);
+
+      List<ProductStock> mockResults =
+          List.of(new ProductStock(productId, 10), new ProductStock(id2, 20));
+
+      when(stockMovementRepository.getStockForProducts(ids)).thenReturn(mockResults);
+
+      // Act
+      Map<UUID, Integer> stocks = stockService.getStocks(ids);
+
+      // Assert
+      assertEquals(2, stocks.size());
+      assertEquals(10, stocks.get(productId));
+      assertEquals(20, stocks.get(id2));
     }
   }
 }
