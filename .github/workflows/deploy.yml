@@ -87,7 +87,7 @@ jobs:
           sudo mkdir -p certbot/conf/live/java-e-commerce.duckdns.org
           if [ ! -f certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem ]; then
 
-            sudo openssl req -x509 -nodes -newkey rsa:2048 \
+            sudo openssl req -x509 -nodes -newkey rsa:1024 \
             -keyout certbot/conf/live/java-e-commerce.duckdns.org/privkey.pem \
             -out certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem \
             -days 1 -subj '/CN=localhost'
@@ -96,8 +96,7 @@ jobs:
           fi
 
           docker compose -f compose.prod.yml --env-file .env pull
-          docker compose -f compose.prod.yml --env-file .env down
-          docker compose -f compose.prod.yml --env-file .env up -d
+          docker compose -f compose.prod.yml --env-file .env up -d --remove-orphans
           
           if sudo openssl x509 -in certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem -text -noout | grep -q "CN = localhost"; then
             
@@ -106,7 +105,7 @@ jobs:
             --email ${{ secrets.SSL_EMAIL }} --agree-tos --no-eff-email \
             -d java-e-commerce.duckdns.org --force-renewal
           
-            docker compose -f compose.prod.yml exec nginx nginx -s reload
+            docker compose -f compose.prod.yml restart nginx
           fi
 
           docker image prune -f
