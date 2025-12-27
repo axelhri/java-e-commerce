@@ -100,7 +100,7 @@ jobs:
           
           if sudo openssl x509 -in certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem -text -noout | grep -q "CN = localhost"; then
             
-            docker compose -f compose.prod.yml run --rm certbot certonly \
+            docker compose -f compose.prod.yml run -T --rm certbot certonly \
             --webroot --webroot-path=/var/www/certbot \
             --email ${{ secrets.SSL_EMAIL }} --agree-tos --no-eff-email \
             -d java-e-commerce.duckdns.org --force-renewal
