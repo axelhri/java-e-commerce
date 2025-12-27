@@ -83,9 +83,30 @@ jobs:
               https://raw.githubusercontent.com/${{ github.repository }}/develop/nginx.conf \
               -o nginx/default.conf
           fi
+          
+          sudo mkdir -p certbot/conf/live/java-e-commerce.duckdns.org
+          if [ ! -f certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem ]; then
+
+            sudo openssl req -x509 -nodes -newkey rsa:2048 \
+            -keyout certbot/conf/live/java-e-commerce.duckdns.org/privkey.pem \
+            -out certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem \
+            -days 1 -subj '/CN=localhost'
+
+            sudo chmod -R 755 certbot/conf
+          fi
 
           docker compose -f compose.prod.yml --env-file .env pull
           docker compose -f compose.prod.yml --env-file .env down
           docker compose -f compose.prod.yml --env-file .env up -d
+          
+          if sudo openssl x509 -in certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem -text -noout | grep -q "CN = localhost"; then
+            
+            docker compose -f compose.prod.yml run --rm certbot certonly \
+            --webroot --webroot-path=/var/www/certbot \
+            --email ${{ secrets.SSL_EMAIL }} --agree-tos --no-eff-email \
+            -d java-e-commerce.duckdns.org --force-renewal
+          
+            docker compose -f compose.prod.yml exec nginx nginx -s reload
+          fi
 
           docker image prune -f
