@@ -98,13 +98,12 @@ jobs:
           docker compose -f compose.prod.yml --env-file .env pull
           docker compose -f compose.prod.yml --env-file .env up -d --remove-orphans
           
-          if sudo openssl x509 -in certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem -text -noout | grep -q "CN = localhost"; then
-            
+          if [ ! -f certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem ] || \
+            openssl x509 -in certbot/conf/live/java-e-commerce.duckdns.org/fullchain.pem -checkend 86400; then
             docker compose -f compose.prod.yml run -T --rm certbot certonly \
             --webroot --webroot-path=/var/www/certbot \
             --email ${{ secrets.SSL_EMAIL }} --agree-tos --no-eff-email \
             -d java-e-commerce.duckdns.org --force-renewal
-          
             docker compose -f compose.prod.yml restart nginx
           fi
 
