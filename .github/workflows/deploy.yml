@@ -57,10 +57,7 @@ jobs:
         passphrase: ${{ secrets.VPS_PASSPHRASE }}
         script: |
           set -e
-          APP_DIR=/opt/${{ secrets.APP_NAME }}
-  
-          sudo mkdir -p "$APP_DIR"
-          cd "$APP_DIR"
+          cd /opt/${{ secrets.APP_NAME }} || sudo mkdir -p /opt/${{ secrets.APP_NAME }} && cd /opt/${{ secrets.APP_NAME }}
           
           cat > .env << EOF
           APP_NAME=${{ secrets.APP_NAME }}
@@ -74,7 +71,7 @@ jobs:
           CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
           EOF
           
-          curl -fsSL \
+          sudo curl -fsSL \
             -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
             https://raw.githubusercontent.com/${{ github.repository }}/main/compose.prod.yml \
             -o compose.prod.yml
