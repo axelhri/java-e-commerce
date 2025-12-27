@@ -78,7 +78,7 @@ jobs:
 
           if [ ! -f nginx/default.conf ]; then
             sudo mkdir -p nginx
-            curl -fsSL \
+            sudo curl -fsSL \
               -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
               https://raw.githubusercontent.com/${{ github.repository }}/develop/nginx.conf \
               -o nginx/default.conf
