@@ -40,11 +40,11 @@ VALUES
     ('84d0b829-ba3f-4c07-8441-279bc706b161', '96ad91c0-c2ad-49c8-aee7-aea5e25d190a');
 
 -- PRODUCTS
-INSERT INTO products (id, name, price, description, vendor_id, category_id)
+INSERT INTO products (id, name, price, description, slug, vendor_id, category_id)
 VALUES
-    ('11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Tennis Racket', 15000, 'Professional lightweight tennis racket', 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '6edead47-2858-436d-aa86-f8ce1f6496b6'),
-    ('22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Mechanical Keyboard', 8000, 'RGB backlit keyboard with blue switches', 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'f2f4fd38-7dc6-4b2d-b860-958fcdbe68a8'),
-    ('33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Baseball Cap', 1500, 'Comfortable cotton cap', 'aaaa2222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '84d0b829-ba3f-4c07-8441-279bc706b161');
+    ('11111111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Tennis Racket', 15000, 'Professional lightweight tennis racket', 'slug1', 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '6edead47-2858-436d-aa86-f8ce1f6496b6'),
+    ('22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Mechanical Keyboard', 8000, 'RGB backlit keyboard with blue switches', 'slug2', 'aaaa1111-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'f2f4fd38-7dc6-4b2d-b860-958fcdbe68a8'),
+    ('33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Baseball Cap', 1500, 'Comfortable cotton cap', 'slug3', 'aaaa2222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '84d0b829-ba3f-4c07-8441-279bc706b161');
 
 -- CARTS
 INSERT INTO carts (id, user_id)

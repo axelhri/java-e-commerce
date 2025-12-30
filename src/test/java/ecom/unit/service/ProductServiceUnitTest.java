@@ -22,6 +22,7 @@ import ecom.repository.ProductImageRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import ecom.service.ProductService;
+import ecom.service.SlugService;
 import java.io.IOException;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,6 +49,7 @@ class ProductServiceUnitTest {
   @Mock private CloudinaryServiceInterface cloudinaryService;
   @Mock private ProductImageRepository productImageRepository;
   @Mock private RatingServiceInterface ratingService;
+  @Mock private SlugService slugService;
 
   @InjectMocks private ProductService productService;
 
@@ -86,9 +88,10 @@ class ProductServiceUnitTest {
       when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Category()));
       when(vendorRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Vendor()));
       when(productRepository.save(any(Product.class))).thenReturn(product);
+      when(slugService.generateSlug(anyString())).thenReturn("test-slug");
 
       ProductResponse expectedResponse =
-          new ProductResponse(product.getId(), "Test", 100, "Desc", 10, List.of(), null);
+          new ProductResponse(product.getId(), "Test", 100, "Desc", "slug", 10, List.of(), null);
       when(productMapper.toResponse(any(Product.class), anyInt())).thenReturn(expectedResponse);
 
       // Act
@@ -180,7 +183,7 @@ class ProductServiceUnitTest {
       when(stockService.getCurrentStock(product)).thenReturn(20);
 
       ProductResponse mockResponse =
-          new ProductResponse(product.getId(), "Test", 100, "Desc", 20, List.of(), null);
+          new ProductResponse(product.getId(), "Test", 100, "Desc", "slug", 20, List.of(), null);
       when(productMapper.toResponse(eq(product), eq(20))).thenReturn(mockResponse);
 
       // Act

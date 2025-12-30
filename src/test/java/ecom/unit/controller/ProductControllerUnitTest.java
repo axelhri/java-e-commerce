@@ -61,7 +61,8 @@ class ProductControllerUnitTest {
             "Test Product", 100, "Test Description", 10, UUID.randomUUID(), UUID.randomUUID());
 
     productResponse =
-        new ProductResponse(testId, "Test Product", 100, "Test Description", 10, List.of(), null);
+        new ProductResponse(
+            testId, "Test Product", 100, "Test Description", "slug", 10, List.of(), null);
   }
 
   @Nested

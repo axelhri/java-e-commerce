@@ -32,6 +32,9 @@ public class Product {
   @Column(nullable = false, columnDefinition = "TEXT")
   private String description;
 
+  @Column(nullable = false, columnDefinition = "TEXT", unique = true)
+  private String slug;
+
   @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("displayOrder ASC")
   @Builder.Default

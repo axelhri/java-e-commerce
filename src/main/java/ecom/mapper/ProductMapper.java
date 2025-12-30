@@ -42,6 +42,7 @@ public class ProductMapper {
         product.getName(),
         product.getPrice(),
         product.getDescription(),
+        product.getSlug(),
         currentStock,
         mapImageResponses(product.getImages()),
         vendorSummary);
