@@ -66,7 +66,7 @@ public class ProductController {
   }
 
   @GetMapping("slug/{slug}")
-  public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable String slug) {
+  public ResponseEntity<ApiResponse<ProductResponse>> getProductBySlug(@PathVariable String slug) {
     ProductResponse product = productService.getProductBySlug(slug);
     return ResponseEntity.ok(
         new ApiResponse<>(
