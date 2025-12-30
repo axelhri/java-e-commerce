@@ -227,5 +227,15 @@ class ProductServiceUnitTest {
       assertEquals(product.getId(), result.id());
       assertEquals(20, result.stock());
     }
+
+    @Test
+    void should_throw_exception_when_product_not_found() {
+      // Arrange
+      String slug = "test-product";
+      when(productRepository.findBySlug(slug)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      assertThrows(ResourceNotFoundException.class, () -> productService.getProductBySlug(slug));
+    }
   }
 }
