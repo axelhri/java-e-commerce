@@ -42,6 +42,7 @@ public class ProductService implements ProductServiceInterface {
   private final CloudinaryServiceInterface cloudinaryService;
   private final ProductImageRepository productImageRepository;
   private final RatingServiceInterface ratingService;
+  private final SlugService slugService;
 
   @Override
   @Transactional
@@ -59,6 +60,8 @@ public class ProductService implements ProductServiceInterface {
 
     product.setCategory(category);
     product.setVendor(vendor);
+
+    product.setSlug(slugService.generateSlug(product.getName()));
 
     Product savedProduct = productRepository.save(product);
 
