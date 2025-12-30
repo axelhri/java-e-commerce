@@ -204,4 +204,28 @@ class ProductServiceUnitTest {
       assertThrows(ResourceNotFoundException.class, () -> productService.getProductById(productId));
     }
   }
+
+  @Nested
+  class GetProductBySlug {
+    @Test
+    void should_return_product_when_found_by_slug() {
+      // Arrange
+      String slug = "test-product";
+      when(productRepository.findBySlug(slug)).thenReturn(Optional.of(product));
+      when(stockService.getCurrentStock(product)).thenReturn(20);
+
+      // AJOUT DU MOCK POUR LE MAPPER
+      ProductResponse expectedResponse =
+          new ProductResponse(product.getId(), "Test Product", 100, "Desc", 20, List.of(), null);
+      when(productMapper.toResponse(eq(product), eq(20))).thenReturn(expectedResponse);
+
+      // Act
+      ProductResponse result = productService.getProductBySlug(slug);
+
+      // Assert
+      assertNotNull(result);
+      assertEquals(product.getId(), result.id());
+      assertEquals(20, result.stock());
+    }
+  }
 }
