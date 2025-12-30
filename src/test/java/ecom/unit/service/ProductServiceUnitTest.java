@@ -22,10 +22,9 @@ import ecom.repository.ProductImageRepository;
 import ecom.repository.ProductRepository;
 import ecom.repository.VendorRepository;
 import ecom.service.ProductService;
+import ecom.service.SlugService;
 import java.io.IOException;
 import java.util.*;
-
-import ecom.service.SlugService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -89,7 +88,7 @@ class ProductServiceUnitTest {
       when(categoryRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Category()));
       when(vendorRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Vendor()));
       when(productRepository.save(any(Product.class))).thenReturn(product);
-        when(slugService.generateSlug(anyString())).thenReturn("test-slug");
+      when(slugService.generateSlug(anyString())).thenReturn("test-slug");
 
       ProductResponse expectedResponse =
           new ProductResponse(product.getId(), "Test", 100, "Desc", "slug", 10, List.of(), null);
