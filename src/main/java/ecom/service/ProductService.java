@@ -127,4 +127,14 @@ public class ProductService implements ProductServiceInterface {
 
     return productMapper.toResponse(product, stockService.getCurrentStock(product));
   }
+
+  @Override
+  public ProductResponse getProductBySlug(String slug) {
+    Product product =
+        productRepository
+            .findBySlug(slug)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found."));
+
+    return productMapper.toResponse(product, stockService.getCurrentStock(product));
+  }
 }

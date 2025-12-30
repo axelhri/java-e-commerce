@@ -64,4 +64,12 @@ public class ProductController {
         new ApiResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Product fetched successfully", product));
   }
+
+  @GetMapping("slug/{slug}")
+  public ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable String slug) {
+    ProductResponse product = productService.getProductBySlug(slug);
+    return ResponseEntity.ok(
+        new ApiResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Product fetched successfully", product));
+  }
 }
