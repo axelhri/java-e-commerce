@@ -21,8 +21,7 @@ public class SlugService {
     String slug = NON_LATIN.matcher(normalized).replaceAll("").toLowerCase(Locale.ENGLISH);
 
     slug = slug.replaceAll("-+", "-");
-
-    slug = slug.replaceAll("^-|-$", "");
+    slug = slug.replaceAll("(^-|-$)", "");
 
     if (slug.length() > MAX_LENGTH) {
       slug = slug.substring(0, MAX_LENGTH);
