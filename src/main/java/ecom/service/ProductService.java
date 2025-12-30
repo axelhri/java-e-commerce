@@ -112,6 +112,7 @@ public class ProductService implements ProductServiceInterface {
                 product.getId(),
                 product.getName(),
                 product.getPrice(),
+                product.getSlug(),
                 stockMap.getOrDefault(product.getId(), 0),
                 product.getPrimaryImage().getImageUrl(),
                 ratingMap.getOrDefault(product.getId(), 5.0)));
