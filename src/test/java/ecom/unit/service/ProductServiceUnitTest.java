@@ -91,7 +91,7 @@ class ProductServiceUnitTest {
       when(slugService.generateSlug(anyString())).thenReturn("test-slug");
 
       ProductResponse expectedResponse =
-          new ProductResponse(product.getId(), "Test", 100, "Desc", "slug", 10, List.of(), null);
+          new ProductResponse(product.getId(), "Test", 100, "Desc", 10, List.of(), null);
       when(productMapper.toResponse(any(Product.class), anyInt())).thenReturn(expectedResponse);
 
       // Act
@@ -183,7 +183,7 @@ class ProductServiceUnitTest {
       when(stockService.getCurrentStock(product)).thenReturn(20);
 
       ProductResponse mockResponse =
-          new ProductResponse(product.getId(), "Test", 100, "Desc", "slug", 20, List.of(), null);
+          new ProductResponse(product.getId(), "Test", 100, "Desc", 20, List.of(), null);
       when(productMapper.toResponse(eq(product), eq(20))).thenReturn(mockResponse);
 
       // Act

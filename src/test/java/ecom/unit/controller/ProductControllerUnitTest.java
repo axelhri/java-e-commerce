@@ -61,8 +61,7 @@ class ProductControllerUnitTest {
             "Test Product", 100, "Test Description", 10, UUID.randomUUID(), UUID.randomUUID());
 
     productResponse =
-        new ProductResponse(
-            testId, "Test Product", 100, "Test Description", "slug", 10, List.of(), null);
+        new ProductResponse(testId, "Test Product", 100, "Test Description", 10, List.of(), null);
   }
 
   @Nested
@@ -107,7 +106,7 @@ class ProductControllerUnitTest {
       // Arrange
       AllProductsResponse response =
           new AllProductsResponse(
-              testId, "Test Product", 100, 10, "http://example.com/image.png", 4.5);
+              testId, "Test Product", 100, "slug", 10, "http://example.com/image.png", 4.5);
       Page<AllProductsResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 10), 1);
 
       when(productService.getAllProducts(eq(null), eq(null), any(Pageable.class))).thenReturn(page);
@@ -131,7 +130,7 @@ class ProductControllerUnitTest {
       UUID categoryId = UUID.randomUUID();
       AllProductsResponse response =
           new AllProductsResponse(
-              testId, "Test Product", 100, 10, "http://example.com/image.png", 4.5);
+              testId, "Test Product", 100, "slug", 10, "http://example.com/image.png", 4.5);
       Page<AllProductsResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 10), 1);
 
       when(productService.getAllProducts(eq(categoryId), eq(null), any(Pageable.class)))
@@ -157,7 +156,7 @@ class ProductControllerUnitTest {
       String searchTerm = "laptop";
       AllProductsResponse response =
           new AllProductsResponse(
-              testId, "Gaming Laptop", 100, 10, "http://example.com/image.png", 4.5);
+              testId, "Gaming Laptop", 100, "slug", 10, "http://example.com/image.png", 4.5);
       Page<AllProductsResponse> page = new PageImpl<>(List.of(response), PageRequest.of(0, 10), 1);
 
       when(productService.getAllProducts(nullable(UUID.class), eq(searchTerm), any(Pageable.class)))

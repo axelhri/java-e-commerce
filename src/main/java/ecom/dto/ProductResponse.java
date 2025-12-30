@@ -9,7 +9,6 @@ public record ProductResponse(
     @JsonProperty("product_name") String name,
     @JsonProperty("product_price") Integer price,
     @JsonProperty("product_description") String description,
-    @JsonProperty("product_slug") String slug,
     @JsonProperty("product_stock") Integer stock,
     @JsonProperty("product_images") List<ProductImageResponse> images,
     @JsonProperty("vendor") VendorSummary vendor) {}
