@@ -3,7 +3,7 @@ package ecom.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
-public record ApiResponse<T>(
+public record ApiRestResponse<T>(
     @Schema(
             description = "Timestamp of the response",
             example = "2023-10-27T10:00:00Z",

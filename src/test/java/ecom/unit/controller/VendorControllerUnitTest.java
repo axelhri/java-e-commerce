@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import ecom.controller.VendorController;
-import ecom.dto.ApiResponse;
+import ecom.dto.ApiRestResponse;
 import ecom.dto.VendorRequest;
 import ecom.dto.VendorResponse;
 import ecom.interfaces.VendorServiceInterface;
@@ -47,14 +47,14 @@ public class VendorControllerUnitTest {
       when(vendorService.createVendor(eq(vendorRequest), eq(mockFile))).thenReturn(vendorResponse);
 
       // Act
-      ResponseEntity<ApiResponse<VendorResponse>> response =
+      ResponseEntity<ApiRestResponse<VendorResponse>> response =
           vendorController.createVendor(vendorRequest, mockFile);
 
       // Assert
       assertNotNull(response);
       assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
-      ApiResponse<VendorResponse> body = response.getBody();
+      ApiRestResponse<VendorResponse> body = response.getBody();
       assertNotNull(body);
       assertEquals("Vendor created successfully", body.message());
       assertEquals(vendorResponse.id(), body.data().id());
