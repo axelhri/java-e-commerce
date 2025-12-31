@@ -1,12 +1,10 @@
 package ecom.unit.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import ecom.entity.MailConfirmation;
 import ecom.entity.User;
-import ecom.exception.InvalidTokenException;
 import ecom.interfaces.CartServiceInterface;
 import ecom.repository.MailConfirmationRepository;
 import ecom.repository.UserRepository;
@@ -67,6 +65,35 @@ class EmailServiceUnitTest {
           sentMessage
               .getText()
               .contains("http://localhost:8080/api/v1/email/confirm?token=" + token));
+    }
+  }
+
+  @Nested
+  class ConfirmEmail {
+    @Test
+    void should_confirm_email_successfully() {
+      // Arrange
+      String token = "valid-token";
+      String encodedToken = "encoded-token";
+      User user = User.builder().id(UUID.randomUUID()).isMailConfirmed(false).build();
+      MailConfirmation mailConfirmation =
+          MailConfirmation.builder()
+              .token(encodedToken)
+              .user(user)
+              .expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
+              .build();
+
+      when(mailConfirmationRepository.findAll()).thenReturn(List.of(mailConfirmation));
+      when(passwordEncoder.matches(token, encodedToken)).thenReturn(true);
+
+      // Act
+      emailService.confirmEmail(token);
+
+      // Assert
+      assertTrue(user.isMailConfirmed());
+      verify(userRepository).save(user);
+      verify(cartServiceInterface).createCart(user);
+      verify(mailConfirmationRepository).delete(mailConfirmation);
     }
   }
 }
