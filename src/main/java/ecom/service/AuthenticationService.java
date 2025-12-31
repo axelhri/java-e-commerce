@@ -3,6 +3,8 @@ package ecom.service;
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
 import ecom.dto.RefreshTokenResponse;
+import ecom.dto.RegisterResponse;
+import ecom.entity.MailConfirmation;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
 import ecom.exception.InvalidTokenException;
@@ -11,9 +13,13 @@ import ecom.interfaces.AuthenticationServiceInterface;
 import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.mapper.UserMapper;
+import ecom.repository.MailConfirmationRepository;
 import ecom.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Locale;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -28,11 +34,12 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
   private final CartServiceInterface cartService;
+  private final MailConfirmationRepository mailConfirmationRepository;
+  private final EmailService emailService;
 
   @Override
   @Transactional
-  public AuthenticationResponse register(AuthenticationRequest registerRequest) {
-
+  public RegisterResponse register(AuthenticationRequest registerRequest) {
     if (userRepository.existsByEmail(registerRequest.email())) {
       throw new ResourceAlreadyExistsException(registerRequest.email() + " is already registered");
     }
@@ -42,13 +49,21 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     var savedUser = userRepository.save(user);
 
-    String jwtToken = jwtService.generateToken(user);
+    String token = UUID.randomUUID().toString();
 
-    tokenManagementService.saveUserToken(savedUser, jwtToken);
+    MailConfirmation mailConfirmation =
+        MailConfirmation.builder()
+            .token(passwordEncoder.encode(token))
+            .user(savedUser)
+            .expiresAt(Instant.now().plus(24, ChronoUnit.HOURS))
+            .build();
 
-    cartService.createCart(savedUser);
+    mailConfirmationRepository.save(mailConfirmation);
 
-    return new AuthenticationResponse(jwtToken, user.getId());
+    emailService.sendConfirmationEmail(user.getEmail(), token);
+
+    return new RegisterResponse(
+        "User registered successfully. Please confirm your email", user.getId());
   }
 
   @Override

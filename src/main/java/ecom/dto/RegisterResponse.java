@@ -1,0 +1,7 @@
+package ecom.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.UUID;
+
+public record RegisterResponse(
+    @JsonProperty("message") String message, @JsonProperty("user_id") UUID id) {}
