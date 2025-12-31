@@ -39,6 +39,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/api/v1/auth/**")
                     .permitAll()
+                    .requestMatchers("/api/v1/email/confirm")
+                    .permitAll()
                     .requestMatchers("/api/v1/user/**")
                     .authenticated()
                     .requestMatchers("/api/v1/vendors")

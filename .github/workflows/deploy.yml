@@ -69,6 +69,8 @@ jobs:
           CLOUDINARY_NAME=${{ secrets.CLOUDINARY_NAME }}
           CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
           CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+          SMTP_MAIL=${{ secrets.SMTP_MAIL }}
+          SMTP_KEY=${{ secrets.SMTP_KEY }}
           EOF
           
           sudo curl -fsSL \

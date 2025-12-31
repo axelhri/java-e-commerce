@@ -3,9 +3,10 @@ package ecom.interfaces;
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
 import ecom.dto.RefreshTokenResponse;
+import ecom.dto.RegisterResponse;
 
 public interface AuthenticationServiceInterface {
-  AuthenticationResponse register(AuthenticationRequest registerRequest);
+  RegisterResponse register(AuthenticationRequest registerRequest);
 
   AuthenticationResponse login(AuthenticationRequest loginRequest);
 

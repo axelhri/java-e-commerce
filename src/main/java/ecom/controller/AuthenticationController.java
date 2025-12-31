@@ -3,6 +3,7 @@ package ecom.controller;
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
 import ecom.dto.RefreshTokenResponse;
+import ecom.dto.RegisterResponse;
 import ecom.exception.InvalidTokenException;
 import ecom.interfaces.AuthenticationServiceInterface;
 import jakarta.validation.Valid;
@@ -19,9 +20,9 @@ public class AuthenticationController {
   private final AuthenticationServiceInterface authenticationService;
 
   @PostMapping("/register")
-  public ResponseEntity<AuthenticationResponse> register(
+  public ResponseEntity<RegisterResponse> register(
       @RequestBody @Valid AuthenticationRequest registerRequest) {
-    AuthenticationResponse response = authenticationService.register(registerRequest);
+    RegisterResponse response = authenticationService.register(registerRequest);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 

@@ -1,9 +1,9 @@
 -- USERS
-INSERT INTO users (id, email, password)
+INSERT INTO users (id, email, password, is_mail_confirmed)
 VALUES
-    ('11111111-1111-1111-1111-111111111111', 'alice@example.com', '$2a$10$kP9bVDWjeSjhJhqhuRPlmOG8.YmC9uFWBMhuLWfcEIUQVv0LB7R62'),
-    ('22222222-2222-2222-2222-222222222222', 'bob@example.com', '$2a$10$w7ty1skmOPy.5T5PZ1dK5ePoqcWq1bZr4N7DlD/J.0AibFtB7DC8G'),
-    ('33333333-3333-3333-3333-333333333333', 'charlie@example.com', '$2a$10$w7ty1skmOPy.5T5PZ1dK5ePoqcWq1bZr4N7DlD/J.0AibFtB7DC8G');
+    ('11111111-1111-1111-1111-111111111111', 'alice@example.com', '$2a$10$kP9bVDWjeSjhJhqhuRPlmOG8.YmC9uFWBMhuLWfcEIUQVv0LB7R62', true),
+    ('22222222-2222-2222-2222-222222222222', 'bob@example.com', '$2a$10$w7ty1skmOPy.5T5PZ1dK5ePoqcWq1bZr4N7DlD/J.0AibFtB7DC8G', true),
+    ('33333333-3333-3333-3333-333333333333', 'charlie@example.com', '$2a$10$w7ty1skmOPy.5T5PZ1dK5ePoqcWq1bZr4N7DlD/J.0AibFtB7DC8G', true);
 
 -- USER ROLES
 INSERT INTO user_roles (user_id, role)
