@@ -8,6 +8,7 @@ import ecom.interfaces.EmailServiceInterface;
 import ecom.repository.MailConfirmationRepository;
 import ecom.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,9 +23,12 @@ public class EmailService implements EmailServiceInterface {
   private final PasswordEncoder passwordEncoder;
   private final CartServiceInterface cartServiceInterface;
 
+  @Value("${api.url}")
+  private String apiUrl;
+
   @Override
   public void sendConfirmationEmail(String to, String token) {
-    String confirmationLink = "http://localhost:8080/api/v1/email/confirm?token=" + token;
+    String confirmationLink = apiUrl + "api/v1/email/confirm?token=" + token;
 
     SimpleMailMessage message = new SimpleMailMessage();
     message.setFrom("no-replyaxelttest@app.com");
