@@ -37,6 +37,10 @@ public class User implements UserDetails {
   @Column(nullable = false)
   private Integer points = 10000;
 
+  @Column(nullable = false)
+  @Builder.Default
+  private boolean isMailConfirmed = false;
+
   @ElementCollection(fetch = FetchType.EAGER)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
@@ -97,6 +101,6 @@ public class User implements UserDetails {
 
   @Override
   public boolean isEnabled() {
-    return true;
+    return isMailConfirmed;
   }
 }
