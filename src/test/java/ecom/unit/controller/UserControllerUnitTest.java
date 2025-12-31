@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import ecom.controller.UserController;
-import ecom.dto.ApiResponse;
+import ecom.dto.ApiRestResponse;
 import ecom.dto.ChangePassword;
 import ecom.exception.InvalidPasswordException;
 import ecom.exception.ResourceNotFoundException;
@@ -50,7 +50,7 @@ class UserControllerUnitTest {
       when(userDetails.getUsername()).thenReturn(email);
 
       // Act
-      ResponseEntity<ApiResponse<ChangePassword>> response =
+      ResponseEntity<ApiRestResponse<ChangePassword>> response =
           userController.changePassword(userDetails, dto);
 
       // Assert

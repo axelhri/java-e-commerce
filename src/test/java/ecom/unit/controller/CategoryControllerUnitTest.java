@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import ecom.controller.CategoryController;
-import ecom.dto.ApiResponse;
+import ecom.dto.ApiRestResponse;
 import ecom.dto.CategoryRequest;
 import ecom.entity.Category;
 import ecom.exception.ResourceAlreadyExistsException;
@@ -48,7 +48,7 @@ public class CategoryControllerUnitTest {
       when(categoryService.createCategory(categoryRequest)).thenReturn(category);
 
       // Act
-      ResponseEntity<ApiResponse<CategoryRequest>> response =
+      ResponseEntity<ApiRestResponse<CategoryRequest>> response =
           categoryController.createCategory(categoryRequest);
 
       // Assert

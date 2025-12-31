@@ -1,10 +1,16 @@
 package ecom.controller;
 
-import ecom.dto.ApiResponse;
+import ecom.dto.ApiRestResponse;
 import ecom.dto.CartItemResponse;
 import ecom.dto.ManageCartRequest;
 import ecom.entity.User;
 import ecom.interfaces.CartProductServiceInterface;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -16,22 +22,55 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/cart-items")
+@Tag(name = "Cart Items", description = "Endpoints for managing individual items within the cart")
 public class CartProductController {
   private final CartProductServiceInterface cartProductService;
 
+  @Operation(
+      summary = "Add product to cart",
+      description = "Adds a product to the user's cart or updates quantity if already present.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Product added to cart successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input or insufficient stock",
+            content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content)
+      })
   @PostMapping
-  public ResponseEntity<ApiResponse<CartItemResponse>> addProductToCart(
+  public ResponseEntity<ApiRestResponse<CartItemResponse>> addProductToCart(
       @AuthenticationPrincipal User user, @Valid @RequestBody ManageCartRequest dto) {
     CartItemResponse response = cartProductService.addProductToCart(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
-            new ApiResponse<>(
+            new ApiRestResponse<>(
                 Instant.now(),
                 HttpStatus.CREATED.value(),
                 "Product added to cart successfully",
                 response));
   }
 
+  @Operation(
+      summary = "Remove product from cart",
+      description = "Removes a specific product from the user's cart.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Product removed successfully",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product not found in cart",
+            content = @Content)
+      })
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void removeProductFromCart(
