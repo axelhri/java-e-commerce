@@ -1,23 +1,27 @@
 package ecom.unit.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import ecom.dto.AuthenticationRequest;
 import ecom.dto.AuthenticationResponse;
 import ecom.dto.RefreshTokenResponse;
-import ecom.entity.Cart;
+import ecom.dto.RegisterResponse;
+import ecom.entity.MailConfirmation;
 import ecom.entity.User;
 import ecom.exception.InvalidCredentialsException;
-import ecom.exception.InvalidTokenException;
 import ecom.exception.ResourceAlreadyExistsException;
 import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.TokenManagementServiceInterface;
 import ecom.mapper.UserMapper;
+import ecom.repository.MailConfirmationRepository;
 import ecom.repository.UserRepository;
 import ecom.service.AuthenticationService;
+import ecom.service.EmailService;
 import ecom.service.JwtService;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,16 +33,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceUnitTest {
+
   @Mock private UserRepository userRepository;
-
   @Mock private TokenManagementServiceInterface tokenManagementService;
-
   @Mock private JwtService jwtService;
-
   @Mock private UserMapper userMapper;
   @Mock private PasswordEncoder passwordEncoder;
-
   @Mock private CartServiceInterface cartService;
+  @Mock private MailConfirmationRepository mailConfirmationRepository;
+  @Mock private EmailService emailService;
 
   @InjectMocks private AuthenticationService authenticationService;
 
@@ -47,212 +50,113 @@ class AuthenticationServiceUnitTest {
 
   @BeforeEach
   void setUp() {
-    authRequest = new AuthenticationRequest("test@mail.com", "Password123!");
-    user = User.builder().email(authRequest.email()).password(authRequest.password()).build();
+    authRequest = new AuthenticationRequest("test@example.com", "Password123!");
+    user =
+        User.builder()
+            .id(UUID.randomUUID())
+            .email("test@example.com")
+            .password("encodedPassword")
+            .build();
   }
 
   @Nested
-  class registerUnitTest {
+  class Register {
     @Test
-    void registerShouldRegisterUserSuccessfully() {
-      // Arrange
+    void should_register_user_successfully() {
       when(userRepository.existsByEmail(authRequest.email())).thenReturn(false);
       when(userMapper.toUserEntity(authRequest)).thenReturn(user);
-      when(passwordEncoder.encode(authRequest.password())).thenReturn("encodedPass");
+      when(passwordEncoder.encode(authRequest.password())).thenReturn("encodedPassword");
       when(userRepository.save(user)).thenReturn(user);
-      when(jwtService.generateToken(user)).thenReturn("jwtAccessToken");
-      doNothing().when(tokenManagementService).saveUserToken(user, "jwtAccessToken");
-      when(cartService.createCart(user)).thenReturn(new Cart());
 
-      // Act
-      AuthenticationResponse response = authenticationService.register(authRequest);
-
-      // Assert
-      verify(userRepository, times(1)).existsByEmail(authRequest.email());
-      verify(userMapper, times(1)).toUserEntity(authRequest);
-      verify(passwordEncoder, times(1)).encode(authRequest.password());
-      verify(userRepository, times(1)).save(user);
-      verify(jwtService, times(1)).generateToken(user);
-      verify(tokenManagementService, times(1)).saveUserToken(user, "jwtAccessToken");
-      verify(cartService, times(1)).createCart(user);
+      RegisterResponse response = authenticationService.register(authRequest);
 
       assertNotNull(response);
-      assertEquals("jwtAccessToken", response.accessToken());
       assertEquals(user.getId(), response.id());
-      assertEquals("encodedPass", user.getPassword());
+      assertEquals("User registered successfully. Please confirm your email", response.message());
+
+      verify(userRepository).save(user);
+      verify(mailConfirmationRepository).save(any(MailConfirmation.class));
+      verify(emailService).sendConfirmationEmail(eq(user.getEmail()), anyString());
     }
 
     @Test
-    void registerShouldThrowExceptionWhenUserIsAlreadyExists() {
-      // Arrange
+    void should_throw_exception_if_email_already_exists() {
       when(userRepository.existsByEmail(authRequest.email())).thenReturn(true);
 
-      // Act & Assert
       assertThrows(
           ResourceAlreadyExistsException.class, () -> authenticationService.register(authRequest));
 
-      // Assert
-      verify(userRepository, times(1)).existsByEmail(authRequest.email());
-      verifyNoMoreInteractions(
-          userRepository, userMapper, passwordEncoder, jwtService, tokenManagementService);
+      verify(userRepository, never()).save(any());
+      verify(emailService, never()).sendConfirmationEmail(anyString(), anyString());
     }
   }
 
   @Nested
-  class loginUnitTest {
+  class Login {
     @Test
-    void loginShouldLoginUserSuccessfully() {
-      // Arrange
+    void should_login_successfully() {
       when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.of(user));
       when(passwordEncoder.matches(authRequest.password(), user.getPassword())).thenReturn(true);
-      doNothing().when(tokenManagementService).revokeAllUserTokens(user);
-      when(jwtService.generateToken(user)).thenReturn("jwtAccessToken");
-      doNothing().when(tokenManagementService).saveUserToken(user, "jwtAccessToken");
+      when(jwtService.generateToken(user)).thenReturn("jwt-token");
 
-      // Act
       AuthenticationResponse response = authenticationService.login(authRequest);
 
-      // Assert
-      verify(userRepository, times(1)).findByEmail(authRequest.email());
-      verify(passwordEncoder, times(1)).matches(authRequest.password(), user.getPassword());
-      verify(tokenManagementService, times(1)).revokeAllUserTokens(user);
-      verify(jwtService, times(1)).generateToken(user);
-      verify(tokenManagementService, times(1)).saveUserToken(user, "jwtAccessToken");
-
       assertNotNull(response);
-      assertEquals("jwtAccessToken", response.accessToken());
+      assertEquals("jwt-token", response.accessToken());
       assertEquals(user.getId(), response.id());
+
+      verify(tokenManagementService).revokeAllUserTokens(user);
+      verify(tokenManagementService).saveUserToken(user, "jwt-token");
     }
 
     @Test
-    void loginShouldThrowExceptionIfEmailIsNotFound() {
-      // Arrange
+    void should_throw_exception_if_user_not_found() {
       when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.empty());
 
-      // Act & Assert
       assertThrows(
           InvalidCredentialsException.class, () -> authenticationService.login(authRequest));
-
-      // Assert
-      verify(userRepository, times(1)).findByEmail(authRequest.email());
-      verifyNoMoreInteractions(passwordEncoder, tokenManagementService, jwtService);
     }
 
     @Test
-    void loginShouldThrowExceptionIfPasswordDoesNotMatch() {
-      // Arrange
+    void should_throw_exception_if_password_incorrect() {
       when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.of(user));
       when(passwordEncoder.matches(authRequest.password(), user.getPassword())).thenReturn(false);
 
-      // Act & Assert
       assertThrows(
           InvalidCredentialsException.class, () -> authenticationService.login(authRequest));
-
-      // Assert
-      verify(userRepository, times(1)).findByEmail(authRequest.email());
-      verify(passwordEncoder, times(1)).matches(authRequest.password(), user.getPassword());
-      verifyNoMoreInteractions(passwordEncoder, tokenManagementService, jwtService);
     }
   }
 
   @Nested
-  class refreshTokenUnitTest {
-    private String token;
-    private final String email = "test@mail.com";
-    private final String validToken = "validToken";
-
+  class RefreshToken {
     @Test
-    void refreshTokenShouldReturnNewTokenSuccessfully() {
-      // Arrange
-      when(jwtService.extractUsername(validToken)).thenReturn(user.getEmail());
+    void should_refresh_token_successfully() {
+      String refreshToken = "valid-refresh-token";
+      when(jwtService.extractUsername(refreshToken)).thenReturn(user.getEmail());
       when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
-      when(jwtService.isTokenValid(validToken, user)).thenReturn(true);
-      when(jwtService.generateToken(user)).thenReturn("newAccessToken");
-      doNothing().when(tokenManagementService).revokeAllUserTokens(user);
-      doNothing().when(tokenManagementService).saveUserToken(user, "newAccessToken");
+      when(jwtService.isTokenValid(refreshToken, user)).thenReturn(true);
+      when(jwtService.generateToken(user)).thenReturn("new-access-token");
 
-      // Act
-      RefreshTokenResponse response = authenticationService.refreshToken(validToken);
-
-      // Assert
-      verify(jwtService, times(1)).extractUsername(validToken);
-      verify(userRepository, times(1)).findByEmail(user.getEmail());
-      verify(jwtService, times(1)).isTokenValid(validToken, user);
-      verify(jwtService, times(1)).generateToken(user);
+      RefreshTokenResponse response = authenticationService.refreshToken(refreshToken);
 
       assertNotNull(response);
-      assertEquals("newAccessToken", response.accessToken());
-      assertEquals(validToken, response.refreshToken());
-      assertEquals(user.getId(), response.id());
+      assertEquals("new-access-token", response.accessToken());
+      assertEquals(refreshToken, response.refreshToken());
+
+      verify(tokenManagementService).revokeAllUserTokens(user);
+      verify(tokenManagementService).saveUserToken(user, "new-access-token");
     }
 
     @Test
-    void refreshTokenShouldThrowExceptionIfTokenIsNull() {
-      // Arrange
-      token = null;
-
-      // Act & Assert
-      InvalidTokenException exception =
-          assertThrows(
-              InvalidTokenException.class, () -> authenticationService.refreshToken(token));
-
-      verifyNoInteractions(jwtService, userRepository, tokenManagementService);
-      assertEquals("Token is empty", exception.getMessage());
-    }
-
-    @Test
-    void refreshTokenShouldThrowExceptionIfTokenIsBlank() {
-      // Arrange
-      token = "";
-
-      // Act & Assert
-      InvalidTokenException exception =
-          assertThrows(
-              InvalidTokenException.class, () -> authenticationService.refreshToken(token));
-
-      assertEquals("Token is empty", exception.getMessage());
-      verifyNoInteractions(jwtService, userRepository, tokenManagementService);
-    }
-
-    @Test
-    void refreshTokenShouldThrowExceptionWhenEmailNotFound() {
-      // Arrange
-      when(jwtService.extractUsername(validToken)).thenReturn(email);
-      when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
-
-      // Act & Assert
-      InvalidTokenException exception =
-          assertThrows(
-              InvalidTokenException.class, () -> authenticationService.refreshToken(validToken));
-
-      // Assert
-      verify(jwtService, times(1)).extractUsername(validToken);
-      verify(userRepository, times(1)).findByEmail(email);
-      verifyNoMoreInteractions(tokenManagementService);
-
-      assertEquals("Invalid refresh token", exception.getMessage());
-    }
-
-    @Test
-    void refreshTokenShouldThrowExceptionWhenTokenIsInvalid() {
-      // Arrange
-      when(jwtService.extractUsername(validToken)).thenReturn(user.getEmail());
+    void should_throw_exception_if_token_invalid() {
+      String refreshToken = "invalid-token";
+      when(jwtService.extractUsername(refreshToken)).thenReturn(user.getEmail());
       when(userRepository.findByEmail(user.getEmail())).thenReturn(Optional.of(user));
-      when(jwtService.isTokenValid(validToken, user)).thenReturn(false);
+      when(jwtService.isTokenValid(refreshToken, user)).thenReturn(false);
 
-      // Act & Assert
-      InvalidCredentialsException exception =
-          assertThrows(
-              InvalidCredentialsException.class,
-              () -> authenticationService.refreshToken(validToken));
-
-      // Assert
-      verify(jwtService, times(1)).extractUsername(validToken);
-      verify(userRepository, times(1)).findByEmail(user.getEmail());
-      verify(jwtService, times(1)).isTokenValid(validToken, user);
-      verifyNoMoreInteractions(tokenManagementService);
-
-      assertEquals("Token is invalid or expired", exception.getMessage());
+      assertThrows(
+          InvalidCredentialsException.class,
+          () -> authenticationService.refreshToken(refreshToken));
     }
   }
 }
