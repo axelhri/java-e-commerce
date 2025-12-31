@@ -7,7 +7,7 @@ import ecom.interfaces.CartServiceInterface;
 import ecom.interfaces.EmailServiceInterface;
 import ecom.repository.MailConfirmationRepository;
 import ecom.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class EmailService implements EmailServiceInterface {
   private final JavaMailSender mailSender;
   private final MailConfirmationRepository mailConfirmationRepository;
