@@ -120,5 +120,29 @@ class EmailServiceUnitTest {
 
       verify(userRepository, never()).save(any());
     }
+
+    @Test
+    void should_throw_exception_if_token_expired() {
+      // Arrange
+      String token = "expired-token";
+      String encodedToken = "encoded-token";
+      User user = User.builder().id(UUID.randomUUID()).build();
+      MailConfirmation mailConfirmation =
+          MailConfirmation.builder()
+              .token(encodedToken)
+              .user(user)
+              .expiresAt(Instant.now().minus(1, ChronoUnit.HOURS))
+              .build();
+
+      when(mailConfirmationRepository.findAll()).thenReturn(List.of(mailConfirmation));
+      when(passwordEncoder.matches(token, encodedToken)).thenReturn(true);
+
+      // Act & Assert
+      InvalidTokenException exception =
+          assertThrows(InvalidTokenException.class, () -> emailService.confirmEmail(token));
+      assertEquals("Token expired", exception.getMessage());
+
+      verify(userRepository, never()).save(any());
+    }
   }
 }
