@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import ecom.entity.MailConfirmation;
 import ecom.entity.User;
+import ecom.exception.InvalidTokenException;
 import ecom.interfaces.CartServiceInterface;
 import ecom.repository.MailConfirmationRepository;
 import ecom.repository.UserRepository;
@@ -94,6 +95,30 @@ class EmailServiceUnitTest {
       verify(userRepository).save(user);
       verify(cartServiceInterface).createCart(user);
       verify(mailConfirmationRepository).delete(mailConfirmation);
+    }
+
+    @Test
+    void should_throw_exception_if_token_invalid() {
+      // Arrange
+      String token = "invalid-token";
+      String encodedToken = "encoded-token";
+      User user = User.builder().id(UUID.randomUUID()).build();
+      MailConfirmation mailConfirmation =
+          MailConfirmation.builder()
+              .token(encodedToken)
+              .user(user)
+              .expiresAt(Instant.now().plus(1, ChronoUnit.HOURS))
+              .build();
+
+      when(mailConfirmationRepository.findAll()).thenReturn(List.of(mailConfirmation));
+      when(passwordEncoder.matches(token, encodedToken)).thenReturn(false);
+
+      // Act & Assert
+      InvalidTokenException exception =
+          assertThrows(InvalidTokenException.class, () -> emailService.confirmEmail(token));
+      assertEquals("Invalid token", exception.getMessage());
+
+      verify(userRepository, never()).save(any());
     }
   }
 }
