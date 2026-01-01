@@ -4,13 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
 import neora.dto.ChangePassword;
 import neora.entity.User;
 import neora.exception.InvalidPasswordException;
 import neora.exception.ResourceNotFoundException;
 import neora.repository.UserRepository;
 import neora.service.UserService;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

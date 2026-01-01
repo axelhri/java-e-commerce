@@ -1,9 +1,5 @@
 package neora.controller;
 
-import neora.dto.ApiRestResponse;
-import neora.dto.CategoryRequest;
-import neora.dto.CategoryResponse;
-import neora.interfaces.CategoryServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +10,10 @@ import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import neora.dto.ApiRestResponse;
+import neora.dto.CategoryRequest;
+import neora.dto.CategoryResponse;
+import neora.interfaces.CategoryServiceInterface;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

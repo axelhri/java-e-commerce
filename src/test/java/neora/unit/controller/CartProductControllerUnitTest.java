@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 import neora.config.JwtAuthenticationFilter;
 import neora.controller.CartProductController;
 import neora.dto.CartItemResponse;
@@ -14,7 +15,6 @@ import neora.entity.User;
 import neora.exception.ResourceNotFoundException;
 import neora.interfaces.CartProductServiceInterface;
 import neora.service.JwtService;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

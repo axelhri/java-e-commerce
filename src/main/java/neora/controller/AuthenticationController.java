@@ -1,11 +1,5 @@
 package neora.controller;
 
-import neora.dto.AuthenticationRequest;
-import neora.dto.AuthenticationResponse;
-import neora.dto.RefreshTokenResponse;
-import neora.dto.RegisterResponse;
-import neora.exception.InvalidTokenException;
-import neora.interfaces.AuthenticationServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,6 +9,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import neora.dto.AuthenticationRequest;
+import neora.dto.AuthenticationResponse;
+import neora.dto.RefreshTokenResponse;
+import neora.dto.RegisterResponse;
+import neora.exception.InvalidTokenException;
+import neora.interfaces.AuthenticationServiceInterface;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

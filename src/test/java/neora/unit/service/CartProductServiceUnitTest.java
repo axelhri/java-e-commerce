@@ -3,6 +3,8 @@ package neora.unit.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+import java.util.UUID;
 import neora.dto.CartItemResponse;
 import neora.dto.ManageCartRequest;
 import neora.entity.Cart;
@@ -15,8 +17,6 @@ import neora.interfaces.StockServiceInterface;
 import neora.repository.CartItemRepository;
 import neora.repository.ProductRepository;
 import neora.service.CartProductService;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

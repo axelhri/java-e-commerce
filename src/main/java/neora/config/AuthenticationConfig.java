@@ -1,7 +1,7 @@
 package neora.config;
 
-import neora.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import neora.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

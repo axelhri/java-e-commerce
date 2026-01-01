@@ -1,9 +1,9 @@
 package neora.interfaces;
 
-import neora.validator.PasswordMatchValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.*;
+import neora.validator.PasswordMatchValidator;
 
 @Constraint(validatedBy = PasswordMatchValidator.class)
 @Target({ElementType.TYPE})

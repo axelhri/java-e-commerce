@@ -1,8 +1,8 @@
 package neora.interfaces;
 
+import java.io.IOException;
 import neora.dto.VendorRequest;
 import neora.dto.VendorResponse;
-import java.io.IOException;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface VendorServiceInterface {

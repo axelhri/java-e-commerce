@@ -1,7 +1,7 @@
 package neora.specification;
 
-import neora.entity.Product;
 import java.util.UUID;
+import neora.entity.Product;
 import org.springframework.data.jpa.domain.Specification;
 
 public class ProductSpecification {

@@ -1,11 +1,11 @@
 package neora.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import neora.model.Role;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.*;
 import lombok.*;
+import neora.model.Role;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.UUID;
 import neora.config.JwtAuthenticationFilter;
 import neora.controller.RatingController;
 import neora.dto.RatingRequest;
@@ -15,7 +16,6 @@ import neora.dto.RatingResponse;
 import neora.entity.User;
 import neora.interfaces.RatingServiceInterface;
 import neora.service.JwtService;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

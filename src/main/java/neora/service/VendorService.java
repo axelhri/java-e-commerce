@@ -1,5 +1,7 @@
 package neora.service;
 
+import java.io.IOException;
+import lombok.AllArgsConstructor;
 import neora.dto.CloudinaryResponse;
 import neora.dto.VendorRequest;
 import neora.dto.VendorResponse;
@@ -11,8 +13,6 @@ import neora.interfaces.VendorServiceInterface;
 import neora.mapper.VendorMapper;
 import neora.repository.VendorImageRepository;
 import neora.repository.VendorRepository;
-import java.io.IOException;
-import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

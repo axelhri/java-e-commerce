@@ -1,5 +1,8 @@
 package neora.mapper;
 
+import java.util.Collections;
+import java.util.List;
+import lombok.AllArgsConstructor;
 import neora.dto.ProductImageResponse;
 import neora.dto.ProductRequest;
 import neora.dto.ProductResponse;
@@ -8,9 +11,6 @@ import neora.entity.Product;
 import neora.entity.ProductImage;
 import neora.entity.Vendor;
 import neora.interfaces.RatingServiceInterface;
-import java.util.Collections;
-import java.util.List;
-import lombok.AllArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 

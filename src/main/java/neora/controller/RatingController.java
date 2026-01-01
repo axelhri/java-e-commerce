@@ -1,8 +1,5 @@
 package neora.controller;
 
-import neora.dto.*;
-import neora.entity.User;
-import neora.interfaces.RatingServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +11,9 @@ import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import neora.dto.*;
+import neora.entity.User;
+import neora.interfaces.RatingServiceInterface;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

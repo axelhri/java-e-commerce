@@ -1,5 +1,9 @@
 package neora.service;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import neora.dto.CategoryRequest;
 import neora.dto.CategoryResponse;
 import neora.entity.Category;
@@ -8,10 +12,6 @@ import neora.exception.ResourceNotFoundException;
 import neora.interfaces.CategoryServiceInterface;
 import neora.mapper.CategoryMapper;
 import neora.repository.CategoryRepository;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 

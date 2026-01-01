@@ -1,11 +1,11 @@
 package neora.service;
 
+import lombok.AllArgsConstructor;
 import neora.entity.Token;
 import neora.entity.User;
 import neora.interfaces.TokenManagementServiceInterface;
 import neora.model.TokenType;
 import neora.repository.TokenRepository;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service

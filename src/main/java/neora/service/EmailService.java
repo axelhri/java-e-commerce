@@ -1,5 +1,6 @@
 package neora.service;
 
+import lombok.RequiredArgsConstructor;
 import neora.entity.MailConfirmation;
 import neora.entity.User;
 import neora.exception.InvalidTokenException;
@@ -7,7 +8,6 @@ import neora.interfaces.CartServiceInterface;
 import neora.interfaces.EmailServiceInterface;
 import neora.repository.MailConfirmationRepository;
 import neora.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;

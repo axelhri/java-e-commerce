@@ -1,7 +1,7 @@
 package neora.repository;
 
-import neora.entity.VendorImage;
 import java.util.UUID;
+import neora.entity.VendorImage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

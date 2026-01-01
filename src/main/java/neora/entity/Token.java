@@ -1,10 +1,10 @@
 package neora.entity;
 
-import neora.model.TokenType;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
+import neora.model.TokenType;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Getter

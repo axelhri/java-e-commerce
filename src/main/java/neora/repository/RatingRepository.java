@@ -1,9 +1,9 @@
 package neora.repository;
 
-import neora.dto.ProductAverageRating;
-import neora.entity.ProductRating;
 import java.util.List;
 import java.util.UUID;
+import neora.dto.ProductAverageRating;
+import neora.entity.ProductRating;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

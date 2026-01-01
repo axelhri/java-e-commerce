@@ -1,9 +1,9 @@
 package neora.interfaces;
 
-import neora.dto.CloudinaryResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import neora.dto.CloudinaryResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface CloudinaryServiceInterface {

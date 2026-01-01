@@ -1,5 +1,11 @@
 package neora.service;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
 import neora.dto.*;
 import neora.entity.Category;
 import neora.entity.Product;
@@ -18,12 +24,6 @@ import neora.repository.ProductImageRepository;
 import neora.repository.ProductRepository;
 import neora.repository.VendorRepository;
 import neora.specification.ProductSpecification;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

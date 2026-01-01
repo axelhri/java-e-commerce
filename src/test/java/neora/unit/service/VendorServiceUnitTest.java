@@ -3,6 +3,8 @@ package neora.unit.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+import java.util.UUID;
 import neora.dto.CloudinaryResponse;
 import neora.dto.VendorRequest;
 import neora.dto.VendorResponse;
@@ -13,8 +15,6 @@ import neora.mapper.VendorMapper;
 import neora.repository.VendorImageRepository;
 import neora.repository.VendorRepository;
 import neora.service.VendorService;
-import java.io.IOException;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

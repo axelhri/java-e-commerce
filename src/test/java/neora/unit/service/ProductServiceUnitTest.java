@@ -5,6 +5,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
+import java.util.*;
 import neora.dto.AllProductsResponse;
 import neora.dto.ProductRequest;
 import neora.dto.ProductResponse;
@@ -23,8 +25,6 @@ import neora.repository.ProductRepository;
 import neora.repository.VendorRepository;
 import neora.service.ProductService;
 import neora.service.SlugService;
-import java.io.IOException;
-import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

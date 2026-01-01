@@ -1,5 +1,10 @@
 package neora.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import neora.dto.ProductStock;
 import neora.entity.Product;
 import neora.entity.StockMovement;
@@ -7,11 +12,6 @@ import neora.interfaces.StockServiceInterface;
 import neora.model.StockReason;
 import neora.model.StockType;
 import neora.repository.StockMovementRepository;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service

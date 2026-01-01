@@ -1,12 +1,12 @@
 package neora.service;
 
+import lombok.AllArgsConstructor;
 import neora.dto.ChangePassword;
 import neora.entity.User;
 import neora.exception.InvalidPasswordException;
 import neora.exception.ResourceNotFoundException;
 import neora.interfaces.UserServiceInterface;
 import neora.repository.UserRepository;
-import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

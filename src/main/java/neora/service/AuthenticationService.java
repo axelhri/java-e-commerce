@@ -1,5 +1,11 @@
 package neora.service;
 
+import jakarta.transaction.Transactional;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Locale;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
 import neora.dto.AuthenticationRequest;
 import neora.dto.AuthenticationResponse;
 import neora.dto.RefreshTokenResponse;
@@ -15,12 +21,6 @@ import neora.interfaces.TokenManagementServiceInterface;
 import neora.mapper.UserMapper;
 import neora.repository.MailConfirmationRepository;
 import neora.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Locale;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

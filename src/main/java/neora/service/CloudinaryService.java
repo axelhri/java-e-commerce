@@ -2,13 +2,13 @@ package neora.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import neora.dto.CloudinaryResponse;
-import neora.interfaces.CloudinaryServiceInterface;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
+import neora.dto.CloudinaryResponse;
+import neora.interfaces.CloudinaryServiceInterface;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,7 +29,8 @@ public class CloudinaryService implements CloudinaryServiceInterface {
                     file.getBytes(),
                     ObjectUtils.asMap("resource_type", "auto", "folder", folder, "tags", folder));
 
-    return new CloudinaryResponse((String) result.get("public_id"), (String) result.get("secure_url"));
+    return new CloudinaryResponse(
+        (String) result.get("public_id"), (String) result.get("secure_url"));
   }
 
   @Override

@@ -1,5 +1,11 @@
 package neora.service;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 import neora.dto.PagedResponse;
 import neora.dto.ProductAverageRating;
 import neora.dto.RatingRequest;
@@ -19,12 +25,6 @@ import neora.repository.OrderRepository;
 import neora.repository.ProductRatingRepository;
 import neora.repository.ProductRepository;
 import neora.repository.RatingRepository;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

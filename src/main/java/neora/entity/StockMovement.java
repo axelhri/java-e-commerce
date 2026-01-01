@@ -1,12 +1,12 @@
 package neora.entity;
 
-import neora.model.StockReason;
-import neora.model.StockType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.*;
+import neora.model.StockReason;
+import neora.model.StockType;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 

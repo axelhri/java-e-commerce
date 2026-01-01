@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import java.util.Optional;
+import java.util.UUID;
 import neora.dto.AuthenticationRequest;
 import neora.dto.AuthenticationResponse;
 import neora.dto.RefreshTokenResponse;
@@ -20,8 +22,6 @@ import neora.repository.UserRepository;
 import neora.service.AuthenticationService;
 import neora.service.EmailService;
 import neora.service.JwtService;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

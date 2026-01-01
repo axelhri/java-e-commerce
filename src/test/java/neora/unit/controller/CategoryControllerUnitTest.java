@@ -3,6 +3,8 @@ package neora.unit.controller;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Set;
+import java.util.UUID;
 import neora.controller.CategoryController;
 import neora.dto.ApiRestResponse;
 import neora.dto.CategoryRequest;
@@ -10,8 +12,6 @@ import neora.entity.Category;
 import neora.exception.ResourceAlreadyExistsException;
 import neora.exception.ResourceNotFoundException;
 import neora.service.CategoryService;
-import java.util.Set;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

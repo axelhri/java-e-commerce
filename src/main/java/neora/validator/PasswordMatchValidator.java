@@ -1,9 +1,9 @@
 package neora.validator;
 
-import neora.dto.ChangePassword;
-import neora.interfaces.PasswordMatch;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
+import neora.dto.ChangePassword;
+import neora.interfaces.PasswordMatch;
 
 public class PasswordMatchValidator implements ConstraintValidator<PasswordMatch, ChangePassword> {
   @Override
