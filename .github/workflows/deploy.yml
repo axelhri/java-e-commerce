@@ -78,6 +78,12 @@ jobs:
             https://raw.githubusercontent.com/${{ github.repository }}/main/compose.prod.yml \
             -o compose.prod.yml
 
+          if [ -d "nginx/default.conf" ]; then sudo rm -rf nginx/default.conf; fi
+          
+          sudo mkdir -p nginx
+          sudo curl -fsSL -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+            https://raw.githubusercontent.com/${{ github.repository }}/develop/nginx.conf -o nginx/default.conf
+          
           CERT_PATH="certbot/conf/live/neora.duckdns.org/fullchain.pem"
           if [ ! -f "$CERT_PATH" ]; then
             sudo mkdir -p certbot/conf/live/neora.duckdns.org
@@ -100,7 +106,6 @@ jobs:
               -d neora.duckdns.org --force-renewal
           
             sudo chmod -R 755 certbot/conf
-          
             docker compose -f compose.prod.yml exec -T nginx nginx -s reload
           fi
 
