@@ -59,6 +59,7 @@ public class CartProductService implements CartProductServiceInterface {
     cartItemRepository.save(cartItem);
 
     return new CartItemResponse(
+        cartItem.getId(),
         cartItem.getProduct().getId(),
         cartItem.getProduct().getName(),
         cartItem.getQuantity(),
