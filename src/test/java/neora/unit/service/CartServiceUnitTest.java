@@ -60,8 +60,8 @@ class CartServiceUnitTest {
       // Arrange
       User user = new User();
       user.setEmail("test@example.com");
-      Cart cart = Cart.builder().user(user).build();
-      when(cartRepository.save(any(Cart.class))).thenReturn(cart);
+      Cart newCart = Cart.builder().user(user).build();
+      when(cartRepository.save(any(Cart.class))).thenReturn(newCart);
 
       // Act
       Cart result = cartService.createCart(user);
