@@ -49,7 +49,8 @@ class OrderControllerUnitTest {
   @BeforeEach
   void setUp() {
     orderResponse =
-        new OrderResponse(Set.of(UUID.randomUUID(), UUID.randomUUID()), new BigDecimal("50"));
+        new OrderResponse(
+            UUID.randomUUID(), Set.of(UUID.randomUUID(), UUID.randomUUID()), new BigDecimal("50"));
     user = User.builder().email("test@example.com").password("Password123!").build();
     orderRequest = new OrderRequest(Set.of(UUID.randomUUID(), UUID.randomUUID()));
   }
