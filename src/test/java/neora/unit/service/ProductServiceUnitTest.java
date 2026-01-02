@@ -184,7 +184,7 @@ class ProductServiceUnitTest {
 
       ProductResponse mockResponse =
           new ProductResponse(product.getId(), "Test", 100, "Desc", 20, List.of(), null);
-      when(productMapper.toResponse(eq(product), eq(20))).thenReturn(mockResponse);
+      when(productMapper.toResponse(product, 20)).thenReturn(mockResponse);
 
       // Act
       ProductResponse result = productService.getProductById(productId);
