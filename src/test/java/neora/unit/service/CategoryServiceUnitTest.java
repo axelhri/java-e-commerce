@@ -25,7 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
-public class CategoryServiceUnitTest {
+class CategoryServiceUnitTest {
   @Mock private CategoryMapper categoryMapper;
   @Mock private CategoryRepository categoryRepository;
   @InjectMocks private CategoryService categoryService;
