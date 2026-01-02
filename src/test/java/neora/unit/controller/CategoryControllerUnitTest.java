@@ -23,7 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 @ExtendWith(MockitoExtension.class)
-public class CategoryControllerUnitTest {
+class CategoryControllerUnitTest {
   @Mock private CategoryService categoryService;
   @InjectMocks private CategoryController categoryController;
 
