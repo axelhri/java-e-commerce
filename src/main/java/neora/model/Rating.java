@@ -14,10 +14,10 @@ public enum Rating {
   FOUR_STAR(4),
   FIVE_STAR(5);
 
-  @Getter private final Integer rating;
+  @Getter private final Integer value;
 
   private static final Map<Integer, Rating> RATING_MAP =
-      Arrays.stream(values()).collect(Collectors.toMap(Rating::getRating, r -> r));
+      Arrays.stream(values()).collect(Collectors.toMap(Rating::getValue, r -> r));
 
   public static Rating fromValue(int value) {
     Rating rating = RATING_MAP.get(value);

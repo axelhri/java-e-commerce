@@ -37,7 +37,7 @@ public class ProductRating {
   private Instant createdAt;
 
   public void setRating(Rating rating) {
-    this.ratingValue = rating.getRating();
+    this.ratingValue = rating.getValue();
   }
 
   public Rating getRatingEnum() {

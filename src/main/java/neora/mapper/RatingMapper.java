@@ -11,6 +11,6 @@ public class RatingMapper {
     return new RatingResponse(
         productRating.getId(),
         productRating.getProduct().getId(),
-        productRating.getRatingEnum().getRating());
+        productRating.getRatingEnum().getValue());
   }
 }

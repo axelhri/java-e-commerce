@@ -81,7 +81,7 @@ class RatingServiceUnitTest {
                 return new RatingResponse(
                     pr.getProduct().getId(),
                     pr.getProduct().getId(),
-                    pr.getRatingEnum().getRating());
+                    pr.getRatingEnum().getValue());
               });
 
       // Act
