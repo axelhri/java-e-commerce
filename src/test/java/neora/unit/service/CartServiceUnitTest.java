@@ -78,14 +78,14 @@ class CartServiceUnitTest {
     void createCartShouldCreateCartThrowExceptionWhenUserAlreadyHasCart() {
 
       // Arrange
-      User user = new User();
-      user.setEmail("test@example.com");
-      Cart existingCart = Cart.builder().user(user).build();
-      user.setCart(existingCart);
+      User newUser = new User();
+      newUser.setEmail("test@example.com");
+      Cart existingCart = Cart.builder().user(newUser).build();
+      newUser.setCart(existingCart);
 
       // Act & Assert
       CartAlreadyExistsException exception =
-          assertThrows(CartAlreadyExistsException.class, () -> cartService.createCart(user));
+          assertThrows(CartAlreadyExistsException.class, () -> cartService.createCart(newUser));
 
       assertEquals("test@example.com cart already exists", exception.getMessage());
       verify(cartRepository, never()).save(any(Cart.class));
