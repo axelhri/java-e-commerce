@@ -313,12 +313,14 @@ class OrderServiceUnitTest {
       User otherUser = User.builder().id(UUID.randomUUID()).email("other@example.com").build();
       Order otherOrder = Order.builder().id(UUID.randomUUID()).user(otherUser).build();
 
-      when(orderRepository.findById(otherOrder.getId())).thenReturn(Optional.of(otherOrder));
+      UUID otherOrderId = otherOrder.getId();
+
+      when(orderRepository.findById(otherOrderId)).thenReturn(Optional.of(otherOrder));
 
       // Act & Assert
       UnauthorizedAccess exception =
           assertThrows(
-              UnauthorizedAccess.class, () -> orderService.getOrderById(user, otherOrder.getId()));
+              UnauthorizedAccess.class, () -> orderService.getOrderById(user, otherOrderId));
 
       assertEquals("You do not have the rights to perform this action.", exception.getMessage());
     }
