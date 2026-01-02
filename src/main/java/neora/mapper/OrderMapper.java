@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class OrderMapper {
-  public OrderResponse toOrderResponse(Set<UUID> productIds, BigDecimal totalAmount) {
-    return new OrderResponse(productIds, totalAmount);
+  public OrderResponse toOrderResponse(UUID orderId, Set<UUID> productIds, BigDecimal totalAmount) {
+    return new OrderResponse(orderId, productIds, totalAmount);
   }
 }
