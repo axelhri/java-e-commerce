@@ -20,14 +20,12 @@ public class CloudinaryService implements CloudinaryServiceInterface {
 
   @Override
   public CloudinaryResponse upload(MultipartFile file, String folder) throws IOException {
-    @SuppressWarnings("unchecked")
-    Map<String, Object> result =
-        (Map<String, Object>)
-            cloudinary
-                .uploader()
-                .upload(
-                    file.getBytes(),
-                    ObjectUtils.asMap("resource_type", "auto", "folder", folder, "tags", folder));
+    Map result =
+        cloudinary
+            .uploader()
+            .upload(
+                file.getBytes(),
+                ObjectUtils.asMap("resource_type", "auto", "folder", folder, "tags", folder));
 
     return new CloudinaryResponse(
         (String) result.get("public_id"), (String) result.get("secure_url"));
