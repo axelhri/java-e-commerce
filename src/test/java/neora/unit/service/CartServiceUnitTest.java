@@ -58,20 +58,20 @@ class CartServiceUnitTest {
     @Test
     void createCartShouldCreateCartWhenUserHasNoCart() {
       // Arrange
-      User user = new User();
-      user.setEmail("test@example.com");
-      Cart newCart = Cart.builder().user(user).build();
+      User newUser = new User();
+      newUser.setEmail("test@example.com");
+      Cart newCart = Cart.builder().user(newUser).build();
       when(cartRepository.save(any(Cart.class))).thenReturn(newCart);
 
       // Act
-      Cart result = cartService.createCart(user);
+      Cart result = cartService.createCart(newUser);
 
       // Assert
       verify(cartRepository, times(1)).save(any(Cart.class));
 
       assertNotNull(result);
-      assertEquals(user, result.getUser());
-      assertEquals(user, user.getCart().getUser());
+      assertEquals(newUser, result.getUser());
+      assertEquals(newUser, newUser.getCart().getUser());
     }
 
     @Test
