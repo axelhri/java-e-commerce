@@ -92,7 +92,7 @@ jobs:
             sudo openssl req -x509 -nodes -newkey rsa:2048 \
             -keyout certbot/conf/live/neora.duckdns.org/privkey.pem \
             -out certbot/conf/live/neora.duckdns.org/fullchain.pem \
-            -days 1 -subj '/CN=localhost'
+            -days 1 -subj '/CN=neora.duckdns.org'
 
             sudo chmod -R 755 certbot/conf
           fi
