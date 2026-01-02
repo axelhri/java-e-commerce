@@ -135,7 +135,7 @@ public class OrderService implements OrderServiceInterface {
   private OrderResponse buildOrderResponse(Order order) {
     BigDecimal total = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
     Set<UUID> ids = extractProductIds(order.getOrderItems());
-    return orderMapper.toOrderResponse(ids, total);
+    return orderMapper.toOrderResponse(order.getId(), ids, total);
   }
 
   private void validateCartItemOwnership(User user, CartItem cartItem) {
