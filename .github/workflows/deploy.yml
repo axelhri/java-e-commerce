@@ -89,7 +89,7 @@ jobs:
           sudo mkdir -p certbot/conf/live/neora.duckdns.org
           if [ ! -f certbot/conf/live/neora.duckdns.org/fullchain.pem ]; then
 
-            sudo openssl req -x509 -nodes -newkey rsa:1024 \
+            sudo openssl req -x509 -nodes -newkey rsa:2048 \
             -keyout certbot/conf/live/neora.duckdns.org/privkey.pem \
             -out certbot/conf/live/neora.duckdns.org/fullchain.pem \
             -days 1 -subj '/CN=localhost'
