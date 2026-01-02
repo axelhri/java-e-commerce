@@ -6,6 +6,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class ProductSpecification {
 
+  // Sonar maintainability issue fix
+  private ProductSpecification() {
+    throw new IllegalStateException("Utility class");
+  }
+
   public static Specification<Product> hasCategory(UUID categoryId) {
     return (root, query, cb) ->
         categoryId == null ? null : cb.equal(root.get("category").get("id"), categoryId);
