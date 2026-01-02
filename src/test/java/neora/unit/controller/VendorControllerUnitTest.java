@@ -44,7 +44,7 @@ public class VendorControllerUnitTest {
     @Test
     void createVendorShouldReturnCode201() throws IOException {
       // Arrange
-      when(vendorService.createVendor(eq(vendorRequest), eq(mockFile))).thenReturn(vendorResponse);
+      when(vendorService.createVendor(vendorRequest, mockFile)).thenReturn(vendorResponse);
 
       // Act
       ResponseEntity<ApiRestResponse<VendorResponse>> response =
