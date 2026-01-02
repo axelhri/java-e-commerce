@@ -15,9 +15,9 @@ public enum Permission {
   USER_CREATE("user:create"),
   USER_DELETE("user:delete");
 
-  @Getter private final String permission;
+  @Getter private final String value;
 
   public SimpleGrantedAuthority toAuthority() {
-    return new SimpleGrantedAuthority(permission);
+    return new SimpleGrantedAuthority(value);
   }
 }
