@@ -58,7 +58,8 @@ class CartProductControllerUnitTest {
             .build();
     request = new ManageCartRequest(product.getId(), 1);
     cartItemResponse =
-        new CartItemResponse(product.getId(), product.getName(), 1, product.getPrice());
+        new CartItemResponse(
+            UUID.randomUUID(), product.getId(), product.getName(), 1, product.getPrice());
   }
 
   @Nested
