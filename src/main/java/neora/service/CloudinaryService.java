@@ -45,9 +45,6 @@ public class CloudinaryService implements CloudinaryServiceInterface {
 
   @Override
   public Map<String, Object> delete(String publicId) throws IOException {
-    @SuppressWarnings("unchecked")
-    Map<String, Object> result =
-        (Map<String, Object>) cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
-    return result;
+    return cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
   }
 }
