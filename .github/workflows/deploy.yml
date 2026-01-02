@@ -79,7 +79,6 @@ jobs:
             -o compose.prod.yml
 
           if [ -d "nginx/default.conf" ]; then sudo rm -rf nginx/default.conf; fi
-          
           sudo mkdir -p nginx
           sudo curl -fsSL -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
             https://raw.githubusercontent.com/${{ github.repository }}/develop/nginx.conf -o nginx/default.conf
@@ -99,14 +98,17 @@ jobs:
           
           if openssl x509 -in "$CERT_PATH" -noout -issuer | grep -q "neora.duckdns.org" || \
              ! openssl x509 -in "$CERT_PATH" -checkend 86400; then
+            sudo rm -rf certbot/conf/live/neora.duckdns.org
+            sudo rm -rf certbot/conf/archive/neora.duckdns.org
+            sudo rm -rf certbot/conf/renewal/neora.duckdns.org.conf
           
             docker compose -f compose.prod.yml run --rm --entrypoint "" certbot \
               certbot certonly --webroot --webroot-path=/var/www/certbot \
               --email ${{ secrets.SSL_EMAIL }} --agree-tos --no-eff-email \
-              -d neora.duckdns.org --force-renewal
+              -d neora.duckdns.org
           
             sudo chmod -R 755 certbot/conf
-            docker compose -f compose.prod.yml exec -T nginx nginx -s reload
+            docker compose -f compose.prod.yml restart nginx
           fi
 
           docker image prune -f
