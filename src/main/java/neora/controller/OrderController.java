@@ -1,5 +1,6 @@
 package neora.controller;
 
+import com.stripe.exception.StripeException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -11,10 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
-import neora.dto.ApiRestResponse;
-import neora.dto.CancelOrderRequest;
-import neora.dto.OrderRequest;
-import neora.dto.OrderResponse;
+import neora.dto.*;
 import neora.entity.User;
 import neora.interfaces.OrderServiceInterface;
 import org.springframework.http.HttpStatus;
@@ -51,9 +49,10 @@ public class OrderController {
             content = @Content)
       })
   @PostMapping
-  public ResponseEntity<ApiRestResponse<OrderResponse>> initiateOrder(
-      @AuthenticationPrincipal User user, @Valid @RequestBody OrderRequest dto) {
-    OrderResponse response = orderService.initiateOrder(user, dto);
+  public ResponseEntity<ApiRestResponse<PaymentResponse>> initiateOrder(
+      @AuthenticationPrincipal User user, @Valid @RequestBody OrderRequest dto)
+      throws StripeException {
+    PaymentResponse response = orderService.initiateOrder(user, dto);
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiRestResponse<>(
