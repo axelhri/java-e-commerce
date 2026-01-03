@@ -3,11 +3,14 @@ package neora.unit.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import java.math.BigDecimal;
 import java.util.*;
 import neora.dto.CancelOrderRequest;
 import neora.dto.OrderRequest;
 import neora.dto.OrderResponse;
+import neora.dto.PaymentResponse;
 import neora.entity.*;
 import neora.exception.EmptyCartException;
 import neora.exception.InsufficientStockException;
@@ -20,6 +23,7 @@ import neora.model.OrderStatus;
 import neora.repository.CartItemRepository;
 import neora.repository.OrderRepository;
 import neora.service.OrderService;
+import neora.service.StripeService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,6 +39,7 @@ class OrderServiceUnitTest {
   @Mock private OrderItemMapper orderItemMapper;
   @Mock private StockServiceInterface stockService;
   @Mock private OrderMapper orderMapper;
+  @Mock private StripeService stripeService;
   @InjectMocks private OrderService orderService;
 
   private OrderRequest orderRequest;
@@ -70,30 +75,37 @@ class OrderServiceUnitTest {
     orderRequest = new OrderRequest(Set.of(UUID.randomUUID()));
     order = Order.builder().user(user).build();
     cartItem = CartItem.builder().product(product).cart(cart).quantity(5).build();
-    orderItem = OrderItem.builder().product(product).order(order).build();
+    orderItem = OrderItem.builder().product(product).order(order).quantity(5).build();
   }
 
   @Nested
   class initiateOrderUnitTest {
 
     @Test
-    void should_initiate_order_successfully() {
+    void should_initiate_order_successfully() throws StripeException {
       // Arrange
+      PaymentIntent paymentIntent = mock(PaymentIntent.class);
+      when(paymentIntent.getId()).thenReturn("pi_12345");
+      when(paymentIntent.getClientSecret()).thenReturn("secret_12345");
+
       when(cartItemRepository.findAllById(orderRequest.productIds())).thenReturn(List.of(cartItem));
       when(orderItemMapper.fromCartItem(eq(cartItem), any(Order.class))).thenReturn(orderItem);
       when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
       when(stockService.getCurrentStock(product)).thenReturn(100);
+      when(stripeService.createPaymentIntent(any(Order.class), any(BigDecimal.class)))
+          .thenReturn(paymentIntent);
       when(orderMapper.toOrderResponse(any(), any(), any()))
           .thenReturn(
               new OrderResponse(
                   UUID.randomUUID(), Set.of(product.getId()), new BigDecimal("75.00")));
 
       // Act
-      OrderResponse response = orderService.initiateOrder(user, orderRequest);
+      PaymentResponse response = orderService.initiateOrder(user, orderRequest);
 
       // Assert
       assertNotNull(response);
-      assertEquals(Set.of(product.getId()), response.productsIds());
+      assertEquals("secret_12345", response.clientSecret());
+      assertEquals(Set.of(product.getId()), response.order().productsIds());
     }
 
     @Test
@@ -142,6 +154,7 @@ class OrderServiceUnitTest {
     @Test
     void should_throw_exception_if_stock_is_insufficient_during_order_initiation() {
       // Arrange
+
       when(cartItemRepository.findAllById(orderRequest.productIds())).thenReturn(List.of(cartItem));
       when(stockService.getCurrentStock(product)).thenReturn(2);
 
