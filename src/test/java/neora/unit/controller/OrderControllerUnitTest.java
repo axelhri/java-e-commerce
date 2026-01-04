@@ -63,7 +63,7 @@ class OrderControllerUnitTest {
     @Test
     void should_order_successfully_and_return_201_created() throws Exception {
       // Arrange
-      when(orderService.initiateOrder(user, orderRequest)).thenReturn(paymentResponse);
+      when(orderService.initiateOrder(any(), eq(orderRequest))).thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -78,7 +78,7 @@ class OrderControllerUnitTest {
     void should_return_bad_request_if_request_is_empty() throws Exception {
       // Arrange
       OrderRequest invalidRequest = new OrderRequest(Set.of());
-      when(orderService.initiateOrder(user, invalidRequest)).thenReturn(paymentResponse);
+      when(orderService.initiateOrder(any(), eq(invalidRequest))).thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -94,7 +94,7 @@ class OrderControllerUnitTest {
     void should_return_bad_request_if_request_is_null() throws Exception {
       // Arrange
       OrderRequest invalidRequest = new OrderRequest(null);
-      when(orderService.initiateOrder(user, invalidRequest)).thenReturn(paymentResponse);
+      when(orderService.initiateOrder(any(), eq(invalidRequest))).thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -120,7 +120,7 @@ class OrderControllerUnitTest {
     @Test
     void should_cancel_order_successfully_and_return_200_ok() throws Exception {
       // Arrange
-      when(orderService.cancelOrder(user, cancelRequest)).thenReturn(orderResponse);
+      when(orderService.cancelOrder(any(), eq(cancelRequest))).thenReturn(orderResponse);
 
       // Act & Assert
       mockMvc
@@ -153,7 +153,7 @@ class OrderControllerUnitTest {
       SecurityContextHolder.getContext()
           .setAuthentication(new TestingAuthenticationToken(user, null));
 
-      when(orderService.cancelOrder(user, cancelRequest))
+      when(orderService.cancelOrder(any(), eq(cancelRequest)))
           .thenThrow(
               new neora.exception.ResourceNotFoundException(
                   "Issue encountered while searching for this order."));
@@ -175,7 +175,7 @@ class OrderControllerUnitTest {
       SecurityContextHolder.getContext()
           .setAuthentication(new TestingAuthenticationToken(user, null));
 
-      when(orderService.cancelOrder(any(User.class), eq(cancelRequest)))
+      when(orderService.cancelOrder(any(), eq(cancelRequest)))
           .thenThrow(new UnauthorizedAccess("You do not have the rights to perform this action."));
 
       // Act & Assert
