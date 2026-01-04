@@ -2,6 +2,8 @@ package neora.service;
 
 import com.stripe.exception.StripeException;
 import com.stripe.model.PaymentIntent;
+import com.stripe.model.Refund;
+import com.stripe.param.RefundCreateParams;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -107,7 +109,7 @@ public class OrderService implements OrderServiceInterface {
 
   @Override
   @Transactional
-  public OrderResponse cancelOrder(User user, CancelOrderRequest request) {
+  public OrderResponse cancelOrder(User user, CancelOrderRequest request) throws StripeException {
     Order order =
         orderRepository
             .findById(request.orderId())
@@ -120,16 +122,27 @@ public class OrderService implements OrderServiceInterface {
       throw new UnauthorizedAccess("You do not have the rights to perform this action.");
     }
 
-    order.setStatus(OrderStatus.CANCELLED);
+    switch (order.getStatus()) {
+      case PAID -> {
+        RefundCreateParams params =
+            RefundCreateParams.builder().setPaymentIntent(order.getStripePaymentIntentId()).build();
+        Refund.create(params);
 
-    Order savedOrder = orderRepository.save(order);
-
-    for (OrderItem orderItem : order.getOrderItems()) {
-      stockService.createStockMovement(
-          orderItem.getProduct(), orderItem.getQuantity(), StockType.IN, StockReason.RETURN);
+        order.setStatus(OrderStatus.REFUNDED);
+        order
+            .getOrderItems()
+            .forEach(
+                item ->
+                    stockService.createStockMovement(
+                        item.getProduct(), item.getQuantity(), StockType.IN, StockReason.RETURN));
+      }
+      case PENDING -> order.setStatus(OrderStatus.CANCELLED);
+      case CANCELLED, REFUNDED ->
+          throw new IllegalStateException("Order cannot be cancelled in current state");
     }
 
-    return buildOrderResponse(savedOrder);
+    orderRepository.save(order);
+    return buildOrderResponse(order);
   }
 
   @Override
