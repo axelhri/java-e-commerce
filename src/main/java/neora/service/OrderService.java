@@ -1,5 +1,7 @@
 package neora.service;
 
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -8,6 +10,7 @@ import lombok.AllArgsConstructor;
 import neora.dto.CancelOrderRequest;
 import neora.dto.OrderRequest;
 import neora.dto.OrderResponse;
+import neora.dto.PaymentResponse;
 import neora.entity.*;
 import neora.exception.EmptyCartException;
 import neora.exception.InsufficientStockException;
@@ -28,20 +31,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class OrderService implements OrderServiceInterface {
-  private CartItemRepository cartItemRepository;
-  private OrderRepository orderRepository;
-  private OrderItemMapper orderItemMapper;
-  private StockServiceInterface stockService;
-  private OrderMapper orderMapper;
+  private final CartItemRepository cartItemRepository;
+  private final OrderRepository orderRepository;
+  private final OrderItemMapper orderItemMapper;
+  private final StockServiceInterface stockService;
+  private final OrderMapper orderMapper;
+  private final StripeService stripeService;
 
   @Override
   @Transactional
-  public OrderResponse initiateOrder(User user, OrderRequest request) {
+  public PaymentResponse initiateOrder(User user, OrderRequest request) throws StripeException {
     List<CartItem> foundItems = cartItemRepository.findAllById(request.productIds());
 
-    if (foundItems.isEmpty()) {
-      throw new EmptyCartException("No products were found in cart.");
-    }
+    if (foundItems.isEmpty()) throw new EmptyCartException("No products were found in cart.");
 
     for (CartItem cartItem : foundItems) {
       validateCartItemOwnership(user, cartItem);
@@ -53,27 +55,54 @@ public class OrderService implements OrderServiceInterface {
       }
     }
 
-    Set<CartItem> cartItems = new HashSet<>(foundItems);
-
-    Order order = Order.builder().user(user).build();
+    Order order =
+        Order.builder()
+            .user(user)
+            .status(OrderStatus.PENDING)
+            .orderItems(new ArrayList<>())
+            .build();
 
     Set<OrderItem> orderItems =
-        cartItems.stream()
+        foundItems.stream()
             .map(cartItem -> orderItemMapper.fromCartItem(cartItem, order))
             .collect(Collectors.toSet());
 
     order.getOrderItems().addAll(orderItems);
 
+    orderRepository.save(order);
+
+    BigDecimal total = getOrderTotalAmount(orderItems);
+
+    PaymentIntent intent = stripeService.createPaymentIntent(order, total);
+
+    order.setStripePaymentIntentId(intent.getId());
     Order savedOrder = orderRepository.save(order);
 
-    for (OrderItem orderItem : orderItems) {
+    return new PaymentResponse(buildOrderResponse(savedOrder), intent.getClientSecret());
+  }
+
+  @Override
+  @Transactional
+  public void confirmPayment(UUID orderId) {
+    Order order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    if (order.getStatus() == OrderStatus.PAID) {
+      return;
+    }
+
+    order.setStatus(OrderStatus.PAID);
+    orderRepository.save(order);
+
+    for (OrderItem orderItem : order.getOrderItems()) {
       stockService.createStockMovement(
           orderItem.getProduct(), orderItem.getQuantity(), StockType.OUT, StockReason.SALE);
     }
 
-    cartItemRepository.deleteAll(cartItems);
-
-    return buildOrderResponse(savedOrder);
+    List<CartItem> itemsToRemove = cartItemRepository.findAllByCartUser(order.getUser());
+    cartItemRepository.deleteAll(itemsToRemove);
   }
 
   @Override

@@ -14,6 +14,7 @@ import neora.controller.OrderController;
 import neora.dto.CancelOrderRequest;
 import neora.dto.OrderRequest;
 import neora.dto.OrderResponse;
+import neora.dto.PaymentResponse;
 import neora.entity.User;
 import neora.exception.UnauthorizedAccess;
 import neora.interfaces.OrderServiceInterface;
@@ -41,6 +42,7 @@ class OrderControllerUnitTest {
   @Autowired ObjectMapper objectMapper;
 
   private OrderResponse orderResponse;
+  private PaymentResponse paymentResponse;
 
   private User user;
 
@@ -51,6 +53,7 @@ class OrderControllerUnitTest {
     orderResponse =
         new OrderResponse(
             UUID.randomUUID(), Set.of(UUID.randomUUID(), UUID.randomUUID()), new BigDecimal("50"));
+    paymentResponse = new PaymentResponse(orderResponse, "client_secret");
     user = User.builder().email("test@example.com").password("Password123!").build();
     orderRequest = new OrderRequest(Set.of(UUID.randomUUID(), UUID.randomUUID()));
   }
@@ -60,7 +63,7 @@ class OrderControllerUnitTest {
     @Test
     void should_order_successfully_and_return_201_created() throws Exception {
       // Arrange
-      when(orderService.initiateOrder(user, orderRequest)).thenReturn(orderResponse);
+      when(orderService.initiateOrder(user, orderRequest)).thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -75,7 +78,7 @@ class OrderControllerUnitTest {
     void should_return_bad_request_if_request_is_empty() throws Exception {
       // Arrange
       OrderRequest invalidRequest = new OrderRequest(Set.of());
-      when(orderService.initiateOrder(user, invalidRequest)).thenReturn(orderResponse);
+      when(orderService.initiateOrder(user, invalidRequest)).thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -91,7 +94,7 @@ class OrderControllerUnitTest {
     void should_return_bad_request_if_request_is_null() throws Exception {
       // Arrange
       OrderRequest invalidRequest = new OrderRequest(null);
-      when(orderService.initiateOrder(user, invalidRequest)).thenReturn(orderResponse);
+      when(orderService.initiateOrder(user, invalidRequest)).thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc

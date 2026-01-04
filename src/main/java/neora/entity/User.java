@@ -60,7 +60,7 @@ public class User implements UserDetails {
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
-  private transient Cart cart;
+  private Cart cart;
 
   @PrePersist
   @PreUpdate

@@ -49,8 +49,7 @@ public class RatingService implements RatingServiceInterface {
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
     boolean hasPurchased =
-        orderRepository.existsByUserAndOrderItemsProductAndStatus(
-            user, product, OrderStatus.DELIVERED);
+        orderRepository.existsByUserAndOrderItemsProductAndStatus(user, product, OrderStatus.PAID);
     if (!hasPurchased) {
       throw new UnauthorizedAccess("You can only rate products you have purchased and received.");
     }

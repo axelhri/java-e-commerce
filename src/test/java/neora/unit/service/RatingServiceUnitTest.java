@@ -62,7 +62,7 @@ class RatingServiceUnitTest {
       // Arrange
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
-              user, product, OrderStatus.DELIVERED))
+              user, product, OrderStatus.PAID))
           .thenReturn(true);
       when(productRatingRepository.findByUserAndProduct(user, product))
           .thenReturn(Optional.empty());
@@ -114,7 +114,7 @@ class RatingServiceUnitTest {
       // Arrange
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
-              user, product, OrderStatus.DELIVERED))
+              user, product, OrderStatus.PAID))
           .thenReturn(false);
 
       // Act & Assert
@@ -132,7 +132,7 @@ class RatingServiceUnitTest {
       // Arrange
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
-              user, product, OrderStatus.DELIVERED))
+              user, product, OrderStatus.PAID))
           .thenReturn(true);
       when(productRatingRepository.findByUserAndProduct(user, product))
           .thenReturn(Optional.of(new ProductRating()));
@@ -153,7 +153,7 @@ class RatingServiceUnitTest {
       RatingRequest invalidRequest = new RatingRequest(product.getId(), 10);
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
       when(orderRepository.existsByUserAndOrderItemsProductAndStatus(
-              user, product, OrderStatus.DELIVERED))
+              user, product, OrderStatus.PAID))
           .thenReturn(true);
       when(productRatingRepository.findByUserAndProduct(user, product))
           .thenReturn(Optional.empty());

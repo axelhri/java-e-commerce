@@ -13,7 +13,6 @@ import neora.config.JwtAuthenticationFilter;
 import neora.controller.RatingController;
 import neora.dto.RatingRequest;
 import neora.dto.RatingResponse;
-import neora.entity.User;
 import neora.interfaces.RatingServiceInterface;
 import neora.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +52,7 @@ class RatingControllerUnitTest {
     @Test
     void should_send_rating_and_return_201_created() throws Exception {
       // Arrange
-      when(ratingService.sendProductRating(any(User.class), any(RatingRequest.class)))
+      when(ratingService.sendProductRating(any(), any(RatingRequest.class)))
           .thenReturn(ratingResponse);
 
       // Act & Assert

@@ -60,10 +60,10 @@ VALUES
     ('33333333-cccc-cccc-cccc-cccccccccccc', '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1);
 
 -- ORDERS
-INSERT INTO orders (id, user_id, status)
+INSERT INTO orders (id, user_id, status, stripe_payment_intent_id)
 VALUES
-    ('11111111-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', 'PENDING'),
-    ('22222222-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'PENDING');
+    ('11111111-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', 'PENDING', 'id'),
+    ('22222222-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'PENDING', 'id');
 
 -- ORDER ITEMS
 INSERT INTO order_items (id, order_id, product_id, quantity)

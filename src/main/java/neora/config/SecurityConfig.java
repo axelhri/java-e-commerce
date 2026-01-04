@@ -43,6 +43,8 @@ public class SecurityConfig {
                         "/swagger-ui/**",
                         "/swagger-ui.html")
                     .permitAll()
+                    .requestMatchers("/api/v1/payments/webhook")
+                    .permitAll()
                     .requestMatchers("/api/v1/auth/**")
                     .permitAll()
                     .requestMatchers("/api/v1/email/confirm")

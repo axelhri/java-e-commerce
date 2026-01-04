@@ -37,6 +37,8 @@ public class Order {
   @Enumerated(EnumType.STRING)
   private OrderStatus status = OrderStatus.PENDING;
 
+  @Column private String stripePaymentIntentId;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant orderedAt;
