@@ -1,6 +1,8 @@
 package neora.entity;
 
 import jakarta.persistence.*;
+
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Builder
 @Entity
 @Table(name = "carts")
-public class Cart {
+public class Cart implements Serializable {
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
