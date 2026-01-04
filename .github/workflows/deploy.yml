@@ -71,6 +71,8 @@ jobs:
           CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
           SMTP_MAIL=${{ secrets.SMTP_MAIL }}
           SMTP_KEY=${{ secrets.SMTP_KEY }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
           EOF
           
           sudo curl -fsSL \
