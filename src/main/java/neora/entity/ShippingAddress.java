@@ -42,6 +42,9 @@ public class ShippingAddress {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
+  @OneToOne(mappedBy = "shippingAddress", cascade = CascadeType.ALL, orphanRemoval = true)
+  private Order order;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
