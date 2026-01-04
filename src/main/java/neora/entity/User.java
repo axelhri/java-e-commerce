@@ -62,6 +62,14 @@ public class User implements UserDetails {
   @JsonIgnore
   private Cart cart;
 
+  @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+  @JsonIgnore
+  private List<Order> order;
+
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private ShippingAddress shippingAddress;
+
   @PrePersist
   @PreUpdate
   private void normalizeEmail() {
