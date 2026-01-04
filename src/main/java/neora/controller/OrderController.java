@@ -59,25 +59,10 @@ public class OrderController {
                 Instant.now(), HttpStatus.CREATED.value(), "Order passed successfully", response));
   }
 
-  @Operation(summary = "Cancel an order", description = "Cancels an existing order.")
-  @ApiResponses(
-      value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Order cancelled successfully",
-            content =
-                @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiRestResponse.class))),
-        @ApiResponse(responseCode = "404", description = "Order not found", content = @Content),
-        @ApiResponse(
-            responseCode = "403",
-            description = "Access denied or user not authenticated",
-            content = @Content)
-      })
   @PostMapping("/cancel")
   public ResponseEntity<ApiRestResponse<OrderResponse>> cancelOrder(
-      @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request) {
+      @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request)
+      throws StripeException {
     OrderResponse response = orderService.cancelOrder(user, request);
     return ResponseEntity.status(HttpStatus.OK)
         .body(
