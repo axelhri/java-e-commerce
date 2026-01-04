@@ -1,7 +1,6 @@
 package neora.entity;
 
 import jakarta.persistence.*;
-
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
