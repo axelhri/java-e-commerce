@@ -1,5 +1,7 @@
 package neora.service;
 
+import static com.stripe.net.ApiResource.GSON;
+
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
@@ -44,12 +46,12 @@ public class StripeWebhookService {
     EventDataObjectDeserializer deserializer = event.getDataObjectDeserializer();
     return deserializer
         .getObject()
-        .map(obj -> (PaymentIntent) obj)
+        .map(PaymentIntent.class::cast)
         .or(
             () -> {
               String rawJson = deserializer.getRawJson();
               if (rawJson != null && !rawJson.isEmpty()) {
-                return Optional.of(PaymentIntent.GSON.fromJson(rawJson, PaymentIntent.class));
+                return Optional.of(GSON.fromJson(rawJson, PaymentIntent.class));
               }
               return Optional.empty();
             });
