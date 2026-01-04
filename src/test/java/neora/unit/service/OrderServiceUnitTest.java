@@ -194,7 +194,7 @@ class OrderServiceUnitTest {
     }
 
     @Test
-    void should_cancel_order_successfully() {
+    void should_cancel_order_successfully() throws StripeException {
       // Arrange
       when(orderRepository.findById(cancelRequest.orderId()))
           .thenReturn(Optional.of(existingOrder));
