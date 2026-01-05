@@ -60,10 +60,10 @@ VALUES
     ('33333333-cccc-cccc-cccc-cccccccccccc', '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1);
 
 -- SHIPPING ADDRESSES
-INSERT INTO shipping_addresses (id, first_name, last_name, address_line, postal_code, state, country, user_id)
+INSERT INTO shipping_addresses (id, first_name, last_name, address_line, postal_code, state, country)
 VALUES
-    ('66666666-9999-9999-9999-999999999999', 'Alice', 'Example', '28 Clos Victor Hugo', '70000', 'Ile-de-France', 'France','11111111-1111-1111-1111-111111111111'),
-    ('77777777-9999-9999-9999-999999999999', 'Bob', 'Example', '29 Clos Victor Hugo', '70000', 'Ile-de-France', 'France','22222222-2222-2222-2222-222222222222');
+    ('66666666-9999-9999-9999-999999999999', 'Alice', 'Example', '28 Clos Victor Hugo', '70000', 'Ile-de-France', 'France'),
+    ('77777777-9999-9999-9999-999999999999', 'Bob', 'Example', '29 Clos Victor Hugo', '70000', 'Ile-de-France', 'France');
 
 
 -- ORDERS
