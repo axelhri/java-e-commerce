@@ -27,12 +27,14 @@ public class EmailService implements EmailServiceInterface {
   @Value("${api.url}")
   private String apiUrl;
 
+  private final String email = "no-reply@neora.com";
+
   @Override
   public void sendRegistrationConfirmationEmail(String to, String token) {
     String confirmationLink = apiUrl + "api/v1/email/confirm?token=" + token;
 
     SimpleMailMessage message = new SimpleMailMessage();
-    message.setFrom("no-replyaxelttest@app.com");
+    message.setFrom(email);
     message.setTo(to);
     message.setSubject("Confirmez votre compte");
     message.setText("Cliquez sur ce lien pour confirmer votre compte :\n" + confirmationLink);
@@ -66,7 +68,7 @@ public class EmailService implements EmailServiceInterface {
     String orderLink = apiUrl + "api/v1/orders/" + orderId;
 
     SimpleMailMessage message = new SimpleMailMessage();
-    message.setFrom("no-replyaxelttest@app.com");
+    message.setFrom(email);
     message.setTo(to);
     message.setSubject("Order passed succesfully");
     message.setText("Your order has been passed succesfully: \n " + orderLink);
