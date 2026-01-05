@@ -416,15 +416,15 @@ class OrderServiceUnitTest {
     void should_mark_payment_as_failed_successfully() {
       // Arrange
       UUID orderId = UUID.randomUUID();
-      Order order = Order.builder().id(orderId).status(OrderStatus.PENDING).build();
-      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+      Order newOrder = Order.builder().id(orderId).status(OrderStatus.PENDING).build();
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
 
       // Act
       orderService.markPaymentAsFailed(orderId);
 
       // Assert
-      assertEquals(OrderStatus.PAYMENT_FAILED, order.getStatus());
-      verify(orderRepository).save(order);
+      assertEquals(OrderStatus.PAYMENT_FAILED, newOrder.getStatus());
+      verify(orderRepository).save(newOrder);
     }
 
     @Test
@@ -449,7 +449,7 @@ class OrderServiceUnitTest {
     void should_retry_payment_successfully() throws StripeException {
       // Arrange
       UUID orderId = UUID.randomUUID();
-      Order order =
+      Order newOrder =
           Order.builder()
               .id(orderId)
               .user(user)
@@ -457,13 +457,13 @@ class OrderServiceUnitTest {
               .orderItems(new ArrayList<>(List.of(orderItem)))
               .shippingAddress(shippingAddress)
               .build();
-      orderItem.setOrder(order);
+      orderItem.setOrder(newOrder);
 
       PaymentIntent paymentIntent = mock(PaymentIntent.class);
       when(paymentIntent.getId()).thenReturn("pi_new");
       when(paymentIntent.getClientSecret()).thenReturn("secret_new");
 
-      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
       when(stripeService.createPaymentIntent(any(Order.class), any(BigDecimal.class)))
           .thenReturn(paymentIntent);
       when(orderMapper.toOrderResponse(any(), any(), any(), any()))
@@ -480,9 +480,9 @@ class OrderServiceUnitTest {
       // Assert
       assertNotNull(response);
       assertEquals("secret_new", response.clientSecret());
-      assertEquals(OrderStatus.PENDING, order.getStatus());
-      assertEquals("pi_new", order.getStripePaymentIntentId());
-      verify(orderRepository).save(order);
+      assertEquals(OrderStatus.PENDING, newOrder.getStatus());
+      assertEquals("pi_new", newOrder.getStripePaymentIntentId());
+      verify(orderRepository).save(newOrder);
     }
 
     @Test
@@ -504,9 +504,9 @@ class OrderServiceUnitTest {
       // Arrange
       UUID orderId = UUID.randomUUID();
       User otherUser = User.builder().id(UUID.randomUUID()).build();
-      Order order = Order.builder().id(orderId).user(otherUser).build();
+      Order newOrder = Order.builder().id(orderId).user(otherUser).build();
 
-      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
 
       // Act & Assert
       UnauthorizedAccess exception =
@@ -519,9 +519,9 @@ class OrderServiceUnitTest {
     void should_throw_exception_if_order_already_paid() {
       // Arrange
       UUID orderId = UUID.randomUUID();
-      Order order = Order.builder().id(orderId).user(user).status(OrderStatus.PAID).build();
+      Order newOrder = Order.builder().id(orderId).user(user).status(OrderStatus.PAID).build();
 
-      when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
 
       // Act & Assert
       IllegalStateException exception =
