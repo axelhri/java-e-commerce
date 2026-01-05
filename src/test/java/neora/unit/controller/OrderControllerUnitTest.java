@@ -15,6 +15,7 @@ import neora.dto.CancelOrderRequest;
 import neora.dto.OrderRequest;
 import neora.dto.OrderResponse;
 import neora.dto.PaymentResponse;
+import neora.dto.ShippingAddressRequest;
 import neora.entity.User;
 import neora.exception.UnauthorizedAccess;
 import neora.interfaces.OrderServiceInterface;
@@ -52,10 +53,16 @@ class OrderControllerUnitTest {
   void setUp() {
     orderResponse =
         new OrderResponse(
-            UUID.randomUUID(), Set.of(UUID.randomUUID(), UUID.randomUUID()), new BigDecimal("50"));
+            UUID.randomUUID(),
+            Set.of(UUID.randomUUID(), UUID.randomUUID()),
+            new BigDecimal("50"),
+            UUID.randomUUID());
     paymentResponse = new PaymentResponse(orderResponse, "client_secret");
     user = User.builder().email("test@example.com").password("Password123!").build();
-    orderRequest = new OrderRequest(Set.of(UUID.randomUUID(), UUID.randomUUID()));
+    ShippingAddressRequest shippingAddressRequest =
+        new ShippingAddressRequest("John", "Doe", "123 Main St", "12345", "NY", "USA");
+    orderRequest =
+        new OrderRequest(Set.of(UUID.randomUUID(), UUID.randomUUID()), shippingAddressRequest);
   }
 
   @Nested
@@ -77,7 +84,9 @@ class OrderControllerUnitTest {
     @Test
     void should_return_bad_request_if_request_is_empty() throws Exception {
       // Arrange
-      OrderRequest invalidRequest = new OrderRequest(Set.of());
+      ShippingAddressRequest shippingAddressRequest =
+          new ShippingAddressRequest("John", "Doe", "123 Main St", "12345", "NY", "USA");
+      OrderRequest invalidRequest = new OrderRequest(Set.of(), shippingAddressRequest);
       when(orderService.initiateOrder(any(), eq(invalidRequest))).thenReturn(paymentResponse);
 
       // Act & Assert
@@ -93,7 +102,7 @@ class OrderControllerUnitTest {
     @Test
     void should_return_bad_request_if_request_is_null() throws Exception {
       // Arrange
-      OrderRequest invalidRequest = new OrderRequest(null);
+      OrderRequest invalidRequest = new OrderRequest(null, null);
       when(orderService.initiateOrder(any(), eq(invalidRequest))).thenReturn(paymentResponse);
 
       // Act & Assert
