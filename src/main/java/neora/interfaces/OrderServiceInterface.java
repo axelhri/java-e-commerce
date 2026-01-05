@@ -16,6 +16,8 @@ public interface OrderServiceInterface {
 
   void markPaymentAsFailed(UUID orderId);
 
+  PaymentResponse retryPayment(User user, UUID orderId) throws StripeException;
+
   OrderResponse cancelOrder(User user, CancelOrderRequest request) throws StripeException;
 
   List<OrderResponse> getUserOrders(User user);

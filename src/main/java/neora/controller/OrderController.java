@@ -59,6 +59,12 @@ public class OrderController {
                 Instant.now(), HttpStatus.CREATED.value(), "Order passed successfully", response));
   }
 
+  @PostMapping("/{orderId}/retry-payment")
+  public PaymentResponse retryPayment(
+      @AuthenticationPrincipal User user, @PathVariable UUID orderId) throws StripeException {
+    return orderService.retryPayment(user, orderId);
+  }
+
   @PostMapping("/cancel")
   public ResponseEntity<ApiRestResponse<OrderResponse>> cancelOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request)
