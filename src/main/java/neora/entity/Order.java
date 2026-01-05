@@ -28,6 +28,10 @@ public class Order {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
+  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "shipping_address_id", nullable = false)
+  private ShippingAddress shippingAddress;
+
   @Builder.Default
   @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<OrderItem> orderItems = new ArrayList<>();

@@ -59,11 +59,18 @@ VALUES
     ('22222222-cccc-cccc-cccc-cccccccccccc', '11111111-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '33333333-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 2),
     ('33333333-cccc-cccc-cccc-cccccccccccc', '22222222-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '22222222-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 1);
 
--- ORDERS
-INSERT INTO orders (id, user_id, status, stripe_payment_intent_id)
+-- SHIPPING ADDRESSES
+INSERT INTO shipping_addresses (id, first_name, last_name, address_line, postal_code, state, country, user_id)
 VALUES
-    ('11111111-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', 'PENDING', 'id'),
-    ('22222222-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'PENDING', 'id');
+    ('66666666-9999-9999-9999-999999999999', 'Alice', 'Example', '28 Clos Victor Hugo', '70000', 'Ile-de-France', 'France','11111111-1111-1111-1111-111111111111'),
+    ('77777777-9999-9999-9999-999999999999', 'Bob', 'Example', '29 Clos Victor Hugo', '70000', 'Ile-de-France', 'France','22222222-2222-2222-2222-222222222222');
+
+
+-- ORDERS
+INSERT INTO orders (id, user_id, status, stripe_payment_intent_id, shipping_address_id)
+VALUES
+    ('11111111-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', 'PENDING', 'id', '66666666-9999-9999-9999-999999999999'),
+    ('22222222-dddd-dddd-dddd-dddddddddddd', '33333333-3333-3333-3333-333333333333', 'PENDING', 'id', '77777777-9999-9999-9999-999999999999');
 
 -- ORDER ITEMS
 INSERT INTO order_items (id, order_id, product_id, quantity)

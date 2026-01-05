@@ -1,0 +1,1 @@
+ALTER TABLE orders ADD COLUMN shipping_address_id UUID NOT NULL REFERENCES shipping_addresses(id);
