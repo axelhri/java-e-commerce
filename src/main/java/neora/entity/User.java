@@ -64,11 +64,11 @@ public class User implements UserDetails {
 
   @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
   @JsonIgnore
-  private List<Order> orders;
+  private transient List<Order> orders;
 
   @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
-  private ShippingAddress shippingAddress;
+  private transient ShippingAddress shippingAddress;
 
   @PrePersist
   @PreUpdate
