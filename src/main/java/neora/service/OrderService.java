@@ -153,6 +153,8 @@ public class OrderService implements OrderServiceInterface {
     order.setStatus(OrderStatus.PENDING);
     orderRepository.save(order);
 
+    emailService.sendOrderPassedConfirmationEmail(order.getUser().getEmail(), order.getId());
+
     return new PaymentResponse(buildOrderResponse(order), intent.getClientSecret());
   }
 
