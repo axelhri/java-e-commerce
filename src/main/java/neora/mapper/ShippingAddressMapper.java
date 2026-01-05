@@ -20,16 +20,4 @@ public class ShippingAddressMapper {
         .country(dto.country())
         .build();
   }
-
-  public ShippingAddressResponse shippingAddressToResponse(
-      @NonNull ShippingAddress shippingAddress) {
-    return new ShippingAddressResponse(
-        shippingAddress.getId(),
-        shippingAddress.getFirstName(),
-        shippingAddress.getLastName(),
-        shippingAddress.getAddressLine(),
-        shippingAddress.getPostalCode(),
-        shippingAddress.getState(),
-        shippingAddress.getCountry());
-  }
 }

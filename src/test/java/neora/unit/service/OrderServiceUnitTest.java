@@ -11,11 +11,13 @@ import neora.dto.CancelOrderRequest;
 import neora.dto.OrderRequest;
 import neora.dto.OrderResponse;
 import neora.dto.PaymentResponse;
+import neora.dto.ShippingAddressRequest;
 import neora.entity.*;
 import neora.exception.EmptyCartException;
 import neora.exception.InsufficientStockException;
 import neora.exception.ResourceNotFoundException;
 import neora.exception.UnauthorizedAccess;
+import neora.interfaces.ShippingAddressServiceInterface;
 import neora.interfaces.StockServiceInterface;
 import neora.mapper.OrderItemMapper;
 import neora.mapper.OrderMapper;
@@ -40,6 +42,7 @@ class OrderServiceUnitTest {
   @Mock private StockServiceInterface stockService;
   @Mock private OrderMapper orderMapper;
   @Mock private StripeService stripeService;
+  @Mock private ShippingAddressServiceInterface shippingAddressService;
   @InjectMocks private OrderService orderService;
 
   private OrderRequest orderRequest;
@@ -55,6 +58,8 @@ class OrderServiceUnitTest {
   private OrderItem orderItem;
 
   private Order order;
+
+  private ShippingAddress shippingAddress;
 
   @BeforeEach
   void setUp() {
@@ -72,8 +77,11 @@ class OrderServiceUnitTest {
             .description("16 inch blue laptop")
             .price(1500)
             .build();
-    orderRequest = new OrderRequest(Set.of(UUID.randomUUID()));
-    order = Order.builder().user(user).build();
+    ShippingAddressRequest shippingAddressRequest =
+        new ShippingAddressRequest("John", "Doe", "123 Main St", "12345", "NY", "USA");
+    orderRequest = new OrderRequest(Set.of(UUID.randomUUID()), shippingAddressRequest);
+    shippingAddress = ShippingAddress.builder().id(UUID.randomUUID()).build();
+    order = Order.builder().user(user).shippingAddress(shippingAddress).build();
     cartItem = CartItem.builder().product(product).cart(cart).quantity(5).build();
     orderItem = OrderItem.builder().product(product).order(order).quantity(5).build();
   }
@@ -89,15 +97,20 @@ class OrderServiceUnitTest {
       when(paymentIntent.getClientSecret()).thenReturn("secret_12345");
 
       when(cartItemRepository.findAllById(orderRequest.productIds())).thenReturn(List.of(cartItem));
+      when(shippingAddressService.createShippingAddress(any(ShippingAddressRequest.class)))
+          .thenReturn(shippingAddress);
       when(orderItemMapper.fromCartItem(eq(cartItem), any(Order.class))).thenReturn(orderItem);
       when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
       when(stockService.getCurrentStock(product)).thenReturn(100);
       when(stripeService.createPaymentIntent(any(Order.class), any(BigDecimal.class)))
           .thenReturn(paymentIntent);
-      when(orderMapper.toOrderResponse(any(), any(), any()))
+      when(orderMapper.toOrderResponse(any(), any(), any(), any()))
           .thenReturn(
               new OrderResponse(
-                  UUID.randomUUID(), Set.of(product.getId()), new BigDecimal("75.00")));
+                  UUID.randomUUID(),
+                  Set.of(product.getId()),
+                  new BigDecimal("75.00"),
+                  shippingAddress.getId()));
 
       // Act
       PaymentResponse response = orderService.initiateOrder(user, orderRequest);
@@ -106,6 +119,7 @@ class OrderServiceUnitTest {
       assertNotNull(response);
       assertEquals("secret_12345", response.clientSecret());
       assertEquals(Set.of(product.getId()), response.order().productsIds());
+      assertEquals(shippingAddress.getId(), response.order().shippingAddress());
     }
 
     @Test
@@ -185,6 +199,7 @@ class OrderServiceUnitTest {
               .id(cancelRequest.orderId())
               .user(user)
               .status(OrderStatus.PENDING)
+              .shippingAddress(shippingAddress)
               .build();
 
       existingOrderItem =
@@ -199,10 +214,13 @@ class OrderServiceUnitTest {
       when(orderRepository.findById(cancelRequest.orderId()))
           .thenReturn(Optional.of(existingOrder));
       when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
-      when(orderMapper.toOrderResponse(any(), any(), any()))
+      when(orderMapper.toOrderResponse(any(), any(), any(), any()))
           .thenReturn(
               new OrderResponse(
-                  UUID.randomUUID(), Set.of(product.getId()), new BigDecimal("75.00")));
+                  UUID.randomUUID(),
+                  Set.of(product.getId()),
+                  new BigDecimal("75.00"),
+                  shippingAddress.getId()));
 
       // Act
       OrderResponse response = orderService.cancelOrder(user, cancelRequest);
@@ -266,19 +284,29 @@ class OrderServiceUnitTest {
       Product product2 = Product.builder().id(UUID.randomUUID()).name("Mouse").price(500).build();
       OrderItem orderItem2 = OrderItem.builder().product(product2).quantity(2).build();
       Order order2 =
-          Order.builder().user(user).orderItems(new ArrayList<>(List.of(orderItem2))).build();
+          Order.builder()
+              .user(user)
+              .orderItems(new ArrayList<>(List.of(orderItem2)))
+              .shippingAddress(shippingAddress)
+              .build();
       orderItem2.setOrder(order2);
 
       order.setOrderItems(new ArrayList<>(List.of(orderItem)));
 
       List<Order> userOrders = List.of(order, order2);
       when(orderRepository.findByUser(user)).thenReturn(userOrders);
-      when(orderMapper.toOrderResponse(any(), any(), any()))
+      when(orderMapper.toOrderResponse(any(), any(), any(), any()))
           .thenReturn(
               new OrderResponse(
-                  UUID.randomUUID(), Set.of(product.getId()), new BigDecimal("15.00")),
+                  UUID.randomUUID(),
+                  Set.of(product.getId()),
+                  new BigDecimal("15.00"),
+                  shippingAddress.getId()),
               new OrderResponse(
-                  UUID.randomUUID(), Set.of(product2.getId()), new BigDecimal("10.00")));
+                  UUID.randomUUID(),
+                  Set.of(product2.getId()),
+                  new BigDecimal("10.00"),
+                  shippingAddress.getId()));
 
       // Act
       List<OrderResponse> responses = orderService.getUserOrders(user);
@@ -356,16 +384,20 @@ class OrderServiceUnitTest {
               .user(user)
               .status(OrderStatus.CANCELLED)
               .orderItems(new ArrayList<>(List.of(orderItem)))
+              .shippingAddress(shippingAddress)
               .build();
       orderItem.setOrder(cancelledOrder);
 
       when(orderRepository.findByUserAndStatus(user, OrderStatus.CANCELLED))
           .thenReturn(List.of(cancelledOrder));
 
-      when(orderMapper.toOrderResponse(any(), any(), any()))
+      when(orderMapper.toOrderResponse(any(), any(), any(), any()))
           .thenReturn(
               new OrderResponse(
-                  UUID.randomUUID(), Set.of(product.getId()), new BigDecimal("75.00")));
+                  UUID.randomUUID(),
+                  Set.of(product.getId()),
+                  new BigDecimal("75.00"),
+                  shippingAddress.getId()));
 
       // Act
       List<OrderResponse> responses = orderService.getUserCancelledOrders(user);

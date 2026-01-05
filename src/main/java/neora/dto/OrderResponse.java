@@ -24,4 +24,5 @@ public record OrderResponse(
             example = "150.50",
             accessMode = Schema.AccessMode.READ_ONLY)
         @JsonProperty("order_price")
-        BigDecimal price) {}
+        BigDecimal price,
+    @JsonProperty("shipping_address_id") UUID shippingAddress) {}

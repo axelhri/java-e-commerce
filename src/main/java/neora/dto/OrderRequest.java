@@ -14,4 +14,6 @@ public record OrderRequest(
         @JsonProperty("cart_items")
         @NotEmpty(message = "You must order at least 1 product.")
         @NotNull(message = "You must order at least 1 product.")
-        Set<UUID> productIds) {}
+        Set<UUID> productIds,
+    @JsonProperty("shipping_address") @NotNull(message = "Shipping address is required")
+        ShippingAddressRequest shippingAddress) {}

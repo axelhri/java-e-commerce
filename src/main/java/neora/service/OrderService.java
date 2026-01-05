@@ -19,6 +19,7 @@ import neora.exception.InsufficientStockException;
 import neora.exception.ResourceNotFoundException;
 import neora.exception.UnauthorizedAccess;
 import neora.interfaces.OrderServiceInterface;
+import neora.interfaces.ShippingAddressServiceInterface;
 import neora.interfaces.StockServiceInterface;
 import neora.mapper.OrderItemMapper;
 import neora.mapper.OrderMapper;
@@ -39,6 +40,7 @@ public class OrderService implements OrderServiceInterface {
   private final StockServiceInterface stockService;
   private final OrderMapper orderMapper;
   private final StripeService stripeService;
+  private final ShippingAddressServiceInterface shippingAddressService;
 
   @Override
   @Transactional
@@ -57,11 +59,15 @@ public class OrderService implements OrderServiceInterface {
       }
     }
 
+    ShippingAddress shippingAddress =
+        shippingAddressService.createShippingAddress(request.shippingAddress());
+
     Order order =
         Order.builder()
             .user(user)
             .status(OrderStatus.PENDING)
             .orderItems(new ArrayList<>())
+            .shippingAddress(shippingAddress)
             .build();
 
     Set<OrderItem> orderItems =
@@ -177,7 +183,8 @@ public class OrderService implements OrderServiceInterface {
   private OrderResponse buildOrderResponse(Order order) {
     BigDecimal total = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
     Set<UUID> ids = extractProductIds(order.getOrderItems());
-    return orderMapper.toOrderResponse(order.getId(), ids, total);
+    return orderMapper.toOrderResponse(
+        order.getId(), ids, total, order.getShippingAddress().getId());
   }
 
   private void validateCartItemOwnership(User user, CartItem cartItem) {
