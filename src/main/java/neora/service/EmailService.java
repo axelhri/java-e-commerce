@@ -27,7 +27,7 @@ public class EmailService implements EmailServiceInterface {
   @Value("${api.url}")
   private String apiUrl;
 
-  private final String email = "no-reply@neora.com";
+  private final static String email = "no-reply@neora.com";
 
   @Override
   public void sendRegistrationConfirmationEmail(String to, String token) {
