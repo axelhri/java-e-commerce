@@ -1,5 +1,6 @@
 package neora.service;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import neora.entity.MailConfirmation;
 import neora.entity.User;
@@ -27,7 +28,7 @@ public class EmailService implements EmailServiceInterface {
   private String apiUrl;
 
   @Override
-  public void sendConfirmationEmail(String to, String token) {
+  public void sendRegistrationConfirmationEmail(String to, String token) {
     String confirmationLink = apiUrl + "api/v1/email/confirm?token=" + token;
 
     SimpleMailMessage message = new SimpleMailMessage();
@@ -58,5 +59,18 @@ public class EmailService implements EmailServiceInterface {
     cartServiceInterface.createCart(user);
 
     mailConfirmationRepository.delete(mailConfirmation);
+  }
+
+  @Override
+  public void sendOrderPassedConfirmationEmail(String to, UUID orderId) {
+    String orderLink = apiUrl + "api/v1/orders/" + orderId;
+
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setFrom("no-replyaxelttest@app.com");
+    message.setTo(to);
+    message.setSubject("Order passed succesfully");
+    message.setText("Your order has been passed succesfully: \n " + orderLink);
+
+    mailSender.send(message);
   }
 }

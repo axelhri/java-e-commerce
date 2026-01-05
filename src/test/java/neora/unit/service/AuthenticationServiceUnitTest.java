@@ -76,7 +76,7 @@ class AuthenticationServiceUnitTest {
 
       verify(userRepository).save(user);
       verify(mailConfirmationRepository).save(any(MailConfirmation.class));
-      verify(emailService).sendConfirmationEmail(eq(user.getEmail()), anyString());
+      verify(emailService).sendRegistrationConfirmationEmail(eq(user.getEmail()), anyString());
     }
 
     @Test
@@ -87,7 +87,7 @@ class AuthenticationServiceUnitTest {
           ResourceAlreadyExistsException.class, () -> authenticationService.register(authRequest));
 
       verify(userRepository, never()).save(any());
-      verify(emailService, never()).sendConfirmationEmail(anyString(), anyString());
+      verify(emailService, never()).sendRegistrationConfirmationEmail(anyString(), anyString());
     }
   }
 
