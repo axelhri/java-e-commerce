@@ -1,9 +1,8 @@
 package neora.interfaces;
 
 import neora.dto.ShippingAddressRequest;
-import neora.dto.ShippingAddressResponse;
-import neora.entity.User;
+import neora.entity.ShippingAddress;
 
 public interface ShippingAddressServiceInterface {
-  ShippingAddressResponse createShippingAddress(User user, ShippingAddressRequest request);
+  ShippingAddress createShippingAddress(ShippingAddressRequest request);
 }
