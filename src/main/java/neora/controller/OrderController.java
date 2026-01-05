@@ -59,6 +59,60 @@ public class OrderController {
                 Instant.now(), HttpStatus.CREATED.value(), "Order passed successfully", response));
   }
 
+  @Operation(
+      summary = "Retry payment for an order",
+      description =
+          "Retries the payment process for an existing order if the previous attempt failed.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Payment retry initiated successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Order not found", content = @Content),
+        @ApiResponse(
+            responseCode = "403",
+            description = "User not authorized to access this order",
+            content = @Content)
+      })
+  @PostMapping("/{orderId}/retry-payment")
+  public ResponseEntity<ApiRestResponse<PaymentResponse>> retryPayment(
+      @AuthenticationPrincipal User user, @PathVariable UUID orderId) throws StripeException {
+    PaymentResponse response = orderService.retryPayment(user, orderId);
+    return ResponseEntity.status(HttpStatus.OK)
+        .body(
+            new ApiRestResponse<>(
+                Instant.now(),
+                HttpStatus.OK.value(),
+                "Order passed successfully, please confirm payment",
+                response));
+  }
+
+  @Operation(
+      summary = "Cancel an order",
+      description = "Cancels an existing order and processes a refund if applicable.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Order cancelled successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Order not found", content = @Content),
+        @ApiResponse(
+            responseCode = "403",
+            description = "User not authorized to cancel this order",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Order cannot be cancelled in its current state",
+            content = @Content)
+      })
   @PostMapping("/cancel")
   public ResponseEntity<ApiRestResponse<OrderResponse>> cancelOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request)

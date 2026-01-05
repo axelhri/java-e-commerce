@@ -30,16 +30,32 @@ public class StripeWebhookService {
       throw new IllegalArgumentException("Invalid Stripe signature", e);
     }
 
-    if ("payment_intent.succeeded".equals(event.getType())) {
-      getPaymentIntent(event)
-          .ifPresent(
-              intent -> {
-                String orderId = intent.getMetadata().get("order_id");
-                if (orderId != null) {
-                  orderService.confirmPayment(UUID.fromString(orderId));
-                }
-              });
+    switch (event.getType()) {
+      case "payment_intent.succeeded" -> handlePaymentSucceeded(event);
+      case "payment_intent.payment_failed" -> handlePaymentFailed(event);
     }
+  }
+
+  private void handlePaymentSucceeded(Event event) {
+    getPaymentIntent(event)
+        .ifPresent(
+            intent -> {
+              String orderId = intent.getMetadata().get("order_id");
+              if (orderId != null) {
+                orderService.confirmPayment(UUID.fromString(orderId));
+              }
+            });
+  }
+
+  private void handlePaymentFailed(Event event) {
+    getPaymentIntent(event)
+        .ifPresent(
+            intent -> {
+              String orderId = intent.getMetadata().get("order_id");
+              if (orderId != null) {
+                orderService.markPaymentAsFailed(UUID.fromString(orderId));
+              }
+            });
   }
 
   private Optional<PaymentIntent> getPaymentIntent(Event event) {

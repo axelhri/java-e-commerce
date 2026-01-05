@@ -409,4 +409,125 @@ class OrderServiceUnitTest {
       verify(orderRepository).findByUserAndStatus(user, OrderStatus.CANCELLED);
     }
   }
+
+  @Nested
+  class MarkPaymentAsFailed {
+    @Test
+    void should_mark_payment_as_failed_successfully() {
+      // Arrange
+      UUID orderId = UUID.randomUUID();
+      Order newOrder = Order.builder().id(orderId).status(OrderStatus.PENDING).build();
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
+
+      // Act
+      orderService.markPaymentAsFailed(orderId);
+
+      // Assert
+      assertEquals(OrderStatus.PAYMENT_FAILED, newOrder.getStatus());
+      verify(orderRepository).save(newOrder);
+    }
+
+    @Test
+    void should_throw_exception_if_order_not_found() {
+      // Arrange
+      UUID orderId = UUID.randomUUID();
+      when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> orderService.markPaymentAsFailed(orderId));
+
+      assertEquals("Order not found", exception.getMessage());
+      verify(orderRepository, never()).save(any());
+    }
+  }
+
+  @Nested
+  class RetryPayment {
+    @Test
+    void should_retry_payment_successfully() throws StripeException {
+      // Arrange
+      UUID orderId = UUID.randomUUID();
+      Order newOrder =
+          Order.builder()
+              .id(orderId)
+              .user(user)
+              .status(OrderStatus.PAYMENT_FAILED)
+              .orderItems(new ArrayList<>(List.of(orderItem)))
+              .shippingAddress(shippingAddress)
+              .build();
+      orderItem.setOrder(newOrder);
+
+      PaymentIntent paymentIntent = mock(PaymentIntent.class);
+      when(paymentIntent.getId()).thenReturn("pi_new");
+      when(paymentIntent.getClientSecret()).thenReturn("secret_new");
+
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
+      when(stripeService.createPaymentIntent(any(Order.class), any(BigDecimal.class)))
+          .thenReturn(paymentIntent);
+      when(orderMapper.toOrderResponse(any(), any(), any(), any()))
+          .thenReturn(
+              new OrderResponse(
+                  orderId,
+                  Set.of(product.getId()),
+                  new BigDecimal("75.00"),
+                  shippingAddress.getId()));
+
+      // Act
+      PaymentResponse response = orderService.retryPayment(user, orderId);
+
+      // Assert
+      assertNotNull(response);
+      assertEquals("secret_new", response.clientSecret());
+      assertEquals(OrderStatus.PENDING, newOrder.getStatus());
+      assertEquals("pi_new", newOrder.getStripePaymentIntentId());
+      verify(orderRepository).save(newOrder);
+    }
+
+    @Test
+    void should_throw_exception_if_order_not_found() {
+      // Arrange
+      UUID orderId = UUID.randomUUID();
+      when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class, () -> orderService.retryPayment(user, orderId));
+
+      assertEquals("Order not found", exception.getMessage());
+    }
+
+    @Test
+    void should_throw_exception_if_user_not_authorized() {
+      // Arrange
+      UUID orderId = UUID.randomUUID();
+      User otherUser = User.builder().id(UUID.randomUUID()).build();
+      Order newOrder = Order.builder().id(orderId).user(otherUser).build();
+
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
+
+      // Act & Assert
+      UnauthorizedAccess exception =
+          assertThrows(UnauthorizedAccess.class, () -> orderService.retryPayment(user, orderId));
+
+      assertEquals("You do not have the rights to perform this action.", exception.getMessage());
+    }
+
+    @Test
+    void should_throw_exception_if_order_already_paid() {
+      // Arrange
+      UUID orderId = UUID.randomUUID();
+      Order newOrder = Order.builder().id(orderId).user(user).status(OrderStatus.PAID).build();
+
+      when(orderRepository.findById(orderId)).thenReturn(Optional.of(newOrder));
+
+      // Act & Assert
+      IllegalStateException exception =
+          assertThrows(IllegalStateException.class, () -> orderService.retryPayment(user, orderId));
+
+      assertEquals("Order is already paid", exception.getMessage());
+    }
+  }
 }

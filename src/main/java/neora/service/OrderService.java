@@ -115,6 +115,45 @@ public class OrderService implements OrderServiceInterface {
 
   @Override
   @Transactional
+  public void markPaymentAsFailed(UUID orderId) {
+    Order order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    order.setStatus(OrderStatus.PAYMENT_FAILED);
+    orderRepository.save(order);
+  }
+
+  @Override
+  @Transactional
+  public PaymentResponse retryPayment(User user, UUID orderId) throws StripeException {
+    Order order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    if (!order.getUser().getId().equals(user.getId())) {
+      throw new UnauthorizedAccess("You do not have the rights to perform this action.");
+    }
+
+    if (order.getStatus() == OrderStatus.PAID) {
+      throw new IllegalStateException("Order is already paid");
+    }
+
+    BigDecimal total = getOrderTotalAmount(new HashSet<>(order.getOrderItems()));
+
+    PaymentIntent intent = stripeService.createPaymentIntent(order, total);
+
+    order.setStripePaymentIntentId(intent.getId());
+    order.setStatus(OrderStatus.PENDING);
+    orderRepository.save(order);
+
+    return new PaymentResponse(buildOrderResponse(order), intent.getClientSecret());
+  }
+
+  @Override
+  @Transactional
   public OrderResponse cancelOrder(User user, CancelOrderRequest request) throws StripeException {
     Order order =
         orderRepository

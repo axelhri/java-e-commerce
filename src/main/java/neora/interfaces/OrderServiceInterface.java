@@ -12,6 +12,12 @@ import neora.entity.User;
 public interface OrderServiceInterface {
   PaymentResponse initiateOrder(User user, OrderRequest request) throws StripeException;
 
+  void confirmPayment(UUID orderId);
+
+  void markPaymentAsFailed(UUID orderId);
+
+  PaymentResponse retryPayment(User user, UUID orderId) throws StripeException;
+
   OrderResponse cancelOrder(User user, CancelOrderRequest request) throws StripeException;
 
   List<OrderResponse> getUserOrders(User user);
@@ -19,6 +25,4 @@ public interface OrderServiceInterface {
   OrderResponse getOrderById(User user, UUID orderId);
 
   List<OrderResponse> getUserCancelledOrders(User user);
-
-  void confirmPayment(UUID orderId);
 }
