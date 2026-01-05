@@ -1,5 +1,11 @@
 package neora.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -19,9 +25,32 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/shipping-addresses")
+@Tag(name = "Shipping Addresses", description = "Endpoints for managing user shipping addresses")
 public class ShippingAddressController {
   private final ShippingAddressServiceInterface shippingAddressService;
 
+  @Operation(
+      summary = "Create a shipping address",
+      description = "Creates a new shipping address for the authenticated user.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Shipping address created successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input", content = @Content),
+        @ApiResponse(
+            responseCode = "409",
+            description = "User already has a shipping address",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "403",
+            description = "User not authenticated",
+            content = @Content)
+      })
   @PostMapping
   public ResponseEntity<ApiRestResponse<ShippingAddressResponse>> createShippingAddress(
       @AuthenticationPrincipal User user, @Valid @RequestBody ShippingAddressRequest request) {
