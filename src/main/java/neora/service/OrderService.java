@@ -115,6 +115,18 @@ public class OrderService implements OrderServiceInterface {
 
   @Override
   @Transactional
+  public void markPaymentAsFailed(UUID orderId) {
+    Order order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+
+    order.setStatus(OrderStatus.PAYMENT_FAILED);
+    orderRepository.save(order);
+  }
+
+  @Override
+  @Transactional
   public OrderResponse cancelOrder(User user, CancelOrderRequest request) throws StripeException {
     Order order =
         orderRepository
