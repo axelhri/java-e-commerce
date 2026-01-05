@@ -60,7 +60,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
     mailConfirmationRepository.save(mailConfirmation);
 
-    emailService.sendConfirmationEmail(user.getEmail(), token);
+    emailService.sendRegistrationConfirmationEmail(user.getEmail(), token);
 
     return new RegisterResponse(
         "User registered successfully. Please confirm your email", user.getId());

@@ -52,7 +52,7 @@ class EmailServiceUnitTest {
       String token = "test-token";
 
       // Act
-      emailService.sendConfirmationEmail(to, token);
+      emailService.sendRegistrationConfirmationEmail(to, token);
 
       // Assert
       ArgumentCaptor<SimpleMailMessage> messageCaptor =

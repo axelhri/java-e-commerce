@@ -1,5 +1,6 @@
 package neora.service;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import neora.entity.MailConfirmation;
 import neora.entity.User;
@@ -26,12 +27,14 @@ public class EmailService implements EmailServiceInterface {
   @Value("${api.url}")
   private String apiUrl;
 
+  private static final String email = "no-reply@neora.com";
+
   @Override
-  public void sendConfirmationEmail(String to, String token) {
+  public void sendRegistrationConfirmationEmail(String to, String token) {
     String confirmationLink = apiUrl + "api/v1/email/confirm?token=" + token;
 
     SimpleMailMessage message = new SimpleMailMessage();
-    message.setFrom("no-replyaxelttest@app.com");
+    message.setFrom(email);
     message.setTo(to);
     message.setSubject("Confirmez votre compte");
     message.setText("Cliquez sur ce lien pour confirmer votre compte :\n" + confirmationLink);
@@ -58,5 +61,31 @@ public class EmailService implements EmailServiceInterface {
     cartServiceInterface.createCart(user);
 
     mailConfirmationRepository.delete(mailConfirmation);
+  }
+
+  @Override
+  public void sendOrderPassedConfirmationEmail(String to, UUID orderId) {
+    String orderLink = apiUrl + "api/v1/orders/" + orderId;
+
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setFrom(email);
+    message.setTo(to);
+    message.setSubject("Order passed succesfully");
+    message.setText("Your order has been passed succesfully: \n " + orderLink);
+
+    mailSender.send(message);
+  }
+
+  @Override
+  public void sendOrderCancelledConfirmationEmail(String to, UUID orderId) {
+    String orderLink = apiUrl + "api/v1/orders/" + orderId;
+
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setFrom("no-replyaxelttest@app.com");
+    message.setTo(to);
+    message.setSubject("Order cancelled succesfully");
+    message.setText("Your order has been cancelled succesfully: \n " + orderLink);
+
+    mailSender.send(message);
   }
 }

@@ -17,6 +17,7 @@ import neora.exception.EmptyCartException;
 import neora.exception.InsufficientStockException;
 import neora.exception.ResourceNotFoundException;
 import neora.exception.UnauthorizedAccess;
+import neora.interfaces.EmailServiceInterface;
 import neora.interfaces.ShippingAddressServiceInterface;
 import neora.interfaces.StockServiceInterface;
 import neora.mapper.OrderItemMapper;
@@ -43,6 +44,7 @@ class OrderServiceUnitTest {
   @Mock private OrderMapper orderMapper;
   @Mock private StripeService stripeService;
   @Mock private ShippingAddressServiceInterface shippingAddressService;
+  @Mock private EmailServiceInterface emailService;
   @InjectMocks private OrderService orderService;
 
   private OrderRequest orderRequest;

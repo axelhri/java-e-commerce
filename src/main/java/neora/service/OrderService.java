@@ -18,6 +18,7 @@ import neora.exception.EmptyCartException;
 import neora.exception.InsufficientStockException;
 import neora.exception.ResourceNotFoundException;
 import neora.exception.UnauthorizedAccess;
+import neora.interfaces.EmailServiceInterface;
 import neora.interfaces.OrderServiceInterface;
 import neora.interfaces.ShippingAddressServiceInterface;
 import neora.interfaces.StockServiceInterface;
@@ -41,6 +42,7 @@ public class OrderService implements OrderServiceInterface {
   private final OrderMapper orderMapper;
   private final StripeService stripeService;
   private final ShippingAddressServiceInterface shippingAddressService;
+  private final EmailServiceInterface emailService;
 
   @Override
   @Transactional
@@ -104,6 +106,8 @@ public class OrderService implements OrderServiceInterface {
     order.setStatus(OrderStatus.PAID);
     orderRepository.save(order);
 
+    emailService.sendOrderPassedConfirmationEmail(order.getUser().getEmail(), order.getId());
+
     for (OrderItem orderItem : order.getOrderItems()) {
       stockService.createStockMovement(
           orderItem.getProduct(), orderItem.getQuantity(), StockType.OUT, StockReason.SALE);
@@ -149,6 +153,8 @@ public class OrderService implements OrderServiceInterface {
     order.setStatus(OrderStatus.PENDING);
     orderRepository.save(order);
 
+    emailService.sendOrderPassedConfirmationEmail(order.getUser().getEmail(), order.getId());
+
     return new PaymentResponse(buildOrderResponse(order), intent.getClientSecret());
   }
 
@@ -187,6 +193,7 @@ public class OrderService implements OrderServiceInterface {
     }
 
     orderRepository.save(order);
+    emailService.sendOrderCancelledConfirmationEmail(order.getUser().getEmail(), order.getId());
     return buildOrderResponse(order);
   }
 
