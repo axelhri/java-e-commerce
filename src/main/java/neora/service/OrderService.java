@@ -193,6 +193,7 @@ public class OrderService implements OrderServiceInterface {
     }
 
     orderRepository.save(order);
+    emailService.sendOrderCancelledConfirmationEmail(order.getUser().getEmail(), order.getId());
     return buildOrderResponse(order);
   }
 

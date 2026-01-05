@@ -73,4 +73,17 @@ public class EmailService implements EmailServiceInterface {
 
     mailSender.send(message);
   }
+
+  @Override
+  public void sendOrderCancelledConfirmationEmail(String to, UUID orderId) {
+    String orderLink = apiUrl + "api/v1/orders/" + orderId;
+
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setFrom("no-replyaxelttest@app.com");
+    message.setTo(to);
+    message.setSubject("Order cancelled succesfully");
+    message.setText("Your order has been cancelled succesfully: \n " + orderLink);
+
+    mailSender.send(message);
+  }
 }

@@ -8,4 +8,6 @@ public interface EmailServiceInterface {
   void confirmEmail(String token);
 
   void sendOrderPassedConfirmationEmail(String to, UUID orderId);
+
+  void sendOrderCancelledConfirmationEmail(String to, UUID orderId);
 }
