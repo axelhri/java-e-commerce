@@ -66,10 +66,6 @@ public class User implements UserDetails {
   @JsonIgnore
   private transient List<Order> orders;
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-  @JsonIgnore
-  private transient ShippingAddress shippingAddress;
-
   @PrePersist
   @PreUpdate
   private void normalizeEmail() {

@@ -28,7 +28,7 @@ public class Order {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @OneToOne(fetch = FetchType.LAZY, optional = false)
+  @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
   @JoinColumn(name = "shipping_address_id", nullable = false)
   private ShippingAddress shippingAddress;
 
