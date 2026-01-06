@@ -104,9 +104,23 @@ public class ProductController {
             Instant.now(), HttpStatus.OK.value(), "Products fetched successfully", response));
   }
 
+  @Operation(
+      summary = "Get products by category",
+      description = "Retrieves a paginated list of products for a specific category.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Products fetched successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Category not found", content = @Content)
+      })
   @GetMapping("/category")
   public ResponseEntity<ApiRestResponse<PagedResponse<AllProductsResponse>>> getProductsByCategory(
-      @Parameter(description = "Filter by category ID") @RequestParam(required = false)
+      @Parameter(description = "Filter by category ID", required = true) @RequestParam
           UUID categoryId,
       @Parameter(description = "Pagination information") Pageable pageable) {
     Page<AllProductsResponse> page = productService.getProductsByCategory(categoryId, pageable);
