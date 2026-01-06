@@ -104,6 +104,26 @@ public class ProductController {
             Instant.now(), HttpStatus.OK.value(), "Products fetched successfully", response));
   }
 
+  @GetMapping("/category")
+  public ResponseEntity<ApiRestResponse<PagedResponse<AllProductsResponse>>> getProductsByCategory(
+      @Parameter(description = "Filter by category ID") @RequestParam(required = false)
+          UUID categoryId,
+      @Parameter(description = "Pagination information") Pageable pageable) {
+    Page<AllProductsResponse> page = productService.getProductsByCategory(categoryId, pageable);
+    PagedResponse<AllProductsResponse> response =
+        new PagedResponse<>(
+            page.getContent(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.isLast());
+
+    return ResponseEntity.ok(
+        new ApiRestResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Products fetched successfully", response));
+  }
+
   @Operation(
       summary = "Get product by ID",
       description = "Retrieves details of a specific product by its ID.")

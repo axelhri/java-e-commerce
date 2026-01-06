@@ -101,21 +101,7 @@ public class ProductService implements ProductServiceInterface {
 
     Page<Product> products = productRepository.findAll(spec, pageable);
 
-    List<UUID> productIds = products.map(Product::getId).toList();
-
-    Map<UUID, Integer> stockMap = stockService.getStocks(productIds);
-    Map<UUID, Double> ratingMap = ratingService.getRatings(productIds);
-
-    return products.map(
-        product ->
-            new AllProductsResponse(
-                product.getId(),
-                product.getName(),
-                product.getPrice(),
-                product.getSlug(),
-                stockMap.getOrDefault(product.getId(), 0),
-                product.getPrimaryImage().getImageUrl(),
-                ratingMap.getOrDefault(product.getId(), 5.0)));
+    return getAllProductsResponses(products);
   }
 
   @Override
@@ -136,5 +122,35 @@ public class ProductService implements ProductServiceInterface {
             .orElseThrow(() -> new ResourceNotFoundException("Product not found."));
 
     return productMapper.toResponse(product, stockService.getCurrentStock(product));
+  }
+
+  @Override
+  public Page<AllProductsResponse> getProductsByCategory(UUID categoryId, Pageable pageable) {
+
+    Category category =
+        categoryRepository
+            .findById(categoryId)
+            .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+    Page<Product> products = productRepository.findAllProductsByCategory(category, pageable);
+
+    return getAllProductsResponses(products);
+  }
+
+  private Page<AllProductsResponse> getAllProductsResponses(Page<Product> products) {
+    List<UUID> productIds = products.map(Product::getId).toList();
+
+    Map<UUID, Integer> stockMap = stockService.getStocks(productIds);
+    Map<UUID, Double> ratingMap = ratingService.getRatings(productIds);
+
+    return products.map(
+        product ->
+            new AllProductsResponse(
+                product.getId(),
+                product.getName(),
+                product.getPrice(),
+                product.getSlug(),
+                stockMap.getOrDefault(product.getId(), 0),
+                product.getPrimaryImage().getImageUrl(),
+                ratingMap.getOrDefault(product.getId(), 5.0)));
   }
 }
