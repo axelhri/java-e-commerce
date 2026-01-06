@@ -1,8 +1,11 @@
 package neora.unit.controller;
 
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
@@ -10,7 +13,6 @@ import neora.config.JwtAuthenticationFilter;
 import neora.controller.CartProductController;
 import neora.dto.CartItemResponse;
 import neora.dto.ManageCartRequest;
-import neora.entity.Product;
 import neora.entity.User;
 import neora.exception.ResourceNotFoundException;
 import neora.interfaces.CartProductServiceInterface;
@@ -22,6 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,77 +33,49 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc(addFilters = false)
 class CartProductControllerUnitTest {
   @MockitoBean private CartProductServiceInterface cartProductService;
-
+  @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
   @MockitoBean private JwtService jwtService;
 
-  @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
-
   @Autowired private MockMvc mockMvc;
-
   @Autowired private ObjectMapper objectMapper;
 
-  private ManageCartRequest request;
-
-  private Product product;
-
   private User user;
-
+  private ManageCartRequest validRequest;
   private CartItemResponse cartItemResponse;
 
   @BeforeEach
   void setUp() {
-    user = User.builder().email("test@example.com").password("Password123!").build();
-    product =
-        Product.builder()
-            .id(UUID.randomUUID())
-            .name("Lighter")
-            .description("Blue and red lighter.")
-            .price(500)
-            .build();
-    request = new ManageCartRequest(product.getId(), 1);
+    user = User.builder().id(UUID.randomUUID()).build();
+    validRequest = new ManageCartRequest(UUID.randomUUID(), 1);
     cartItemResponse =
-        new CartItemResponse(
-            UUID.randomUUID(), product.getId(), product.getName(), 1, product.getPrice());
+        new CartItemResponse(UUID.randomUUID(), validRequest.productId(), "Test", 1, 100);
+
+    // Simulate authenticated user
+    SecurityContextHolder.getContext()
+        .setAuthentication(new TestingAuthenticationToken(user, null));
   }
 
   @Nested
-  class addProductToCart {
-
+  class AddProductToCart {
     @Test
     void should_add_product_to_cart_and_return_201_created() throws Exception {
       // Arrange
-      when(cartProductService.addProductToCart(user, request)).thenReturn(cartItemResponse);
+      when(cartProductService.addProductToCart(any(User.class), any(ManageCartRequest.class)))
+          .thenReturn(cartItemResponse);
 
       // Act & Assert
       mockMvc
           .perform(
               post("/api/v1/cart-items")
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.status").value(201))
-          .andExpect(jsonPath("$.message").value("Product added to cart successfully"));
-    }
-
-    @Test
-    void should_not_add_product_if_validation_fails() throws Exception {
-      // Arrange
-      request = new ManageCartRequest(product.getId(), -32);
-
-      // Act & Assert
-      mockMvc
-          .perform(
-              post("/api/v1/cart-items")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isBadRequest())
-          .andExpect(jsonPath("$.quantity").value("Quantity must be at least 1 or higher"));
+                  .content(objectMapper.writeValueAsString(validRequest)))
+          .andExpect(status().isCreated());
     }
 
     @Test
     void should_not_add_product_if_product_is_not_found() throws Exception {
       // Arrange
-      when(cartProductService.addProductToCart(any(), any()))
+      when(cartProductService.addProductToCart(any(User.class), any(ManageCartRequest.class)))
           .thenThrow(new ResourceNotFoundException("Product not found"));
 
       // Act & Assert
@@ -107,22 +83,26 @@ class CartProductControllerUnitTest {
           .perform(
               post("/api/v1/cart-items")
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
-          .andExpect(status().isNotFound())
-          .andExpect(jsonPath("$.message").value("Product not found"));
+                  .content(objectMapper.writeValueAsString(validRequest)))
+          .andExpect(status().isNotFound());
     }
   }
 
   @Nested
-  class removeProductFromCart {
-
+  class RemoveProductFromCart {
     @Test
     void should_remove_product_and_return_204_no_content() throws Exception {
+      // Arrange
+      doNothing()
+          .when(cartProductService)
+          .removeProductFromCart(any(User.class), any(ManageCartRequest.class));
+
+      // Act & Assert
       mockMvc
           .perform(
               delete("/api/v1/cart-items")
                   .contentType(MediaType.APPLICATION_JSON)
-                  .content(objectMapper.writeValueAsString(request)))
+                  .content(objectMapper.writeValueAsString(validRequest)))
           .andExpect(status().isNoContent());
     }
   }

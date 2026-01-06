@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.AuthenticationRequest;
 import neora.dto.AuthenticationResponse;
 import neora.dto.RefreshTokenResponse;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(
     name = "Authentication",
     description = "Endpoints for user registration, login and token management")
+@Slf4j
 public class AuthenticationController {
   private final AuthenticationServiceInterface authenticationService;
 
@@ -47,7 +49,9 @@ public class AuthenticationController {
   @PostMapping("/register")
   public ResponseEntity<RegisterResponse> register(
       @RequestBody @Valid AuthenticationRequest registerRequest) {
+    log.info("Received registration request for email: {}", registerRequest.email());
     RegisterResponse response = authenticationService.register(registerRequest);
+    log.info("Registration successful for user ID: {}", response.id());
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -69,7 +73,9 @@ public class AuthenticationController {
   @PostMapping("/login")
   public ResponseEntity<AuthenticationResponse> login(
       @RequestBody @Valid AuthenticationRequest loginRequest) {
+    log.info("Received login request for email: {}", loginRequest.email());
     AuthenticationResponse response = authenticationService.login(loginRequest);
+    log.info("Login successful for user ID: {}", response.id());
     return ResponseEntity.ok(response);
   }
 
@@ -96,16 +102,21 @@ public class AuthenticationController {
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
           String authHeader) {
 
+    log.debug("Received refresh token request");
+
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+      log.warn("Refresh token request missing or invalid Authorization header");
       throw new InvalidTokenException("Missing token");
     }
 
     String refreshToken = authHeader.substring(7);
     if (refreshToken.isBlank()) {
+      log.warn("Refresh token is empty");
       throw new InvalidTokenException("Token is empty");
     }
 
     RefreshTokenResponse response = authenticationService.refreshToken(refreshToken);
+    log.info("Token refreshed successfully for user ID: {}", response.id());
     return ResponseEntity.ok(response);
   }
 }
