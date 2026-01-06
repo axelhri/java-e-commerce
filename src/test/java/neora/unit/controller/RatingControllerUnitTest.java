@@ -13,6 +13,7 @@ import neora.config.JwtAuthenticationFilter;
 import neora.controller.RatingController;
 import neora.dto.RatingRequest;
 import neora.dto.RatingResponse;
+import neora.entity.User;
 import neora.interfaces.RatingServiceInterface;
 import neora.service.JwtService;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -40,11 +43,17 @@ class RatingControllerUnitTest {
 
   private RatingRequest validRequest;
   private RatingResponse ratingResponse;
+  private User user;
 
   @BeforeEach
   void setUp() {
+    user = User.builder().id(UUID.randomUUID()).build();
     validRequest = new RatingRequest(UUID.randomUUID(), 5);
     ratingResponse = new RatingResponse(UUID.randomUUID(), validRequest.productId(), 5);
+
+    // Simulate authenticated user
+    SecurityContextHolder.getContext()
+        .setAuthentication(new TestingAuthenticationToken(user, null));
   }
 
   @Nested
@@ -52,7 +61,7 @@ class RatingControllerUnitTest {
     @Test
     void should_send_rating_and_return_201_created() throws Exception {
       // Arrange
-      when(ratingService.sendProductRating(any(), any(RatingRequest.class)))
+      when(ratingService.sendProductRating(any(User.class), any(RatingRequest.class)))
           .thenReturn(ratingResponse);
 
       // Act & Assert

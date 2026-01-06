@@ -63,6 +63,10 @@ class OrderControllerUnitTest {
         new ShippingAddressRequest("John", "Doe", "123 Main St", "12345", "NY", "USA");
     orderRequest =
         new OrderRequest(Set.of(UUID.randomUUID(), UUID.randomUUID()), shippingAddressRequest);
+
+    // Simulate authenticated user
+    SecurityContextHolder.getContext()
+        .setAuthentication(new TestingAuthenticationToken(user, null));
   }
 
   @Nested
@@ -70,7 +74,8 @@ class OrderControllerUnitTest {
     @Test
     void should_order_successfully_and_return_201_created() throws Exception {
       // Arrange
-      when(orderService.initiateOrder(any(), eq(orderRequest))).thenReturn(paymentResponse);
+      when(orderService.initiateOrder(any(User.class), eq(orderRequest)))
+          .thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -87,7 +92,8 @@ class OrderControllerUnitTest {
       ShippingAddressRequest shippingAddressRequest =
           new ShippingAddressRequest("John", "Doe", "123 Main St", "12345", "NY", "USA");
       OrderRequest invalidRequest = new OrderRequest(Set.of(), shippingAddressRequest);
-      when(orderService.initiateOrder(any(), eq(invalidRequest))).thenReturn(paymentResponse);
+      when(orderService.initiateOrder(any(User.class), eq(invalidRequest)))
+          .thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -103,7 +109,8 @@ class OrderControllerUnitTest {
     void should_return_bad_request_if_request_is_null() throws Exception {
       // Arrange
       OrderRequest invalidRequest = new OrderRequest(null, null);
-      when(orderService.initiateOrder(any(), eq(invalidRequest))).thenReturn(paymentResponse);
+      when(orderService.initiateOrder(any(User.class), eq(invalidRequest)))
+          .thenReturn(paymentResponse);
 
       // Act & Assert
       mockMvc
@@ -129,7 +136,7 @@ class OrderControllerUnitTest {
     @Test
     void should_cancel_order_successfully_and_return_200_ok() throws Exception {
       // Arrange
-      when(orderService.cancelOrder(any(), eq(cancelRequest))).thenReturn(orderResponse);
+      when(orderService.cancelOrder(any(User.class), eq(cancelRequest))).thenReturn(orderResponse);
 
       // Act & Assert
       mockMvc
@@ -159,10 +166,7 @@ class OrderControllerUnitTest {
     @Test
     void should_return_not_found_if_order_does_not_exist() throws Exception {
       // Arrange
-      SecurityContextHolder.getContext()
-          .setAuthentication(new TestingAuthenticationToken(user, null));
-
-      when(orderService.cancelOrder(any(), eq(cancelRequest)))
+      when(orderService.cancelOrder(any(User.class), eq(cancelRequest)))
           .thenThrow(
               new neora.exception.ResourceNotFoundException(
                   "Issue encountered while searching for this order."));
@@ -181,10 +185,7 @@ class OrderControllerUnitTest {
     @Test
     void should_return_forbidden_if_user_is_not_owner() throws Exception {
       // Arrange
-      SecurityContextHolder.getContext()
-          .setAuthentication(new TestingAuthenticationToken(user, null));
-
-      when(orderService.cancelOrder(any(), eq(cancelRequest)))
+      when(orderService.cancelOrder(any(User.class), eq(cancelRequest)))
           .thenThrow(new UnauthorizedAccess("You do not have the rights to perform this action."));
 
       // Act & Assert
@@ -205,7 +206,7 @@ class OrderControllerUnitTest {
     void should_get_user_orders_successfully() throws Exception {
       // Arrange
       List<OrderResponse> orders = List.of(orderResponse);
-      when(orderService.getUserOrders(any())).thenReturn(orders);
+      when(orderService.getUserOrders(any(User.class))).thenReturn(orders);
 
       // Act & Assert
       mockMvc
@@ -220,7 +221,7 @@ class OrderControllerUnitTest {
   void should_get_user_cancelled_orders_successfully() throws Exception {
     // Arrange
     List<OrderResponse> cancelledOrders = List.of(orderResponse);
-    when(orderService.getUserCancelledOrders(any())).thenReturn(cancelledOrders);
+    when(orderService.getUserCancelledOrders(any(User.class))).thenReturn(cancelledOrders);
 
     // Act & Assert
     mockMvc
