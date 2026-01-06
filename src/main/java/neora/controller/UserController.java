@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.ApiRestResponse;
 import neora.dto.ChangePassword;
 import neora.interfaces.UserServiceInterface;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/user")
 @Tag(name = "User", description = "Endpoints for user profile management")
+@Slf4j
 public class UserController {
   private final UserServiceInterface userService;
 
@@ -49,7 +51,9 @@ public class UserController {
   @PatchMapping("/password")
   public ResponseEntity<ApiRestResponse<ChangePassword>> changePassword(
       @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePassword dto) {
+    log.info("Received request to change password for user: {}", userDetails.getUsername());
     userService.changePassword(userDetails.getUsername(), dto);
+    log.info("Password changed successfully for user: {}", userDetails.getUsername());
     return ResponseEntity.status(HttpStatus.OK)
         .body(
             new ApiRestResponse<>(
