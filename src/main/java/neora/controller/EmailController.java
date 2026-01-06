@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.ApiRestResponse;
 import neora.interfaces.EmailServiceInterface;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/email")
 @Tag(name = "Email", description = "Endpoints for email related operations")
+@Slf4j
 public class EmailController {
   private final EmailServiceInterface emailService;
 
@@ -44,7 +46,9 @@ public class EmailController {
       @Parameter(description = "Confirmation token received via email", required = true)
           @RequestParam
           String token) {
+    log.info("Received request to confirm email with token");
     emailService.confirmEmail(token);
+    log.info("Email confirmed successfully");
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
