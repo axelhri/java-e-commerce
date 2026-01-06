@@ -237,4 +237,41 @@ class ProductServiceUnitTest {
       assertThrows(ResourceNotFoundException.class, () -> productService.getProductBySlug(slug));
     }
   }
+
+  @Nested
+  class GetProductsByCategory {
+    @Test
+    void should_return_products_by_category() {
+      // Arrange
+      Pageable pageable = Pageable.unpaged();
+      Page<Product> productPage = new PageImpl<>(List.of(product));
+      Category category = new Category();
+      category.setId(categoryId);
+
+      when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
+      when(productRepository.findAllProductsByCategory(category, pageable)).thenReturn(productPage);
+      when(stockService.getStocks(anyList())).thenReturn(Map.of(product.getId(), 10));
+      when(ratingService.getRatings(anyList())).thenReturn(Map.of(product.getId(), 4.5));
+
+      // Act
+      Page<AllProductsResponse> result = productService.getProductsByCategory(categoryId, pageable);
+
+      // Assert
+      assertNotNull(result);
+      assertEquals(1, result.getContent().size());
+      assertEquals(product.getId(), result.getContent().get(0).id());
+    }
+
+    @Test
+    void should_throw_exception_when_category_not_found() {
+      // Arrange
+      Pageable pageable = Pageable.unpaged();
+      when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      assertThrows(
+          ResourceNotFoundException.class,
+          () -> productService.getProductsByCategory(categoryId, pageable));
+    }
+  }
 }
