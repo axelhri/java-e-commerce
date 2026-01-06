@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 public class EmailController {
   private final EmailServiceInterface emailService;
 
+  private static final String emailConfirmedMessage = "Email confirmed successfully";
+
   @Operation(
       summary = "Confirm email address",
       description = "Confirms user's email address using a token.")
@@ -48,14 +50,14 @@ public class EmailController {
           String token) {
     log.info("Received request to confirm email with token");
     emailService.confirmEmail(token);
-    log.info("Email confirmed successfully");
+    log.info(emailConfirmedMessage);
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiRestResponse<>(
                 Instant.now(),
                 HttpStatus.OK.value(),
-                "Email confirmed successfully",
-                "Email confirmed successfully"));
+                emailConfirmedMessage,
+                emailConfirmedMessage));
   }
 }
