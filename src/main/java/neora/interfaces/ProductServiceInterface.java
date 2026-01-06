@@ -19,4 +19,6 @@ public interface ProductServiceInterface {
   ProductResponse getProductById(UUID productId);
 
   ProductResponse getProductBySlug(String slug);
+
+  Page<AllProductsResponse> getProductsByCategory(UUID categoryId, Pageable pageable);
 }
