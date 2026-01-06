@@ -12,6 +12,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.*;
 import neora.entity.User;
 import neora.interfaces.OrderServiceInterface;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/orders")
 @Tag(name = "Orders", description = "Endpoints for managing user orders")
+@Slf4j
 public class OrderController {
   private final OrderServiceInterface orderService;
 
@@ -52,7 +54,9 @@ public class OrderController {
   public ResponseEntity<ApiRestResponse<PaymentResponse>> initiateOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody OrderRequest dto)
       throws StripeException {
+    log.info("Received request to initiate order for user ID: {}", user.getId());
     PaymentResponse response = orderService.initiateOrder(user, dto);
+    log.info("Order initiated successfully for user ID: {}", user.getId());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiRestResponse<>(
@@ -81,7 +85,10 @@ public class OrderController {
   @PostMapping("/{orderId}/retry-payment")
   public ResponseEntity<ApiRestResponse<PaymentResponse>> retryPayment(
       @AuthenticationPrincipal User user, @PathVariable UUID orderId) throws StripeException {
+    log.info(
+        "Received request to retry payment for order ID: {} by user ID: {}", orderId, user.getId());
     PaymentResponse response = orderService.retryPayment(user, orderId);
+    log.info("Payment retry initiated successfully for order ID: {}", orderId);
     return ResponseEntity.status(HttpStatus.OK)
         .body(
             new ApiRestResponse<>(
@@ -117,7 +124,10 @@ public class OrderController {
   public ResponseEntity<ApiRestResponse<OrderResponse>> cancelOrder(
       @AuthenticationPrincipal User user, @Valid @RequestBody CancelOrderRequest request)
       throws StripeException {
+    log.info(
+        "Received request to cancel order ID: {} for user ID: {}", request.orderId(), user.getId());
     OrderResponse response = orderService.cancelOrder(user, request);
+    log.info("Order cancelled successfully for order ID: {}", request.orderId());
     return ResponseEntity.status(HttpStatus.OK)
         .body(
             new ApiRestResponse<>(
@@ -144,7 +154,9 @@ public class OrderController {
   @GetMapping
   public ResponseEntity<ApiRestResponse<List<OrderResponse>>> getUserOrders(
       @AuthenticationPrincipal User user) {
+    log.info("Received request to get orders for user ID: {}", user.getId());
     List<OrderResponse> orders = orderService.getUserOrders(user);
+    log.info("Returning {} orders for user ID: {}", orders.size(), user.getId());
     return ResponseEntity.ok(
         new ApiRestResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Orders fetched successfully", orders));
@@ -169,7 +181,9 @@ public class OrderController {
   @GetMapping("/{orderId}")
   public ResponseEntity<ApiRestResponse<OrderResponse>> getOrderById(
       @AuthenticationPrincipal User user, @PathVariable UUID orderId) {
+    log.info("Received request to get order ID: {} for user ID: {}", orderId, user.getId());
     OrderResponse order = orderService.getOrderById(user, orderId);
+    log.info("Returning order details for order ID: {}", orderId);
     return ResponseEntity.ok(
         new ApiRestResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Order fetched successfully", order));
@@ -195,7 +209,9 @@ public class OrderController {
   @GetMapping("/cancelled")
   public ResponseEntity<ApiRestResponse<List<OrderResponse>>> getUserCancelledOrders(
       @AuthenticationPrincipal User user) {
+    log.info("Received request to get cancelled orders for user ID: {}", user.getId());
     List<OrderResponse> orders = orderService.getUserCancelledOrders(user);
+    log.info("Returning {} cancelled orders for user ID: {}", orders.size(), user.getId());
     return ResponseEntity.ok(
         new ApiRestResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Cancelled orders fetched successfully", orders));
