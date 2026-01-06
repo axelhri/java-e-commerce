@@ -34,6 +34,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.multipart.MultipartFile;
@@ -136,13 +137,13 @@ class ProductServiceUnitTest {
     @Test
     void should_get_all_products_when_category_is_null() {
       // Arrange
-      Pageable pageable = Pageable.unpaged();
+      Pageable pageable = PageRequest.of(0, 10);
       Page<Product> productPage = new PageImpl<>(List.of(product));
 
       when(productRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(productPage);
-      when(stockService.getStocks(anyList())).thenReturn(Map.of(product.getId(), 50));
-      when(ratingService.getRatings(anyList())).thenReturn(Map.of(product.getId(), 4.5));
+      when(stockService.getStocks(any())).thenReturn(Map.of(product.getId(), 50));
+      when(ratingService.getRatings(any())).thenReturn(Map.of(product.getId(), 4.5));
 
       // Act
       Page<AllProductsResponse> result = productService.getAllProducts(null, null, pageable);
@@ -156,13 +157,13 @@ class ProductServiceUnitTest {
     @Test
     void should_get_products_by_category_when_category_is_not_null() {
       // Arrange
-      Pageable pageable = Pageable.unpaged();
+      Pageable pageable = PageRequest.of(0, 10);
       Page<Product> productPage = new PageImpl<>(List.of(product));
 
       when(productRepository.findAll(any(Specification.class), eq(pageable)))
           .thenReturn(productPage);
-      when(stockService.getStocks(anyList())).thenReturn(Map.of(product.getId(), 50));
-      when(ratingService.getRatings(anyList())).thenReturn(Map.of(product.getId(), 4.5));
+      when(stockService.getStocks(any())).thenReturn(Map.of(product.getId(), 50));
+      when(ratingService.getRatings(any())).thenReturn(Map.of(product.getId(), 4.5));
 
       // Act
       Page<AllProductsResponse> result = productService.getAllProducts(categoryId, null, pageable);
@@ -243,15 +244,15 @@ class ProductServiceUnitTest {
     @Test
     void should_return_products_by_category() {
       // Arrange
-      Pageable pageable = Pageable.unpaged();
+      Pageable pageable = PageRequest.of(0, 10);
       Page<Product> productPage = new PageImpl<>(List.of(product));
       Category category = new Category();
       category.setId(categoryId);
 
       when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(category));
       when(productRepository.findAllProductsByCategory(category, pageable)).thenReturn(productPage);
-      when(stockService.getStocks(anyList())).thenReturn(Map.of(product.getId(), 10));
-      when(ratingService.getRatings(anyList())).thenReturn(Map.of(product.getId(), 4.5));
+      when(stockService.getStocks(any())).thenReturn(Map.of(product.getId(), 10));
+      when(ratingService.getRatings(any())).thenReturn(Map.of(product.getId(), 4.5));
 
       // Act
       Page<AllProductsResponse> result = productService.getProductsByCategory(categoryId, pageable);
@@ -265,7 +266,7 @@ class ProductServiceUnitTest {
     @Test
     void should_throw_exception_when_category_not_found() {
       // Arrange
-      Pageable pageable = Pageable.unpaged();
+      Pageable pageable = PageRequest.of(0, 10);
       when(categoryRepository.findById(categoryId)).thenReturn(Optional.empty());
 
       // Act & Assert
