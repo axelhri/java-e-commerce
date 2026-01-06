@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import java.io.IOException;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.ApiRestResponse;
 import neora.dto.VendorRequest;
 import neora.dto.VendorResponse;
@@ -25,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @RequestMapping("/api/v1/vendors")
 @Tag(name = "Vendors", description = "Endpoints for managing vendors")
+@Slf4j
 public class VendorController {
   private final VendorServiceInterface vendorService;
 
@@ -59,7 +61,9 @@ public class VendorController {
       @Parameter(description = "Vendor profile image", required = true) @RequestPart("file")
           MultipartFile file)
       throws IOException {
+    log.info("Received request to create vendor with name: {}", dto.name());
     VendorResponse vendor = vendorService.createVendor(dto, file);
+    log.info("Successfully created vendor with ID: {}", vendor.id());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiRestResponse<>(
