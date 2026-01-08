@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import neora.config.JwtAuthenticationFilter;
+import neora.config.RateLimitingFilter;
 import neora.controller.EmailController;
 import neora.interfaces.EmailServiceInterface;
 import neora.service.JwtService;
@@ -24,6 +25,8 @@ class EmailControllerUnitTest {
 
   @MockitoBean private EmailServiceInterface emailService;
   @MockitoBean private JwtService jwtService;
+
+  @MockitoBean private RateLimitingFilter rateLimitingFilter;
 
   @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
 

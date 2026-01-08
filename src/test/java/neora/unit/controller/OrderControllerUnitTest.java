@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import neora.config.JwtAuthenticationFilter;
+import neora.config.RateLimitingFilter;
 import neora.controller.OrderController;
 import neora.dto.CancelOrderRequest;
 import neora.dto.OrderRequest;
@@ -38,6 +39,7 @@ class OrderControllerUnitTest {
   @MockitoBean private OrderServiceInterface orderService;
   @MockitoBean private JwtService jwtService;
   @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
+  @MockitoBean private RateLimitingFilter rateLimitingFilter;
 
   @Autowired private MockMvc mockMvc;
   @Autowired ObjectMapper objectMapper;
