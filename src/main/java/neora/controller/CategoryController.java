@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.ApiRestResponse;
 import neora.dto.CategoryRequest;
 import neora.dto.CategoryResponse;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/categories")
 @Tag(name = "Categories", description = "Endpoints for managing product categories")
+@Slf4j
 public class CategoryController {
   private final CategoryServiceInterface categoryService;
 
@@ -50,7 +52,9 @@ public class CategoryController {
   @PostMapping
   public ResponseEntity<ApiRestResponse<CategoryRequest>> createCategory(
       @Valid @RequestBody CategoryRequest dto) {
+    log.info("Received request to create category: {}", dto.name());
     categoryService.createCategory(dto);
+    log.info("Successfully created category: {}", dto.name());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiRestResponse<>(
@@ -72,7 +76,9 @@ public class CategoryController {
       })
   @GetMapping
   public ResponseEntity<ApiRestResponse<List<CategoryResponse>>> getAllCategories() {
+    log.info("Received request to get all categories");
     List<CategoryResponse> categories = categoryService.getAllCategories();
+    log.info("Returning {} categories", categories.size());
     return ResponseEntity.ok(
         new ApiRestResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Categories fetched successfully", categories));

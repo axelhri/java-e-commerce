@@ -2,6 +2,7 @@ package neora.service;
 
 import java.io.IOException;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.CloudinaryResponse;
 import neora.dto.VendorRequest;
 import neora.dto.VendorResponse;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class VendorService implements VendorServiceInterface {
 
   private final VendorRepository vendorRepository;
@@ -31,10 +33,14 @@ public class VendorService implements VendorServiceInterface {
   @Transactional
   public VendorResponse createVendor(VendorRequest vendorRequest, MultipartFile file)
       throws IOException {
+    log.info("Attempting to create vendor with name: {}", vendorRequest.name());
     Vendor vendor = vendorMapper.toVendorEntity(vendorRequest);
     try {
       Vendor savedVendor = vendorRepository.save(vendor);
+      log.info("Vendor saved successfully with ID: {}", savedVendor.getId());
+
       if (file != null && !file.isEmpty()) {
+        log.debug("Uploading profile image for vendor ID: {}", savedVendor.getId());
         CloudinaryResponse response =
             cloudinaryService.upload(file, "vendors/vendor_" + savedVendor.getId());
 
@@ -44,15 +50,20 @@ public class VendorService implements VendorServiceInterface {
         vendorImage.setVendor(savedVendor);
 
         vendorImageRepository.save(vendorImage);
+        log.debug("Vendor image saved successfully");
 
         savedVendor.setVendorImage(vendorImage);
+      } else {
+        log.debug("No profile image provided for vendor ID: {}", savedVendor.getId());
       }
 
-      return new VendorResponse(
-          savedVendor.getId(), savedVendor.getName(), savedVendor.getVendorImage().getImageUrl());
+      String imageUrl =
+          savedVendor.getVendorImage() != null ? savedVendor.getVendorImage().getImageUrl() : null;
+      return new VendorResponse(savedVendor.getId(), savedVendor.getName(), imageUrl);
 
     } catch (DataIntegrityViolationException e) {
-
+      log.warn(
+          "Vendor creation failed: A vendor with name '{}' already exists", vendorRequest.name());
       throw new ResourceAlreadyExistsException("A vendor with this name already exists");
     }
   }

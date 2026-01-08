@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.*;
 import neora.entity.User;
 import neora.interfaces.RatingServiceInterface;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/ratings")
 @Tag(name = "Ratings", description = "Endpoints for managing product and vendor ratings")
+@Slf4j
 public class RatingController {
   private final RatingServiceInterface ratingService;
 
@@ -55,7 +57,10 @@ public class RatingController {
   @PostMapping("/products")
   public ResponseEntity<ApiRestResponse<RatingResponse>> sendProductRating(
       @AuthenticationPrincipal User user, @Valid @RequestBody RatingRequest dto) {
+    log.info(
+        "Received request to rate product ID: {} by user ID: {}", dto.productId(), user.getId());
     RatingResponse response = ratingService.sendProductRating(user, dto);
+    log.info("Successfully created rating for product ID: {}", dto.productId());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiRestResponse<>(
@@ -81,8 +86,10 @@ public class RatingController {
   @GetMapping("/vendor/{id}")
   public ResponseEntity<ApiRestResponse<VendorRatingResponse>> getVendorRating(
       @Parameter(description = "Vendor unique identifier", required = true) @PathVariable UUID id) {
+    log.info("Received request to get average rating for vendor ID: {}", id);
     Double averageRating = ratingService.getVendorRating(id);
     VendorRatingResponse response = new VendorRatingResponse(id, averageRating);
+    log.info("Returning average rating {} for vendor ID: {}", averageRating, id);
     return ResponseEntity.ok(
         new ApiRestResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Vendor rating fetched successfully", response));
@@ -106,8 +113,12 @@ public class RatingController {
   public ResponseEntity<ApiRestResponse<PagedResponse<RatingResponse>>> getProductRatings(
       @Parameter(description = "Product unique identifier", required = true) @PathVariable UUID id,
       @Parameter(description = "Pagination information") Pageable pageable) {
+    log.info(
+        "Received request to get ratings for product ID: {}, page: {}",
+        id,
+        pageable.getPageNumber());
     PagedResponse<RatingResponse> page = ratingService.getProductRatings(id, pageable);
-
+    log.info("Returning {} ratings for product ID: {}", page.content().size(), id);
     return ResponseEntity.ok(
         new ApiRestResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Product ratings fetched successfully", page));

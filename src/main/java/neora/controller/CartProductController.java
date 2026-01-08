@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.ApiRestResponse;
 import neora.dto.CartItemResponse;
 import neora.dto.ManageCartRequest;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/cart-items")
 @Tag(name = "Cart Items", description = "Endpoints for managing individual items within the cart")
+@Slf4j
 public class CartProductController {
   private final CartProductServiceInterface cartProductService;
 
@@ -47,7 +49,10 @@ public class CartProductController {
   @PostMapping
   public ResponseEntity<ApiRestResponse<CartItemResponse>> addProductToCart(
       @AuthenticationPrincipal User user, @Valid @RequestBody ManageCartRequest dto) {
+    log.info(
+        "Received request to add product {} to cart for user {}", dto.productId(), user.getId());
     CartItemResponse response = cartProductService.addProductToCart(user, dto);
+    log.info("Successfully added product {} to cart for user {}", dto.productId(), user.getId());
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             new ApiRestResponse<>(
@@ -75,6 +80,12 @@ public class CartProductController {
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void removeProductFromCart(
       @AuthenticationPrincipal User user, @Valid @RequestBody ManageCartRequest dto) {
+    log.info(
+        "Received request to remove product {} from cart for user {}",
+        dto.productId(),
+        user.getId());
     cartProductService.removeProductFromCart(user, dto);
+    log.info(
+        "Successfully removed product {} from cart for user {}", dto.productId(), user.getId());
   }
 }

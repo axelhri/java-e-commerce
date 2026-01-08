@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.ApiRestResponse;
 import neora.dto.CartItemResponse;
 import neora.entity.User;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RequestMapping("/api/v1/cart")
 @Tag(name = "Cart", description = "Endpoints for managing the user's shopping cart")
+@Slf4j
 public class CartController {
   private final CartServiceInterface cartService;
 
@@ -48,7 +50,9 @@ public class CartController {
   @GetMapping("/total")
   public ResponseEntity<Map<String, BigDecimal>> getCartTotalAmount(
       @AuthenticationPrincipal User user) {
+    log.info("Received request to get cart total amount for user ID: {}", user.getId());
     BigDecimal total = cartService.getCartTotalAmount(user);
+    log.info("Returning total amount: {} for user ID: {}", total, user.getId());
     return ResponseEntity.ok(Collections.singletonMap("total", total));
   }
 
@@ -72,7 +76,9 @@ public class CartController {
   @GetMapping
   public ResponseEntity<ApiRestResponse<List<CartItemResponse>>> getCartProducts(
       @AuthenticationPrincipal User user) {
+    log.info("Received request to get cart products for user ID: {}", user.getId());
     List<CartItemResponse> cartProducts = cartService.getCartProducts(user);
+    log.info("Returning {} cart items for user ID: {}", cartProducts.size(), user.getId());
     return ResponseEntity.ok(
         new ApiRestResponse<>(
             Instant.now(),
@@ -96,6 +102,8 @@ public class CartController {
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void clearCart(@AuthenticationPrincipal User user) {
+    log.info("Received request to clear cart for user ID: {}", user.getId());
     cartService.clearCart(user);
+    log.info("Cart cleared successfully for user ID: {}", user.getId());
   }
 }
