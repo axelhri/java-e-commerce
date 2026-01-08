@@ -25,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @RequiredArgsConstructor
 public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthFilter;
+  private final RateLimitingFilter rateLimitingFilter;
   private final AuthenticationProvider authenticationProvider;
   private final LogoutHandler logoutHandler;
 
@@ -66,6 +67,7 @@ public class SecurityConfig {
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider)
+        .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .logout(
             logout ->
