@@ -2,6 +2,7 @@ package neora.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import java.util.UUID;
 
 public record CategoryResponse(
@@ -16,4 +17,7 @@ public record CategoryResponse(
             example = "Electronics",
             accessMode = Schema.AccessMode.READ_ONLY)
         @JsonProperty("category_name")
-        String name) {}
+        String name,
+    @Schema(description = "List of child categories", accessMode = Schema.AccessMode.READ_ONLY)
+        @JsonProperty("children")
+        List<CategoryResponse> children) {}
