@@ -63,7 +63,8 @@ public class CategoryController {
 
   @Operation(
       summary = "Get all categories",
-      description = "Retrieves a list of all available product categories.")
+      description =
+          "Retrieves a list of all available product categories, structured hierarchically (parents contain children).")
   @ApiResponses(
       value = {
         @ApiResponse(
