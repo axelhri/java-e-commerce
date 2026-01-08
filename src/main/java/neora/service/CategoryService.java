@@ -60,12 +60,16 @@ public class CategoryService implements CategoryServiceInterface {
 
   @Override
   public List<CategoryResponse> getAllCategories() {
-    log.info("Fetching all categories");
-    List<CategoryResponse> categories =
-        categoryRepository.findAll().stream()
-            .map(category -> new CategoryResponse(category.getId(), category.getName()))
+    log.info("Fetching all root categories");
+
+    List<Category> rootCategories = categoryRepository.findByParentCategoryIsNull();
+
+    List<CategoryResponse> response =
+        rootCategories.stream()
+            .map(categoryMapper::mapToCategoryResponse)
             .collect(Collectors.toList());
-    log.info("Found {} categories", categories.size());
-    return categories;
+
+    log.info("Found {} root categories", response.size());
+    return response;
   }
 }

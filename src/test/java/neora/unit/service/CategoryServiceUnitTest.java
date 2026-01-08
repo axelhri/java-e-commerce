@@ -21,12 +21,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceUnitTest {
-  @Mock private CategoryMapper categoryMapper;
+  @Spy private CategoryMapper categoryMapper;
   @Mock private CategoryRepository categoryRepository;
   @InjectMocks private CategoryService categoryService;
 
@@ -111,20 +112,24 @@ class CategoryServiceUnitTest {
   @Nested
   class GetAllCategories {
     @Test
-    void should_return_all_categories() {
+    void should_return_all_root_categories() {
       // Arrange
       Category category1 = Category.builder().id(UUID.randomUUID()).name("Electronics").build();
       Category category2 = Category.builder().id(UUID.randomUUID()).name("Books").build();
-      when(categoryRepository.findAll()).thenReturn(List.of(category1, category2));
+
+      category2.setChildrenCategory(Set.of(category1));
+
+      when(categoryRepository.findByParentCategoryIsNull()).thenReturn(List.of(category2));
 
       // Act
       List<CategoryResponse> responses = categoryService.getAllCategories();
 
       // Assert
       assertNotNull(responses);
-      assertEquals(2, responses.size());
-      assertEquals("Electronics", responses.get(0).name());
-      assertEquals("Books", responses.get(1).name());
+      assertEquals(1, responses.size()); // only root categories
+      assertEquals("Books", responses.get(0).name());
+      assertEquals(1, responses.get(0).children().size());
+      assertEquals("Electronics", responses.get(0).children().get(0).name());
     }
   }
 }
