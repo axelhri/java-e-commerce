@@ -17,6 +17,7 @@ public class RateLimitPolicyResolver {
       return Bandwidth.builder().capacity(10).refillIntervally(10, Duration.ofMinutes(1)).build();
     }
 
+
     if (path.startsWith("/api/v1/products") && HttpMethod.GET.matches(method)) {
       return Bandwidth.builder()
           .capacity(1000)
