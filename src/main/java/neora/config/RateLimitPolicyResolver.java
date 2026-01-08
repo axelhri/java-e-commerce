@@ -1,7 +1,6 @@
 package neora.config;
 
 import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Duration;
 import org.springframework.http.HttpMethod;
@@ -15,13 +14,16 @@ public class RateLimitPolicyResolver {
     String method = request.getMethod();
 
     if (path.startsWith("/api/v1/auth")) {
-      return Bandwidth.classic(10, Refill.greedy(10, Duration.ofMinutes(1)));
+      return Bandwidth.builder().capacity(10).refillIntervally(10, Duration.ofMinutes(1)).build();
     }
 
     if (path.startsWith("/api/v1/products") && HttpMethod.GET.matches(method)) {
-      return Bandwidth.classic(1000, Refill.greedy(1000, Duration.ofMinutes(1)));
+      return Bandwidth.builder()
+          .capacity(1000)
+          .refillIntervally(1000, Duration.ofMinutes(1))
+          .build();
     }
 
-    return Bandwidth.classic(100, Refill.greedy(100, Duration.ofMinutes(1)));
+    return Bandwidth.builder().capacity(100).refillIntervally(100, Duration.ofMinutes(1)).build();
   }
 }
