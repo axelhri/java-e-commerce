@@ -16,6 +16,9 @@ public class CategoryMapper {
   }
 
   public CategoryResponse mapToCategoryResponse(Category category) {
+    if (category == null) {
+      return null;
+    }
     List<CategoryResponse> children =
         Optional.ofNullable(category.getChildrenCategory()).orElse(Collections.emptySet()).stream()
             .map(this::mapToCategoryResponse)
