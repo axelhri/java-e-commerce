@@ -6,6 +6,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import neora.dto.AuthenticationRequest;
 import neora.dto.AuthenticationResponse;
 import neora.dto.RefreshTokenResponse;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class AuthenticationService implements AuthenticationServiceInterface {
 
   private final UserRepository userRepository;
@@ -40,7 +42,10 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   @Override
   @Transactional
   public RegisterResponse register(AuthenticationRequest registerRequest) {
+    log.info("Attempting to register user with email: {}", registerRequest.email());
+
     if (userRepository.existsByEmail(registerRequest.email())) {
+      log.warn("Registration failed: Email {} is already registered", registerRequest.email());
       throw new ResourceAlreadyExistsException(registerRequest.email() + " is already registered");
     }
 
@@ -48,6 +53,7 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     user.setPassword(passwordEncoder.encode(registerRequest.password()));
 
     var savedUser = userRepository.save(user);
+    log.info("User registered successfully with ID: {}", savedUser.getId());
 
     String token = UUID.randomUUID().toString();
 
@@ -59,8 +65,10 @@ public class AuthenticationService implements AuthenticationServiceInterface {
             .build();
 
     mailConfirmationRepository.save(mailConfirmation);
+    log.debug("Mail confirmation token generated for user ID: {}", savedUser.getId());
 
     emailService.sendRegistrationConfirmationEmail(user.getEmail(), token);
+    log.info("Confirmation email sent to: {}", user.getEmail());
 
     return new RegisterResponse(
         "User registered successfully. Please confirm your email", user.getId());
@@ -68,27 +76,39 @@ public class AuthenticationService implements AuthenticationServiceInterface {
 
   @Override
   public AuthenticationResponse login(AuthenticationRequest loginRequest) {
+    log.info("Attempting login for user: {}", loginRequest.email());
+
     User user =
         userRepository
             .findByEmail(loginRequest.email().trim().toLowerCase(Locale.ROOT))
-            .orElseThrow(() -> new InvalidCredentialsException("Invalid credentials"));
+            .orElseThrow(
+                () -> {
+                  log.warn("Login failed: User not found for email {}", loginRequest.email());
+                  return new InvalidCredentialsException("Invalid credentials");
+                });
 
     if (!passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+      log.warn("Login failed: Invalid password for user {}", loginRequest.email());
       throw new InvalidCredentialsException("Invalid credentials");
     }
 
     tokenManagementService.revokeAllUserTokens(user);
+    log.debug("Revoked all previous tokens for user ID: {}", user.getId());
 
     String jwtToken = jwtService.generateToken(user);
 
     tokenManagementService.saveUserToken(user, jwtToken);
+    log.info("Login successful for user ID: {}", user.getId());
 
     return new AuthenticationResponse(jwtToken, user.getId());
   }
 
   @Override
   public RefreshTokenResponse refreshToken(String refreshToken) {
+    log.debug("Attempting to refresh token");
+
     if (refreshToken == null || refreshToken.isBlank()) {
+      log.warn("Refresh token is empty or null");
       throw new InvalidTokenException("Token is empty");
     }
 
@@ -97,16 +117,23 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     User user =
         userRepository
             .findByEmail(email)
-            .orElseThrow(() -> new InvalidTokenException("Invalid refresh token"));
+            .orElseThrow(
+                () -> {
+                  log.warn("Refresh token failed: User not found for email extracted from token");
+                  return new InvalidTokenException("Invalid refresh token");
+                });
 
     if (!jwtService.isTokenValid(refreshToken, user)) {
+      log.warn("Refresh token failed: Token invalid or expired for user {}", email);
       throw new InvalidCredentialsException("Token is invalid or expired");
     }
 
     tokenManagementService.revokeAllUserTokens(user);
+    log.debug("Revoked all previous tokens for user ID: {}", user.getId());
 
     String newAccessToken = jwtService.generateToken(user);
     tokenManagementService.saveUserToken(user, newAccessToken);
+    log.info("Token refreshed successfully for user ID: {}", user.getId());
 
     return new RefreshTokenResponse(newAccessToken, refreshToken, user.getId());
   }
