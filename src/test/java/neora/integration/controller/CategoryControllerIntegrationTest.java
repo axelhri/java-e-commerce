@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Set;
 import java.util.UUID;
 import neora.config.JwtAuthenticationFilter;
+import neora.config.RateLimitingFilter;
 import neora.controller.CategoryController;
 import neora.dto.CategoryRequest;
 import neora.interfaces.CategoryServiceInterface;
@@ -27,6 +28,7 @@ class CategoryControllerIntegrationTest {
   @Autowired private ObjectMapper objectMapper;
 
   @MockitoBean private CategoryServiceInterface categoryService;
+  @MockitoBean private RateLimitingFilter rateLimitingFilter;
 
   @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
 

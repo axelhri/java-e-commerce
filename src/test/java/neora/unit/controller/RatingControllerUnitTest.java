@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
 import neora.config.JwtAuthenticationFilter;
+import neora.config.RateLimitingFilter;
 import neora.controller.RatingController;
 import neora.dto.RatingRequest;
 import neora.dto.RatingResponse;
@@ -34,6 +35,7 @@ class RatingControllerUnitTest {
 
   @MockitoBean private RatingServiceInterface ratingService;
   @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
+  @MockitoBean private RateLimitingFilter rateLimitingFilter;
 
   @MockitoBean private JwtService jwtService;
 

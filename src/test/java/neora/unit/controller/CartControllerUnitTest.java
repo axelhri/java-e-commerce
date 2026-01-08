@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import neora.config.JwtAuthenticationFilter;
+import neora.config.RateLimitingFilter;
 import neora.controller.CartController;
 import neora.interfaces.CartServiceInterface;
 import neora.service.JwtService;
@@ -26,6 +27,7 @@ class CartControllerUnitTest {
   @MockitoBean private JwtService jwtService;
 
   @MockitoBean private JwtAuthenticationFilter jwtAuthenticationFilter;
+  @MockitoBean private RateLimitingFilter rateLimitingFilter;
 
   @Autowired private MockMvc mockMvc;
 
