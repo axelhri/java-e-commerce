@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -77,5 +78,45 @@ public class JwtService {
   private Key getSignInKey() {
     byte[] keyBytes = Decoders.BASE64.decode(secretKey);
     return Keys.hmacShaKeyFor(keyBytes);
+  }
+
+  public ResponseCookie generateAccessTokenCookie(String token) {
+    return ResponseCookie.from("access_token", token)
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(jwtExpiration / 1000)
+        .sameSite("Strict")
+        .build();
+  }
+
+  public ResponseCookie generateRefreshTokenCookie(String token) {
+    return ResponseCookie.from("refresh_token", token)
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(jwtRefreshExpiration / 1000)
+        .sameSite("Strict")
+        .build();
+  }
+
+  public ResponseCookie getCleanAccessTokenCookie() {
+    return ResponseCookie.from("access_token", "")
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(0)
+        .sameSite("Strict")
+        .build();
+  }
+
+  public ResponseCookie getCleanRefreshTokenCookie() {
+    return ResponseCookie.from("refresh_token", "")
+        .httpOnly(true)
+        .secure(true)
+        .path("/")
+        .maxAge(0)
+        .sameSite("Strict")
+        .build();
   }
 }
