@@ -1,7 +1,6 @@
 package neora.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,8 +15,10 @@ import neora.dto.RefreshTokenResponse;
 import neora.dto.RegisterResponse;
 import neora.exception.InvalidTokenException;
 import neora.interfaces.AuthenticationServiceInterface;
+import neora.service.JwtService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class AuthenticationController {
   private final AuthenticationServiceInterface authenticationService;
+  private final JwtService jwtService;
 
   @Operation(
       summary = "Register a new user",
@@ -75,13 +77,21 @@ public class AuthenticationController {
       @RequestBody @Valid AuthenticationRequest loginRequest) {
     log.info("Received login request for email: {}", loginRequest.email());
     AuthenticationResponse response = authenticationService.login(loginRequest);
-    log.info("Login successful for user ID: {}", response.id());
-    return ResponseEntity.ok(response);
+
+    ResponseCookie accessTokenCookie = jwtService.generateAccessTokenCookie(response.accessToken());
+    ResponseCookie refreshTokenCookie =
+        jwtService.generateRefreshTokenCookie(response.refreshToken());
+
+    log.info("Login successful for user ID: {}", response.userId());
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+        .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+        .body(response);
   }
 
   @Operation(
       summary = "Refresh access token",
-      description = "Generates a new access token using a valid refresh token.")
+      description = "Generates a new access token using a valid refresh token from cookie.")
   @ApiResponses(
       value = {
         @ApiResponse(
@@ -98,25 +108,25 @@ public class AuthenticationController {
       })
   @PostMapping("/refresh-token")
   public ResponseEntity<RefreshTokenResponse> refreshToken(
-      @Parameter(description = "Bearer token containing the refresh token", required = true)
-          @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false)
-          String authHeader) {
+      @CookieValue(name = "refresh_token", required = false) String refreshToken) {
 
     log.debug("Received refresh token request");
 
-    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      log.warn("Refresh token request missing or invalid Authorization header");
-      throw new InvalidTokenException("Missing token");
-    }
-
-    String refreshToken = authHeader.substring(7);
-    if (refreshToken.isBlank()) {
-      log.warn("Refresh token is empty");
-      throw new InvalidTokenException("Token is empty");
+    if (refreshToken == null || refreshToken.isBlank()) {
+      log.warn("Refresh token cookie is missing or empty");
+      throw new InvalidTokenException("Refresh token is missing");
     }
 
     RefreshTokenResponse response = authenticationService.refreshToken(refreshToken);
-    log.info("Token refreshed successfully for user ID: {}", response.id());
-    return ResponseEntity.ok(response);
+
+    ResponseCookie accessTokenCookie = jwtService.generateAccessTokenCookie(response.accessToken());
+    ResponseCookie refreshTokenCookie =
+        jwtService.generateRefreshTokenCookie(response.refreshToken());
+
+    log.info("Token refreshed successfully for user ID: {}", response.userId());
+    return ResponseEntity.ok()
+        .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+        .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+        .body(response);
   }
 }
