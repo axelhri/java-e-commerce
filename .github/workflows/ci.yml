@@ -1,4 +1,4 @@
-name: CI - Spring Boot
+name: CI
 
 on:
   push:
@@ -27,6 +27,7 @@ jobs:
         run: mvn spotless:check
 
       - name: SonarQube Analysis
+        if: github.ref != 'refs/heads/develop'
         run: |
           mvn clean verify sonar:sonar \
             -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION  }} \
@@ -42,15 +43,3 @@ jobs:
       - name: Run Tests
         if: success()
         run: mvn clean test
-
-      - name: Package JAR
-        if: success()
-        run: mvn clean package -DskipTests
-
-      - name: Upload JAR Artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: springboot-starter-app
-
-          path: target/*.jar

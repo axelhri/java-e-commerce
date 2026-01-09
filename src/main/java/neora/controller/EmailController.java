@@ -1,0 +1,63 @@
+package neora.controller;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.time.Instant;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import neora.dto.ApiRestResponse;
+import neora.interfaces.EmailServiceInterface;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/v1/email")
+@Tag(name = "Email", description = "Endpoints for email related operations")
+@Slf4j
+public class EmailController {
+  private final EmailServiceInterface emailService;
+
+  private static final String emailConfirmedMessage = "Email confirmed successfully";
+
+  @Operation(
+      summary = "Confirm email address",
+      description = "Confirms user's email address using a token.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Email confirmed successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid or expired token",
+            content = @Content)
+      })
+  @GetMapping("/confirm")
+  public ResponseEntity<ApiRestResponse<String>> confirmEmail(
+      @Parameter(description = "Confirmation token received via email", required = true)
+          @RequestParam
+          String token) {
+    log.info("Received request to confirm email with token");
+    emailService.confirmEmail(token);
+    log.info(emailConfirmedMessage);
+
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(
+            new ApiRestResponse<>(
+                Instant.now(),
+                HttpStatus.OK.value(),
+                emailConfirmedMessage,
+                emailConfirmedMessage));
+  }
+}
