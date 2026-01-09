@@ -98,12 +98,14 @@ class AuthenticationServiceUnitTest {
       when(userRepository.findByEmail(authRequest.email())).thenReturn(Optional.of(user));
       when(passwordEncoder.matches(authRequest.password(), user.getPassword())).thenReturn(true);
       when(jwtService.generateToken(user)).thenReturn("jwt-token");
+      when(jwtService.generateRefreshToken(user)).thenReturn("refresh-token");
 
       AuthenticationResponse response = authenticationService.login(authRequest);
 
       assertNotNull(response);
       assertEquals("jwt-token", response.accessToken());
-      assertEquals(user.getId(), response.id());
+      assertEquals("refresh-token", response.refreshToken());
+      assertEquals(user.getId(), response.userId());
 
       verify(tokenManagementService).revokeAllUserTokens(user);
       verify(tokenManagementService).saveUserToken(user, "jwt-token");
@@ -142,6 +144,7 @@ class AuthenticationServiceUnitTest {
       assertNotNull(response);
       assertEquals("new-access-token", response.accessToken());
       assertEquals(refreshToken, response.refreshToken());
+      assertEquals(user.getId(), response.userId());
 
       verify(tokenManagementService).revokeAllUserTokens(user);
       verify(tokenManagementService).saveUserToken(user, "new-access-token");
