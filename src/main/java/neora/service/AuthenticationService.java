@@ -17,7 +17,6 @@ import neora.exception.InvalidCredentialsException;
 import neora.exception.InvalidTokenException;
 import neora.exception.ResourceAlreadyExistsException;
 import neora.interfaces.AuthenticationServiceInterface;
-import neora.interfaces.CartServiceInterface;
 import neora.interfaces.TokenManagementServiceInterface;
 import neora.mapper.UserMapper;
 import neora.repository.MailConfirmationRepository;
@@ -35,7 +34,6 @@ public class AuthenticationService implements AuthenticationServiceInterface {
   private final JwtService jwtService;
   private final UserMapper userMapper;
   private final PasswordEncoder passwordEncoder;
-  private final CartServiceInterface cartService;
   private final MailConfirmationRepository mailConfirmationRepository;
   private final EmailService emailService;
 
@@ -96,11 +94,12 @@ public class AuthenticationService implements AuthenticationServiceInterface {
     log.debug("Revoked all previous tokens for user ID: {}", user.getId());
 
     String jwtToken = jwtService.generateToken(user);
+    String refreshToken = jwtService.generateRefreshToken(user);
 
     tokenManagementService.saveUserToken(user, jwtToken);
     log.info("Login successful for user ID: {}", user.getId());
 
-    return new AuthenticationResponse(jwtToken, user.getId());
+    return new AuthenticationResponse(jwtToken, refreshToken, user.getId());
   }
 
   @Override
