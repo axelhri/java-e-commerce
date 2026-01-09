@@ -26,6 +26,8 @@ public class JwtService {
   @Value("${jwt.refresh.expiration}")
   private Long jwtRefreshExpiration;
 
+  private static final String sameSiteStrict = "Strict";
+
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
   }
@@ -86,7 +88,7 @@ public class JwtService {
         .secure(true)
         .path("/")
         .maxAge(jwtExpiration / 1000)
-        .sameSite("Strict")
+        .sameSite(sameSiteStrict)
         .build();
   }
 
@@ -96,7 +98,7 @@ public class JwtService {
         .secure(true)
         .path("/")
         .maxAge(jwtRefreshExpiration / 1000)
-        .sameSite("Strict")
+        .sameSite(sameSiteStrict)
         .build();
   }
 
@@ -106,7 +108,7 @@ public class JwtService {
         .secure(true)
         .path("/")
         .maxAge(0)
-        .sameSite("Strict")
+        .sameSite(sameSiteStrict)
         .build();
   }
 
@@ -116,7 +118,7 @@ public class JwtService {
         .secure(true)
         .path("/")
         .maxAge(0)
-        .sameSite("Strict")
+        .sameSite(sameSiteStrict)
         .build();
   }
 }
