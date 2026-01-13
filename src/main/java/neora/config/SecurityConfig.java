@@ -1,5 +1,6 @@
 package neora.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +14,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfiguration;
@@ -36,6 +39,11 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .csrf(csrf -> csrf.disable())
+        .exceptionHandling(
+            exception ->
+                exception
+                    .authenticationEntryPoint(authenticationEntryPoint())
+                    .accessDeniedHandler(accessDeniedHandler()))
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
@@ -96,5 +104,40 @@ public class SecurityConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
+  }
+
+  @Bean
+  public AuthenticationEntryPoint authenticationEntryPoint() {
+    return (request, response, authException) -> {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType("application/json");
+      response
+          .getWriter()
+          .write(
+              """
+        {
+          "error": "UNAUTHORIZED",
+          "message": "Authentication required"
+        }
+      """);
+    };
+  }
+
+  // ===== 403 =====
+  @Bean
+  public AccessDeniedHandler accessDeniedHandler() {
+    return (request, response, accessDeniedException) -> {
+      response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+      response.setContentType("application/json");
+      response
+          .getWriter()
+          .write(
+              """
+        {
+          "error": "FORBIDDEN",
+          "message": "Access denied"
+        }
+      """);
+    };
   }
 }
