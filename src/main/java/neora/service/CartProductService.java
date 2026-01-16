@@ -1,11 +1,14 @@
 package neora.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import neora.dto.CartItemResponse;
 import neora.dto.ManageCartRequest;
 import neora.entity.CartItem;
 import neora.entity.Product;
+import neora.entity.ProductImage;
 import neora.entity.User;
 import neora.exception.InsufficientStockException;
 import neora.exception.ResourceNotFoundException;
@@ -84,10 +87,14 @@ public class CartProductService implements CartProductServiceInterface {
         product.getId(),
         cartItem.getQuantity());
 
+    List<String> imageUrls =
+        product.getImages().stream().map(ProductImage::getImageUrl).collect(Collectors.toList());
+
     return new CartItemResponse(
         cartItem.getId(),
         cartItem.getProduct().getId(),
         cartItem.getProduct().getName(),
+        imageUrls,
         cartItem.getQuantity(),
         cartItem.getProduct().getPrice());
   }

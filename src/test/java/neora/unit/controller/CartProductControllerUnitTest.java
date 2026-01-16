@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 import java.util.UUID;
 import neora.config.JwtAuthenticationFilter;
 import neora.config.RateLimitingFilter;
@@ -51,7 +52,8 @@ class CartProductControllerUnitTest {
     user = User.builder().id(UUID.randomUUID()).build();
     validRequest = new ManageCartRequest(UUID.randomUUID(), 1);
     cartItemResponse =
-        new CartItemResponse(UUID.randomUUID(), validRequest.productId(), "Test", 1, 100);
+        new CartItemResponse(
+            UUID.randomUUID(), validRequest.productId(), "Test", List.of(""), 1, 100);
 
     // Simulate authenticated user
     SecurityContextHolder.getContext()
