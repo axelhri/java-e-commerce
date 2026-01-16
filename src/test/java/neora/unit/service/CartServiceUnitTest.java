@@ -10,10 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import neora.dto.CartItemResponse;
-import neora.entity.Cart;
-import neora.entity.CartItem;
-import neora.entity.Product;
-import neora.entity.User;
+import neora.entity.*;
 import neora.exception.CartAlreadyExistsException;
 import neora.repository.CartItemRepository;
 import neora.repository.CartRepository;
@@ -36,11 +33,19 @@ class CartServiceUnitTest {
   private User user;
   private Cart cart;
   private Product product;
+  private Product product2;
   private CartItem cartItem;
 
   @BeforeEach
   void setUp() {
     user = User.builder().email("test@example.com").password("Password123!").build();
+
+    ProductImage image1 = new ProductImage();
+    image1.setImageUrl("http://image-1.jpg");
+
+    ProductImage image2 = new ProductImage();
+    image2.setImageUrl("http://image-2.jpg");
+
     product =
         Product.builder()
             .id(UUID.randomUUID())
@@ -48,8 +53,20 @@ class CartServiceUnitTest {
             .price(1000)
             .description("Black wireless mouse.")
             .build();
+    product.setImages(Collections.singletonList(image1));
+
+    product2 =
+        Product.builder()
+            .id(UUID.randomUUID())
+            .name("Laptop")
+            .description("16 inch blue laptop")
+            .price(1500)
+            .build();
+    product2.setImages(Collections.singletonList(image2));
+
     cart = Cart.builder().id(UUID.randomUUID()).user(user).build();
     user.setCart(cart);
+
     cartItem = CartItem.builder().product(product).cart(cart).quantity(1).build();
   }
 
@@ -152,13 +169,6 @@ class CartServiceUnitTest {
     @Test
     void should_return_list_of_cart_products_successfully() {
       // Arrange
-      Product product2 =
-          Product.builder()
-              .id(UUID.randomUUID())
-              .name("Laptop")
-              .description("16 inch blue laptop")
-              .price(1500)
-              .build();
       CartItem cartItem1 = CartItem.builder().cart(cart).product(product).quantity(1).build();
       CartItem cartItem2 = CartItem.builder().cart(cart).product(product2).quantity(2).build();
       List<CartItem> cartItems = List.of(cartItem1, cartItem2);
