@@ -3,14 +3,12 @@ package neora.unit.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import neora.dto.CartItemResponse;
 import neora.dto.ManageCartRequest;
-import neora.entity.Cart;
-import neora.entity.CartItem;
-import neora.entity.Product;
-import neora.entity.User;
+import neora.entity.*;
 import neora.exception.ResourceNotFoundException;
 import neora.interfaces.CartServiceInterface;
 import neora.interfaces.StockServiceInterface;
@@ -42,6 +40,10 @@ class CartProductServiceUnitTest {
   @BeforeEach
   void setUp() {
     user = User.builder().email("test@example.com").password("Password123!").build();
+
+    ProductImage image = new ProductImage();
+    image.setImageUrl("http://image.jpg");
+
     product =
         Product.builder()
             .id(UUID.randomUUID())
@@ -49,8 +51,11 @@ class CartProductServiceUnitTest {
             .price(1000)
             .description("Black wireless mouse.")
             .build();
+    product.setImages(Collections.singletonList(image));
+
     cart = Cart.builder().id(UUID.randomUUID()).user(user).build();
     user.setCart(cart);
+
     request = new ManageCartRequest(product.getId(), 1);
     cartItem = CartItem.builder().product(product).cart(cart).quantity(1).build();
   }
