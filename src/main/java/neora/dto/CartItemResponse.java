@@ -2,7 +2,6 @@ package neora.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
 import java.util.UUID;
 
 public record CartItemResponse(
@@ -24,7 +23,7 @@ public record CartItemResponse(
             accessMode = Schema.AccessMode.READ_ONLY)
         @JsonProperty("product_name")
         String productName,
-    @JsonProperty("product_images") List<String> productImages,
+    @JsonProperty("product_image") String productImage,
     @Schema(
             description = "Quantity in cart",
             example = "2",

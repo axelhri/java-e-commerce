@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import neora.dto.CartItemResponse;
 import neora.entity.Cart;
 import neora.entity.CartItem;
-import neora.entity.ProductImage;
 import neora.entity.User;
 import neora.exception.CartAlreadyExistsException;
 import neora.interfaces.CartServiceInterface;
@@ -78,20 +77,14 @@ public class CartService implements CartServiceInterface {
         cartItems.stream()
             .filter(item -> item.getProduct() != null)
             .map(
-                item -> {
-                  List<String> imageUrls =
-                      item.getProduct().getImages().stream()
-                          .map(ProductImage::getImageUrl)
-                          .collect(Collectors.toList());
-
-                  return new CartItemResponse(
-                      item.getId(),
-                      item.getProduct().getId(),
-                      item.getProduct().getName(),
-                      imageUrls,
-                      item.getQuantity(),
-                      item.getProduct().getPrice());
-                })
+                item ->
+                    new CartItemResponse(
+                        item.getId(),
+                        item.getProduct().getId(),
+                        item.getProduct().getName(),
+                        item.getProduct().getPrimaryImage().getImageUrl(),
+                        item.getQuantity(),
+                        item.getProduct().getPrice()))
             .collect(Collectors.toList());
 
     log.debug("Found {} products in cart for user ID: {}", response.size(), user.getId());
