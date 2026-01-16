@@ -23,7 +23,13 @@ public record CartItemResponse(
             accessMode = Schema.AccessMode.READ_ONLY)
         @JsonProperty("product_name")
         String productName,
-    @JsonProperty("product_image") String productImage,
+    @Schema(
+            description = "Product image",
+            example =
+                "https://res.cloudinary.com/dfuy6lebj/image/upload/v1768568321/products/product_5cc96f03-2269-49f2-a1a2-bc8a470e73bd/bj71iqi1xf2hzmpn3o4d.jpg",
+            accessMode = Schema.AccessMode.READ_ONLY)
+        @JsonProperty("product_image")
+        String productImage,
     @Schema(
             description = "Quantity in cart",
             example = "2",
