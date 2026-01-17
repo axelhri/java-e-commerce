@@ -216,4 +216,15 @@ public class OrderController {
         new ApiRestResponse<>(
             Instant.now(), HttpStatus.OK.value(), "Cancelled orders fetched successfully", orders));
   }
+
+  @GetMapping("/{orderId}/products")
+  public ResponseEntity<ApiRestResponse<List<OrderProductResponse>>> getOrderProducts(
+      @PathVariable UUID orderId) {
+    log.info("Received request to get order products for order ID: {}", orderId);
+    List<OrderProductResponse> products = orderService.getOrderProducts(orderId);
+    log.info("Returning {} order products for order ID: {}", products.size(), orderId);
+    return ResponseEntity.ok(
+        new ApiRestResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Order products fetched successfully", products));
+  }
 }
