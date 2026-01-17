@@ -11,6 +11,12 @@ public record OrderProductResponse(
         @JsonProperty("product_id")
         String productId,
     @Schema(
+            description = "Product name",
+            example = "Wireless keyboard",
+            accessMode = Schema.AccessMode.READ_ONLY)
+        @JsonProperty("product_name")
+        String product_name,
+    @Schema(
             description = "Product primary image URL",
             example = "http://res.cloudinary.com/...",
             accessMode = Schema.AccessMode.READ_ONLY)
