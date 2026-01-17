@@ -217,6 +217,24 @@ public class OrderController {
             Instant.now(), HttpStatus.OK.value(), "Cancelled orders fetched successfully", orders));
   }
 
+  @Operation(
+      summary = "Get products of an order",
+      description = "Retrieves the list of products associated with a specific order.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Order products fetched successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Order not found", content = @Content),
+        @ApiResponse(
+            responseCode = "403",
+            description = "User not authorized to access this order",
+            content = @Content)
+      })
   @GetMapping("/{orderId}/products")
   public ResponseEntity<ApiRestResponse<List<OrderProductResponse>>> getOrderProducts(
       @PathVariable UUID orderId) {
