@@ -10,10 +10,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import neora.dto.CancelOrderRequest;
-import neora.dto.OrderRequest;
-import neora.dto.OrderResponse;
-import neora.dto.PaymentResponse;
+import neora.dto.*;
 import neora.entity.*;
 import neora.exception.EmptyCartException;
 import neora.exception.InsufficientStockException;
@@ -295,6 +292,17 @@ public class OrderService implements OrderServiceInterface {
     List<Order> orders = orderRepository.findByUserAndStatus(user, OrderStatus.CANCELLED);
     log.info("Found {} cancelled orders for user ID: {}", orders.size(), user.getId());
     return orders.stream().map(this::buildOrderResponse).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<OrderProductResponse> getOrderProducts(UUID orderId) {
+    Order order =
+        orderRepository
+            .findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+    return order.getOrderItems().stream()
+        .map(orderMapper::toOrderProductResponse)
+        .collect(Collectors.toList());
   }
 
   private OrderResponse buildOrderResponse(Order order) {
