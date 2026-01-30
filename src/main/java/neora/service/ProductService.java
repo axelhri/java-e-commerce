@@ -52,6 +52,11 @@ public class ProductService implements ProductServiceInterface {
       throws IOException {
     log.info("Attempting to create a new product with name: {}", productRequest.name());
 
+    if (images != null && images.size() > 5) {
+      log.warn("Product creation failed: Too many images provided ({})", images.size());
+      throw new IllegalArgumentException("You can only upload up to 5 images per product.");
+    }
+
     Product product = productMapper.productToEntity(productRequest);
     Category category =
         categoryRepository
