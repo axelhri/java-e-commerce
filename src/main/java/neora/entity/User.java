@@ -66,6 +66,10 @@ public class User implements UserDetails {
   @JsonIgnore
   private transient List<Order> orders;
 
+  @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
+  private List<Bookmark> bookmarks = new ArrayList<>();
+
   @PrePersist
   @PreUpdate
   private void normalizeEmail() {

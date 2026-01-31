@@ -48,6 +48,10 @@ public class Product {
   @JoinColumn(name = "category_id", nullable = false)
   private Category category;
 
+  @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+  @Builder.Default
+  private List<Bookmark> bookmarks = new ArrayList<>();
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private Instant createdAt;
