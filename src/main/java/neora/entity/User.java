@@ -68,7 +68,7 @@ public class User implements UserDetails {
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   @JsonIgnore
-  private List<Bookmark> bookmarks = new ArrayList<>();
+  private transient List<Bookmark> bookmarks = new ArrayList<>();
 
   @PrePersist
   @PreUpdate
