@@ -6,6 +6,7 @@ import neora.dto.ManageBookmarkRequest;
 import neora.entity.Bookmark;
 import neora.entity.Product;
 import neora.entity.User;
+import neora.exception.ResourceAlreadyExistsException;
 import neora.exception.ResourceNotFoundException;
 import neora.interfaces.BookmarkServiceInterface;
 import neora.mapper.BookmarkMapper;
@@ -32,6 +33,10 @@ public class BookmarkService implements BookmarkServiceInterface {
         productRepository
             .findById(request.productId())
             .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+    if (bookmarkRepository.findByUserAndProduct(user, product).isPresent()) {
+      throw new ResourceAlreadyExistsException("Product already bookmarked");
+    }
 
     Bookmark bookmark = bookmarkMapper.toBookmarkEntity(product, user);
 
