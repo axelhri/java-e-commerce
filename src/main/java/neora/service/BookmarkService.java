@@ -104,6 +104,8 @@ public class BookmarkService implements BookmarkServiceInterface {
   @Override
   @Transactional
   public void clearBookmarks(User user) {
+    log.info("Clearing bookmarks for user ID: {}", user.getId());
     bookmarkRepository.deleteAllByUser(user);
+    log.info("Bookmarks cleared successfully for user ID: {}", user.getId());
   }
 }
