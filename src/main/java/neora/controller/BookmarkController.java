@@ -1,5 +1,11 @@
 package neora.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import lombok.AllArgsConstructor;
@@ -17,10 +23,34 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/bookmarks")
+@Tag(name = "Bookmarks", description = "Endpoints for managing user bookmarks")
 @Slf4j
 public class BookmarkController {
   private final BookmarkServiceInterface bookmarkServiceInterface;
 
+  @Operation(
+      summary = "Bookmark a product",
+      description = "Adds a product to the user's bookmarks.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Product bookmarked successfully",
+            content =
+                @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ApiRestResponse.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content),
+        @ApiResponse(responseCode = "404", description = "Product not found", content = @Content),
+        @ApiResponse(
+            responseCode = "409",
+            description = "Product already bookmarked",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "403",
+            description = "User not authenticated",
+            content = @Content)
+      })
   @PostMapping
   public ResponseEntity<ApiRestResponse<BookmarkResponse>> bookmarkProduct(
       @Valid @RequestBody ManageBookmarkRequest request, @AuthenticationPrincipal User user) {
@@ -43,6 +73,24 @@ public class BookmarkController {
                 bookmark));
   }
 
+  @Operation(
+      summary = "Remove product from bookmarks",
+      description = "Removes a specific product from the user's bookmarks.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Product removed from bookmarks successfully",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Product or bookmark not found",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "403",
+            description = "User not authenticated",
+            content = @Content)
+      })
   @DeleteMapping
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void removeProductFromBookmarks(
@@ -58,6 +106,20 @@ public class BookmarkController {
         user.getId());
   }
 
+  @Operation(
+      summary = "Clear all bookmarks",
+      description = "Removes all bookmarks for the authenticated user.")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "204",
+            description = "Bookmarks cleared successfully",
+            content = @Content),
+        @ApiResponse(
+            responseCode = "403",
+            description = "User not authenticated",
+            content = @Content)
+      })
   @DeleteMapping("/clear")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void clearBookmarks(@AuthenticationPrincipal User user) {
