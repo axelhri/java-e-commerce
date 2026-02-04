@@ -11,10 +11,7 @@ import neora.interfaces.BookmarkServiceInterface;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
@@ -34,5 +31,12 @@ public class BookmarkController {
                 HttpStatus.CREATED.value(),
                 "Product added to bookmarks successfully",
                 bookmark));
+  }
+
+  @DeleteMapping
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void removeProductFromBookmarks(
+      @Valid @RequestBody ManageBookmarkRequest request, @AuthenticationPrincipal User user) {
+    bookmarkServiceInterface.removeProductFromBookmarks(request, user);
   }
 }
