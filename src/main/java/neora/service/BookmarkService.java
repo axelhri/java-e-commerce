@@ -45,4 +45,24 @@ public class BookmarkService implements BookmarkServiceInterface {
     return new BookmarkResponse(
         bookmark.getId(), bookmark.getProduct().getId(), bookmark.getUser().getId());
   }
+
+  @Override
+  public void removeProductFromBookmarks(ManageBookmarkRequest request, User user) {
+
+    if (!userRepository.existsById(user.getId())) {
+      throw new ResourceNotFoundException("User not found");
+    }
+
+    Product product =
+        productRepository
+            .findById(request.productId())
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+    Bookmark bookmark =
+        bookmarkRepository
+            .findByUserAndProduct(user, product)
+            .orElseThrow(() -> new ResourceNotFoundException("Product not found in bookmarks"));
+
+    bookmarkRepository.delete(bookmark);
+  }
 }
