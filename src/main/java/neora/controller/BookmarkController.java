@@ -57,4 +57,10 @@ public class BookmarkController {
         request.productId(),
         user.getId());
   }
+
+  @DeleteMapping("/clear")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void clearBookmarks(@AuthenticationPrincipal User user) {
+    bookmarkServiceInterface.clearBookmarks(user);
+  }
 }
