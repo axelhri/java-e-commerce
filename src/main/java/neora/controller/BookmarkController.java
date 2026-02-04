@@ -61,6 +61,8 @@ public class BookmarkController {
   @DeleteMapping("/clear")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void clearBookmarks(@AuthenticationPrincipal User user) {
+    log.info("Received request to clear bookmarks for user ID: {}", user.getId());
     bookmarkServiceInterface.clearBookmarks(user);
+    log.info("Bookmarks cleared successfully for user ID: {}", user.getId());
   }
 }
