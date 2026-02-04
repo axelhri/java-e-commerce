@@ -1,7 +1,10 @@
 package neora.unit.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -101,6 +104,74 @@ class BookmarkControllerUnitTest {
       mockMvc
           .perform(
               post("/api/v1/bookmarks")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(invalidRequest)))
+          .andExpect(status().isBadRequest());
+    }
+  }
+
+  @Nested
+  class RemoveProductFromBookmarks {
+
+    @Test
+    void should_remove_product_from_bookmarks_and_return_204() throws Exception {
+      // Arrange
+      doNothing()
+          .when(bookmarkService)
+          .removeProductFromBookmarks(any(ManageBookmarkRequest.class), any(User.class));
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              delete("/api/v1/bookmarks")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(validRequest)))
+          .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void should_return_404_if_product_not_found() throws Exception {
+      // Arrange
+      doThrow(new ResourceNotFoundException("Product not found"))
+          .when(bookmarkService)
+          .removeProductFromBookmarks(any(ManageBookmarkRequest.class), any(User.class));
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              delete("/api/v1/bookmarks")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(validRequest)))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.message").value("Product not found"));
+    }
+
+    @Test
+    void should_return_404_if_product_not_in_bookmarks() throws Exception {
+      // Arrange
+      doThrow(new ResourceNotFoundException("Product not found in bookmarks"))
+          .when(bookmarkService)
+          .removeProductFromBookmarks(any(ManageBookmarkRequest.class), any(User.class));
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              delete("/api/v1/bookmarks")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(objectMapper.writeValueAsString(validRequest)))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.message").value("Product not found in bookmarks"));
+    }
+
+    @Test
+    void should_return_400_if_request_is_invalid() throws Exception {
+      // Arrange
+      ManageBookmarkRequest invalidRequest = new ManageBookmarkRequest(null);
+
+      // Act & Assert
+      mockMvc
+          .perform(
+              delete("/api/v1/bookmarks")
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(objectMapper.writeValueAsString(invalidRequest)))
           .andExpect(status().isBadRequest());
