@@ -8,4 +8,6 @@ public interface BookmarkServiceInterface {
   BookmarkResponse bookmarkProduct(ManageBookmarkRequest request, User user);
 
   void removeProductFromBookmarks(ManageBookmarkRequest request, User user);
+
+  void clearBookmarks(User user);
 }

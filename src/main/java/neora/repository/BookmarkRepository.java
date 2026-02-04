@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, UUID> {
   Optional<Bookmark> findByUserAndProduct(User user, Product product);
+
+  void deleteAllByUser(User user);
 }

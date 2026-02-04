@@ -15,6 +15,7 @@ import neora.repository.BookmarkRepository;
 import neora.repository.ProductRepository;
 import neora.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @AllArgsConstructor
@@ -98,5 +99,11 @@ public class BookmarkService implements BookmarkServiceInterface {
         "Bookmark removed successfully for product ID: {} and user ID: {}",
         product.getId(),
         user.getId());
+  }
+
+  @Override
+  @Transactional
+  public void clearBookmarks(User user) {
+    bookmarkRepository.deleteAllByUser(user);
   }
 }
