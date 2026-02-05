@@ -99,4 +99,71 @@ class BookmarkServiceUnitTest {
       verify(bookmarkRepository, never()).save(any());
     }
   }
+
+  @Nested
+  class RemoveProductFromBookmarks {
+
+    @Test
+    void should_remove_product_from_bookmarks_successfully() {
+      // Arrange
+      when(userRepository.existsById(user.getId())).thenReturn(true);
+      when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+      when(bookmarkRepository.findByUserAndProduct(user, product))
+          .thenReturn(Optional.of(bookmark));
+
+      // Act
+      bookmarkService.removeProductFromBookmarks(request, user);
+
+      // Assert
+      verify(bookmarkRepository).delete(bookmark);
+    }
+
+    @Test
+    void should_throw_exception_if_user_not_found() {
+      // Arrange
+      when(userRepository.existsById(user.getId())).thenReturn(false);
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> bookmarkService.removeProductFromBookmarks(request, user));
+
+      assertEquals("User not found", exception.getMessage());
+      verify(bookmarkRepository, never()).delete(any());
+    }
+
+    @Test
+    void should_throw_exception_if_product_not_found() {
+      // Arrange
+      when(userRepository.existsById(user.getId())).thenReturn(true);
+      when(productRepository.findById(product.getId())).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> bookmarkService.removeProductFromBookmarks(request, user));
+
+      assertEquals("Product not found", exception.getMessage());
+      verify(bookmarkRepository, never()).delete(any());
+    }
+
+    @Test
+    void should_throw_exception_if_product_not_in_bookmarks() {
+      // Arrange
+      when(userRepository.existsById(user.getId())).thenReturn(true);
+      when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+      when(bookmarkRepository.findByUserAndProduct(user, product)).thenReturn(Optional.empty());
+
+      // Act & Assert
+      ResourceNotFoundException exception =
+          assertThrows(
+              ResourceNotFoundException.class,
+              () -> bookmarkService.removeProductFromBookmarks(request, user));
+
+      assertEquals("Product not found in bookmarks", exception.getMessage());
+      verify(bookmarkRepository, never()).delete(any());
+    }
+  }
 }
