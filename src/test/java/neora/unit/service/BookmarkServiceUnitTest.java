@@ -3,6 +3,7 @@ package neora.unit.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import neora.dto.BookmarkResponse;
@@ -10,6 +11,7 @@ import neora.dto.ManageBookmarkRequest;
 import neora.entity.Bookmark;
 import neora.entity.Product;
 import neora.entity.User;
+import neora.exception.ResourceAlreadyExistsException;
 import neora.exception.ResourceNotFoundException;
 import neora.mapper.BookmarkMapper;
 import neora.repository.BookmarkRepository;
@@ -37,6 +39,7 @@ class BookmarkServiceUnitTest {
   private Product product;
   private ManageBookmarkRequest request;
   private Bookmark bookmark;
+  private BookmarkResponse bookmarkResponse;
 
   @BeforeEach
   void setUp() {
@@ -44,6 +47,7 @@ class BookmarkServiceUnitTest {
     product = Product.builder().id(UUID.randomUUID()).name("Test Product").build();
     request = new ManageBookmarkRequest(product.getId());
     bookmark = Bookmark.builder().id(UUID.randomUUID()).user(user).product(product).build();
+    bookmarkResponse = new BookmarkResponse(bookmark.getId(), product.getId(), user.getId());
   }
 
   @Nested
@@ -54,8 +58,10 @@ class BookmarkServiceUnitTest {
       // Arrange
       when(userRepository.existsById(user.getId())).thenReturn(true);
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+      when(bookmarkRepository.findByUserAndProduct(user, product)).thenReturn(Optional.empty());
       when(bookmarkMapper.toBookmarkEntity(product, user)).thenReturn(bookmark);
       when(bookmarkRepository.save(bookmark)).thenReturn(bookmark);
+      when(bookmarkMapper.toBookmarkResponse(bookmark)).thenReturn(bookmarkResponse);
 
       // Act
       BookmarkResponse response = bookmarkService.bookmarkProduct(request, user);
@@ -98,13 +104,31 @@ class BookmarkServiceUnitTest {
       assertEquals("Product not found", exception.getMessage());
       verify(bookmarkRepository, never()).save(any());
     }
+
+    @Test
+    void should_throw_exception_if_product_already_bookmarked() {
+      // Arrange
+      when(userRepository.existsById(user.getId())).thenReturn(true);
+      when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
+      when(bookmarkRepository.findByUserAndProduct(user, product))
+          .thenReturn(Optional.of(bookmark));
+
+      // Act & Assert
+      ResourceAlreadyExistsException exception =
+          assertThrows(
+              ResourceAlreadyExistsException.class,
+              () -> bookmarkService.bookmarkProduct(request, user));
+
+      assertEquals("Product already bookmarked", exception.getMessage());
+      verify(bookmarkRepository, never()).save(any());
+    }
   }
 
   @Nested
   class RemoveProductFromBookmarks {
 
     @Test
-    void should_remove_product_from_bookmarks_successfully() {
+    void should_remove_bookmark_successfully() {
       // Arrange
       when(userRepository.existsById(user.getId())).thenReturn(true);
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -150,7 +174,7 @@ class BookmarkServiceUnitTest {
     }
 
     @Test
-    void should_throw_exception_if_product_not_in_bookmarks() {
+    void should_throw_exception_if_bookmark_not_found() {
       // Arrange
       when(userRepository.existsById(user.getId())).thenReturn(true);
       when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -164,6 +188,52 @@ class BookmarkServiceUnitTest {
 
       assertEquals("Product not found in bookmarks", exception.getMessage());
       verify(bookmarkRepository, never()).delete(any());
+    }
+  }
+
+  @Nested
+  class ClearBookmarks {
+    @Test
+    void should_clear_bookmarks_successfully() {
+      // Act
+      bookmarkService.clearBookmarks(user);
+
+      // Assert
+      verify(bookmarkRepository).deleteAllByUser(user);
+    }
+  }
+
+  @Nested
+  class GetUserBookmarks {
+    @Test
+    void should_return_user_bookmarks_successfully() {
+      // Arrange
+      List<Bookmark> bookmarks = List.of(bookmark);
+      when(bookmarkRepository.findAllByUser(user)).thenReturn(bookmarks);
+      when(bookmarkMapper.toBookmarkResponse(bookmark)).thenReturn(bookmarkResponse);
+
+      // Act
+      List<BookmarkResponse> result = bookmarkService.getUserBookmarks(user);
+
+      // Assert
+      assertNotNull(result);
+      assertEquals(1, result.size());
+      assertEquals(bookmarkResponse, result.get(0));
+      verify(bookmarkRepository).findAllByUser(user);
+    }
+
+    @Test
+    void should_return_empty_list_if_no_bookmarks() {
+      // Arrange
+      when(bookmarkRepository.findAllByUser(user)).thenReturn(List.of());
+
+      // Act
+      List<BookmarkResponse> result = bookmarkService.getUserBookmarks(user);
+
+      // Assert
+      assertNotNull(result);
+      assertTrue(result.isEmpty());
+      verify(bookmarkRepository).findAllByUser(user);
     }
   }
 }
