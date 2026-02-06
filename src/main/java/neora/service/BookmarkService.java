@@ -1,5 +1,7 @@
 package neora.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import neora.dto.BookmarkResponse;
@@ -57,8 +59,7 @@ public class BookmarkService implements BookmarkServiceInterface {
     log.info(
         "Product ID: {} successfully bookmarked for user ID: {}", product.getId(), user.getId());
 
-    return new BookmarkResponse(
-        bookmark.getId(), bookmark.getProduct().getId(), bookmark.getUser().getId());
+    return bookmarkMapper.toBookmarkResponse(bookmark);
   }
 
   @Override
@@ -107,5 +108,12 @@ public class BookmarkService implements BookmarkServiceInterface {
     log.info("Clearing bookmarks for user ID: {}", user.getId());
     bookmarkRepository.deleteAllByUser(user);
     log.info("Bookmarks cleared successfully for user ID: {}", user.getId());
+  }
+
+  @Override
+  public List<BookmarkResponse> getUserBookmarks(User user) {
+    List<Bookmark> bookmarks = bookmarkRepository.findAllByUser(user);
+
+    return bookmarks.stream().map(bookmarkMapper::toBookmarkResponse).collect(Collectors.toList());
   }
 }
