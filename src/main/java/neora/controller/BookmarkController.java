@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import neora.dto.ApiRestResponse;
@@ -126,5 +127,15 @@ public class BookmarkController {
     log.info("Received request to clear bookmarks for user ID: {}", user.getId());
     bookmarkServiceInterface.clearBookmarks(user);
     log.info("Bookmarks cleared successfully for user ID: {}", user.getId());
+  }
+
+  @GetMapping
+  public ResponseEntity<ApiRestResponse<List<BookmarkResponse>>> getUserBookmarks(
+      @AuthenticationPrincipal User user) {
+    List<BookmarkResponse> bookmarks = bookmarkServiceInterface.getUserBookmarks(user);
+
+    return ResponseEntity.ok(
+        new ApiRestResponse<>(
+            Instant.now(), HttpStatus.OK.value(), "Bookmarks fetched successfully", bookmarks));
   }
 }
