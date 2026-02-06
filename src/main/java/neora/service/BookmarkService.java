@@ -112,7 +112,9 @@ public class BookmarkService implements BookmarkServiceInterface {
 
   @Override
   public List<BookmarkResponse> getUserBookmarks(User user) {
+    log.info("Fetching bookmarks for user ID: {}", user.getId());
     List<Bookmark> bookmarks = bookmarkRepository.findAllByUser(user);
+    log.info("Found {} bookmarks for user ID: {}", bookmarks.size(), user.getId());
 
     return bookmarks.stream().map(bookmarkMapper::toBookmarkResponse).collect(Collectors.toList());
   }
